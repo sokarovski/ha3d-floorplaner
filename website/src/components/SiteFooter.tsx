@@ -1,10 +1,12 @@
 import type { ReactElement } from "react";
 import { links } from "../content/links";
+import { pages } from "../content/pages";
 
 export const SiteFooter = (): ReactElement => (
   <footer data-site-footer="">
     <div data-site-footer-inner="">
       <nav aria-label="Project" data-site-footer-links="">
+        <a href={pages.possibilities}>All possibilities</a>
         <a href={links.appRepository}>Source and app (ha3d-floorplaner)</a>
         <a href={links.integrationRepository}>Home Assistant integration (ha3d)</a>
         <a href={links.readme}>Documentation</a>

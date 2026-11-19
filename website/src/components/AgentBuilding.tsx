@@ -1,9 +1,8 @@
 import type { ReactElement } from "react";
 import { links } from "../content/links";
+import { agentPrompt } from "../content/prompts";
 import { CopyPrompt } from "./CopyPrompt";
 import { Section } from "./Section";
-
-const agentPrompt = "Find AI Agent Instructions and using the images build my 3D Home.";
 
 export const AgentBuilding = (): ReactElement => (
   <Section

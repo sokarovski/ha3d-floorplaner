@@ -126,6 +126,36 @@
     @apply flex flex-col gap-5;
   }
 
+  /* Full-width hero on the home page: the night capture edge to edge, text on a dark shade (same in both themes,
+     because the image itself is dark). */
+  [data-site-hero] {
+    @apply relative isolate flex min-h-[34rem] items-center overflow-hidden bg-[#06080d] lg:min-h-[42rem];
+  }
+
+  [data-site-hero-image] {
+    @apply absolute inset-0 -z-20 size-full object-cover object-[65%_center];
+  }
+
+  [data-site-hero-shade] {
+    @apply absolute inset-0 -z-10 bg-gradient-to-t from-[#06080d]/95 via-[#06080d]/70 to-[#06080d]/30 lg:bg-gradient-to-r lg:from-[#06080d]/90 lg:via-[#06080d]/55 lg:to-transparent;
+  }
+
+  [data-site-hero-inner] {
+    @apply mx-auto w-full max-w-6xl px-4 py-16 sm:px-6;
+  }
+
+  [data-site-hero-text] {
+    @apply flex max-w-xl flex-col gap-5 text-white;
+  }
+
+  [data-site-hero] h1 {
+    @apply text-4xl leading-tight text-white sm:text-5xl;
+  }
+
+  [data-site-hero-lead] {
+    @apply text-lg text-white/80;
+  }
+
   [data-site-intro-logo] {
     @apply size-20 sm:size-24;
   }
@@ -376,6 +406,95 @@
 
   [data-site-clip-control] {
     @apply absolute right-3 bottom-3;
+  }
+
+  /* "See all possibilities" page */
+  [data-site-page-intro] {
+    @apply mx-auto grid max-w-6xl items-start gap-10 px-4 pt-10 pb-12 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:pt-16;
+  }
+
+  [data-site-page-intro] h1 {
+    @apply text-4xl leading-tight sm:text-5xl;
+  }
+
+  [data-site-contents] {
+    @apply grid gap-4 sm:grid-cols-2;
+  }
+
+  [data-site-contents-part] {
+    @apply flex flex-col gap-2 rounded-card bg-surface p-5;
+  }
+
+  [data-site-contents-title] {
+    @apply font-semibold text-foreground no-underline;
+  }
+
+  [data-site-contents] ul {
+    @apply flex list-none flex-col gap-1 p-0 text-sm;
+  }
+
+  [data-site-group] {
+    @apply flex flex-col gap-5 border-t border-border pt-10;
+  }
+
+  [data-site-section-header] + [data-site-group] {
+    @apply border-t-0 pt-0;
+  }
+
+  [data-site-group-header] {
+    @apply flex flex-col gap-1;
+  }
+
+  [data-site-group-header] h3 {
+    @apply text-2xl;
+  }
+
+  [data-site-group-header] p {
+    @apply max-w-3xl text-muted;
+  }
+
+  [data-site-group-media] {
+    @apply grid gap-4 sm:gap-6 lg:max-w-3xl;
+  }
+
+  [data-site-group-media][data-site-group-media-narrow] {
+    @apply max-w-2xl;
+  }
+
+  [data-site-group-media][data-site-group-media-pair] {
+    @apply lg:max-w-none lg:grid-cols-2;
+  }
+
+  [data-site-capabilities] {
+    @apply grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  [data-site-capability] {
+    @apply flex items-start gap-3 rounded-card bg-surface p-4;
+  }
+
+  [data-site-section-surface] [data-site-capability] {
+    @apply bg-canvas;
+  }
+
+  [data-site-capability-icon] {
+    @apply inline-flex size-9 shrink-0 items-center justify-center rounded-control bg-selection text-on-selection;
+  }
+
+  [data-site-capability-text] {
+    @apply flex min-w-0 flex-col gap-1;
+  }
+
+  [data-site-capability] h4 {
+    @apply text-base font-semibold text-foreground;
+  }
+
+  [data-site-capability] p {
+    @apply text-sm text-muted;
+  }
+
+  [data-site-capability] code {
+    overflow-wrap: anywhere;
   }
 
   /* Footer */

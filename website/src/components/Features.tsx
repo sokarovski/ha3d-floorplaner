@@ -1,5 +1,7 @@
 import type { ReactElement } from "react";
+import { pages } from "../content/pages";
 import { FeatureCard } from "./FeatureCard";
+import { LinkButton } from "./LinkButton";
 import { ScreenshotFigure } from "./ScreenshotFigure";
 import { Section } from "./Section";
 
@@ -29,6 +31,11 @@ export const Features = (): ReactElement => (
           lights and other devices right where they are.
         </p>
       </FeatureCard>
+    </div>
+    <div data-site-actions="">
+      <LinkButton href={pages.possibilities} icon="chevronRight">
+        See all possibilities
+      </LinkButton>
     </div>
   </Section>
 );

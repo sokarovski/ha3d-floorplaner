@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>See all possibilities: Homeplan</title>
+    <meta
+      name="description"
+      content="Everything Homeplan can do: the Home Assistant viewer with live lights, doors, blinds, presence and room cards, and the Floor Builder with its tools, galleries, floors, roofs, yards and AI agent tools."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="../brand/ha3d-logo.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Homeplan" />
+    <meta property="og:title" content="See all possibilities: Homeplan" />
+    <meta
+      property="og:description"
+      content="Everything the Homeplan Home Assistant viewer and Floor Builder can do today."
+    />
+    <meta property="og:url" content="https://sokarovski.github.io/ha3d-floorplaner/possibilities.html" />
+    <script>
+      // Follow the system light/dark preference with the builder's theme tokens (data-ui-root + data-theme),
+      // before the first paint. The site has no theme setting of its own.
+      (function () {
+        var root = document.documentElement;
+        var query = window.matchMedia("(prefers-color-scheme: dark)");
+        var apply = function () {
+          root.setAttribute("data-theme", query.matches ? "dark" : "light");
+        };
+        root.setAttribute("data-ui-root", "");
+        apply();
+        query.addEventListener("change", apply);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p>
+        Homeplan: everything the Home Assistant viewer and the Floor Builder can do. See the source and
+        documentation at
+        <a href="https://github.com/sokarovski/ha3d-floorplaner">github.com/sokarovski/ha3d-floorplaner</a>.
+      </p>
+    </noscript>
+    <script type="module" src="./src/possibilities.tsx"></script>
+  </body>
+</html>
