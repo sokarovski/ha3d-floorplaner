@@ -1,12 +1,31 @@
 # Homeplan
 
-A local editor for an open-top 3D model of your home: draw rooms from measured dimensions, raise and merge walls, furnish, light, and export images. It also ships as a Home Assistant app and a Home Assistant integration that shows the house in a sidebar panel. The specification is in [spec/](spec/README.md).
+<p align="center">
+  <img src="website/public/screenshots/planner-detail.webp" alt="A selected light in the demo apartment with its properties open in the Floor Builder." width="49%">
+  <img src="website/public/screenshots/viewer-night-lights.gif" alt="The demo apartment in the Homeplan viewer at night, its lamps switching on and off and lighting their own rooms." width="49%">
+</p>
+
+A local editor for an open-top 3D model of your home: draw rooms from measured dimensions, raise and merge walls, furnish, light, and export images. It also ships as a Home Assistant app and a Home Assistant integration that shows the house in a sidebar panel. Read more about the project, with screenshots of everything it can do, on [the Homeplan website](https://sokarovski.github.io/ha3d-floorplaner/).
+
+## Browser agents
+
+Too lazy to drag and drop things around to build your house? Don't let that put you off. Open any AI-powered browser, or point Claude Code at the Floor Builder. Send it photos of your rooms and a sketch of your floor plan, and ask it to follow the **AI agent instructions** and use your images. It will build your home in minutes.
+
+For developers: the agent finds everything through `window.homeplan.describe()` in the builder page (tools, schemas, examples and guides), and the starting guide is [public/agent.md](public/agent.md). The website has [step-by-step guides for Claude in Chrome, Claude Code and other agents](https://sokarovski.github.io/ha3d-floorplaner/possibilities.html#builder-agents).
 
 ## Requirements
 
 - Node.js 20.19 or newer (Node 24 LTS recommended) and npm 11.
 - A current Chromium-based browser on macOS (the reference setup); WebGL 2 is required.
-- Optional, for the photorealistic render: Blender 4 (found automatically at `/Applications/Blender.app`, or set `BLENDER_PATH`).
+- Blender is **not** needed. Homeplan does not use it for building, viewing or Home Assistant; it only powers an experimental photorealistic render of the house, if you want one (Blender 4, found automatically at `/Applications/Blender.app`, or set `BLENDER_PATH`).
+
+## Home Assistant app
+
+The builder also runs as a Home Assistant app: add this repository under **Settings → Apps → Install app**, then install **Homeplan**. The Supervisor builds the image on the device from the root `Dockerfile`; the app stores its houses in its private `/data` folder (included in HA backups), opens only through the HA sidebar (ingress), and announces itself to the integration through Supervisor discovery. On first start it creates three demo houses. User documentation is in [DOCS.md](DOCS.md); the packaging and discovery contract is in [publishing](spec/home-assistant/publishing.md#app-packaging-and-ingress) and the runtime settings in [deployment](spec/delivery/deployment.md#home-assistant-app).
+
+## Integration
+
+The Home Assistant viewer ships as the **Homeplan** custom integration in [`custom_components/homeplan/`](custom_components/homeplan/README.md). It hosts the 3D panel, keeps private copies of saved houses and the HA bindings, and keeps working when the builder is stopped. Install it through **Settings → Marketplace** (HA 2026.11+) from the generated integration repository, or manually from the release ZIP; the integration's own instructions are in [packaging/ha3d/README.md](packaging/ha3d/README.md), which becomes that repository's README. `npm run ha:package` builds the release ZIP (`dist/homeplan-<version>.zip`, files at the ZIP root), the `homeplan.zip` release asset and the Marketplace repository tree `dist/ha3d/`. No Node/Vite runtime is needed on HA. Runtime and storage behavior are specified in [production integration](spec/home-assistant/production-integration.md).
 
 ## Commands
 
@@ -28,7 +47,7 @@ A local editor for an open-top 3D model of your home: draw rooms from measured d
 | `npm run seed:demo-houses` | With the backend running, create the demo houses that are missing (`-- --replace` rebuilds them in place, `-- --dry-run` only checks) |
 | `npm run materials:build` | Regenerate the built-in texture images in `server/builtin-materials/` (deterministic) |
 | `npm run materials:check` | Check the built-in textured presets, their served images, snapshot freezing and read-only rules |
-| `npm run yards:check` | Check yards (Phase 17.2): Add yard, pathways, no slab, fences and gates along the walls, the fence templates, indoor mask, exterior, tree |
+| `npm run yards:check` | Check yards: Add yard, pathways, no slab, fences and gates along the walls, the fence templates, indoor mask, exterior, tree |
 | `npm run build:ha-viewer` | Build/stage the HA viewer and stable loader; export shared schemas |
 | `npm run ha:package` | Build and verify the integration release ZIP `dist/homeplan-<version>.zip` (files at the ZIP root, from an allowlist), the `homeplan.zip` release asset and the generated Marketplace repository tree `dist/ha3d/` |
 | `npm run version:check` | Check that the integration's version copies equal `package.json` `version` |
@@ -40,12 +59,6 @@ A local editor for an open-top 3D model of your home: draw rooms from measured d
 
 The design-system workbench is at `/ds` (unlisted).
 
-## Browser agents
-
-Open a house and follow **AI agent instructions** in the editor header, or read [the bootstrap guide](public/agent.md). Execute `window.homeplan.describe()` in the editor page to discover the tool catalog, schemas, examples, and Markdown guides. All operations, including backend reads and revision saves, go through these window functions. See [the automation contract](spec/architecture/browser-automation.md).
-
-Custom template authoring is exposed through `import_template`, `get_template_draft`, and `save_template_version`; read `window.homeplan.docs.read("templates")` for the full import-and-place example.
-
 ## Configuration
 
 | Variable | Default | Meaning |
@@ -55,21 +68,13 @@ Custom template authoring is exposed through `import_template`, `get_template_dr
 | `HOST` | `localhost` | Bind address (exposing it on a network is an explicit choice; there are no accounts) |
 | `HOMEPLAN_BASE_PATH` | `/` | Base path for the SPA and API |
 | `HOMEPLAN_SEED_DEMOS` | on | `0` or `false` turns off creating the three demo houses on the first start of a data directory that has never held a house |
-| `BLENDER_PATH`, `BLENDER_DEVICE`, `BLENDER_SAMPLES` | auto, `CPU`, `64` | Photorealistic render backend |
+| `BLENDER_PATH`, `BLENDER_DEVICE`, `BLENDER_SAMPLES` | auto, `CPU`, `64` | Experimental photorealistic render (optional, not needed otherwise) |
 
 As a Home Assistant app the server runs from the root `Dockerfile` with `DATA_DIR=/data` and port `8099` behind ingress; see [deployment](spec/delivery/deployment.md#home-assistant-app). `npm run app:check` validates the app packaging (`config.yaml`, `Dockerfile`, `repository.yaml`, `DOCS.md`).
 
 ## Data, backup, and restore
 
 Each house is a folder `DATA_DIR/data/<house-id>/` containing `house.json`, its images and templates, and a Git repository with every explicit Save as a revision. To back up a house, copy its folder (including `.git/`). To restore, copy it back into `DATA_DIR/data/` while the app is stopped; it appears on the Houses screen. Deleted houses go to `DATA_DIR/trash/` and can be restored from the Trash view.
-
-## Home Assistant app
-
-The builder also runs as a Home Assistant app: add this repository under **Settings → Apps → Install app**, then install **Homeplan**. The Supervisor builds the image on the device from the root `Dockerfile`; the app stores its houses in its private `/data` folder (included in HA backups), opens only through the HA sidebar (ingress), and announces itself to the integration through Supervisor discovery. On first start it creates three demo houses. User documentation is in [DOCS.md](DOCS.md); the packaging and discovery contract is in [publishing](spec/home-assistant/publishing.md#app-packaging-and-ingress) and the runtime settings in [deployment](spec/delivery/deployment.md#home-assistant-app).
-
-## Integration
-
-The Home Assistant viewer ships as the **Homeplan** custom integration in [`custom_components/homeplan/`](custom_components/homeplan/README.md). It hosts the 3D panel, keeps private copies of saved houses and the HA bindings, and keeps working when the builder is stopped. Install it through **Settings → Marketplace** (HA 2026.11+) from the generated integration repository, or manually from the release ZIP; the integration's own instructions are in [packaging/ha3d/README.md](packaging/ha3d/README.md), which becomes that repository's README. `npm run ha:package` builds the release ZIP (`dist/homeplan-<version>.zip`, files at the ZIP root), the `homeplan.zip` release asset and the Marketplace repository tree `dist/ha3d/`. No Node/Vite runtime is needed on HA. Runtime and storage behavior are specified in [production integration](spec/home-assistant/production-integration.md).
 
 ## Third-party data
 
