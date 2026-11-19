@@ -1,0 +1,11 @@
+{
+  "id": "side-table",
+  "label": "Side Table",
+  "kind": "table",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Tables",
+  "tags": ["side table", "small table", "bistro", "balcony", "end table", "compact"],
+  "product": { "description": "Compact table with a thin top on four slim legs." }
+}

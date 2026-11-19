@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Linear LED Strip">
+<g stroke-width="0.6" stroke-linejoin="round">
+<polygon points="20.0,129.8 236.0,129.8 236.0,126.2" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="20.0,129.8 236.0,126.2 20.0,126.2" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="21.1,129.4 234.9,129.4 234.9,126.6" fill="rgb(208,208,208)" stroke="rgb(208,208,208)"/>
+<polygon points="21.1,129.4 234.9,126.6 21.1,126.6" fill="rgb(208,208,208)" stroke="rgb(208,208,208)"/>
+<polygon points="20.0,129.8 236.0,129.8 236.0,129.4" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="20.0,129.8 236.0,129.4 20.0,129.4" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="20.0,126.6 236.0,126.6 236.0,126.2" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="20.0,126.6 236.0,126.2 20.0,126.2" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="20.0,129.4 21.1,129.4 21.1,126.6" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="20.0,129.4 21.1,126.6 20.0,126.6" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="234.9,129.4 236.0,129.4 236.0,126.6" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+<polygon points="234.9,129.4 236.0,126.6 234.9,126.6" fill="rgb(197,197,197)" stroke="rgb(197,197,197)"/>
+</g>
+</svg>

@@ -1,0 +1,348 @@
+# Production viewer integration and local snapshots
+
+Updated: 2026-11-19 (discovery, release packaging, brand images).
+
+Status: **implemented and owner-accepted on a real installation** (owner requirements from Phase 11, resolved in [D27](../decisions.md#d27-production-ha-viewer-and-local-snapshots)). The component, snapshot routes and bundle are delivered; DEV MODE, panel Upgrade and a full backup/restore were not part of that acceptance. This document owns runtime/storage behavior; the [API spec](../architecture/api.md#phase-11-snapshot-transfer-and-integration-api) owns routes.
+
+## Goal and requirement basis
+
+Home Assistant serves the viewer and a complete local copy of the selected house. After the first successful import, starting HA, viewing the house, editing bindings, changing viewer settings, using room cards, and operating devices work with the builder/app and development laptop stopped. Home Assistant itself and the physical devices must still be available; this is independence from the authoring server, not browser offline mode.
+
+**Owner requirements, consolidated 2026-11-17:** install the custom integration without YAML; first show only the globe/stage gradient and **Setup your home**; open Settings with **House setup** selected; save one Floor Builder URL, **Connect**, list houses below with **Use this house** and **Upgrade** beside each; selecting a house loads it and reactively populates its settings sidebar. One persistent **DEV MODE** controls both remote panel code and current remote house data from that URL. Turning it off restores HA-hosted viewer code and the stored house. Bindings/dashboard/viewer settings stay in HA. Private local snapshots and explicit per-house upgrades preserve independence from the builder.
+
+**Frontend upgrade request:** support **Upgrade panel** from the same configured source as a checked, locally stored frontend bundle. This upgrades panel UI resources, not Python integration code. Atomic bundle activation, protocol checks and retention below are review-inferred implementation safeguards. This consolidated workflow supersedes the earlier draft's two dev toggles/two URL fields and separate executable-source options.
+
+**Review inferences:** one installation-global config entry and panel; server-to-server snapshot transfer; immutable revision-pinned reads; atomic activation; HA's existing authenticated access/admin checks; retention of the last good copy; conflict-aware configuration saves. These are resolved planning choices, not additional owner quotations. [D12](../decisions.md#d12-user-identity-and-access) still rules out Homeplan accounts or per-person data.
+
+**Implementation conventions:** SHA-256 content identity, file layout, retention, timeouts, transfer bounds, job mechanics and build commands below. Initial values are a starting point to verify against the reference house, not measured performance guarantees.
+
+## Scope and boundaries
+
+The integration hosts the existing viewer; it does not host the React builder, run Node or Blender inside HA, or edit `house.json`. A builder may run as an app or standalone server; in normal local-copy mode the integration uses its HTTP address during Connect/discovery, first import, explicit availability checks, per-house Upgrade and Upgrade panel. In DEV MODE it also reads the remote house and its assets on each fresh viewer load, so that mode requires the builder to be running. No Supervisor API, ingress address, shared app filesystem, or mounted Git repository is required.
+
+The local copy contains the whole document and all referenced assets across every floor, including hidden contents. Viewer floor/navigation behavior is specified in [viewer MVP](viewer-mvp.md): since Phase 16.1 a multi-floor house opens in a read-only whole-house exterior (each floor at its stored placement) or on its configured main floor, with Up / Down floor switching ([floors and the whole house](viewer-mvp.md#floors-and-the-whole-house)). The snapshot format is unchanged: floor placements and slabs are ordinary `house.json` fields.
+
+Deferred: automatic/scheduled house synchronization, push delivery, multi-source/config-entry management, arbitrary old-revision picking, a rollback UI, HA image-mode packages, controllables manifests, a dashboard-card distribution and cloud publishing. The HA app and its discovery are specified in [publishing](publishing.md#app-packaging-and-ingress) and [below](#discovered-homeplan-app). A house snapshot is a transfer envelope around existing house JSON and glTF assets, not a replacement asset format ([D17](../decisions.md#d17-object-asset-format-and-template-metadata)).
+
+## Implementation boundary
+
+Implemented and checked on 2026-11-17:
+
+- `ha-viewer/main.ts` retains the standalone YAML/Vite development harness. `loader.ts` is the stable packaged panel; `entry.ts` mounts the production/development integration application without registering a second `homeplan-panel`.
+- `integrationClient.ts` and `integrationSource.ts` own the authenticated HA transport; configuration is stored in HA. `HouseSource` continues to serve the original viewer's bindings/dashboard/Settings methods.
+- `server/snapshots/` exports the pinned explicit Git commit and used assets; `server/routes/snapshots.ts` owns the source routes registered in `server/app.ts`. Working document routes remain independent.
+- `src/renderer/assetTransport.ts` injects authenticated bytes into GLTFLoader and private texture decoding without HA/React/store imports in the renderer.
+- `npm run build:ha-viewer` builds the self-contained viewer and stable loader, exports TypeBox schemas for Python, stages the baseline and freezes source frontend artifacts. `npm run ha:package` produces the manual-install ZIP.
+- `custom_components/homeplan/` implements HA lifecycle, native recovery, private HTTP routes, bounded transfers, revision-aware Store/migration and diagnostics. [Installation and check commands](../../custom_components/homeplan/README.md) identify the tested platform and current distribution limits.
+
+## Installation, configuration and panel lifecycle
+
+1. Install through **Settings → Marketplace → Add from link** with the generated integration repository (HA 2026.11+), or manually: unzip the release ZIP **into** `/config/custom_components/homeplan/` (its files are at the archive root) and restart HA. See [release packaging](#release-packaging-and-the-marketplace-repository).
+2. Settings → Devices & services → Add integration → Homeplan creates the single entry and panel without requiring a source URL or network connection. When a Homeplan app is running, HA instead lists Homeplan under **Discovered**; one confirmation creates the same single entry with the app's URL ([discovery](#discovered-homeplan-app)).
+3. Opening Homeplan with no selected house shows **only the existing globe/stage gradient and a Setup your home button**. No house, fabricated source or test entity appears. A Floor Builder URL may already be saved by [Supervisor discovery](#discovered-homeplan-app); nothing is imported or selected until Use this house. An authenticated non-admin sees the same background with an administrator-setup message instead of mutation controls. While the integration starts, and while a selected house loads, only the gradient shows: no button and no message (owner, 2026-11-18; Phase 13.1). The house model then fades in once prepared, and its separate objects and textures load gradually behind a thin progress bar ([viewer: loading](viewer-mvp.md#loading-and-the-opening-sequence), Phase 15.1). A failed load shows the error and **Retry**, and for an admin also **Setup your home**.
+4. **Setup your home** opens the Settings screen (the same 90 % split screen as Phase 10.9) on its **House** node, which holds **House setup**: the one Floor Builder URL field, **Connect**, the house list, the one **DEV MODE** toggle and Panel. Once a house is shown, Settings → House reaches it again (owner, 2026-11-17: no separate sidebar).
+5. **Use this house** loads/activates the clicked house. On success, the same settings sidebar reactively shows its house name, structure, bindings and house-specific settings without closing/reopening Settings or refreshing the page in normal mode. A deliberate code-mode switch still needs a full browser reload.
+6. Integration Configure provides a recovery path to edit the **same** stored URL/DEV MODE values and restore the packaged frontend. It does not own another toggle or URL. Recovery remains reachable if a remote/upgraded viewer cannot render.
+
+Use HA config-entry, options/reconfigure, unload and storage helpers appropriate to the supported HA release. Register static paths once for the process; reloading an entry must not attempt duplicate route registration. Register/unregister the sidebar with the entry lifecycle, cancel owned jobs on unload, and leave snapshots/configuration intact. Integration setup must not raise “not ready” just because the source is off. An integration-owned handler returns an unavailable response while its entry is unloaded. Transfer jobs run as entry-owned background tasks (`ConfigEntry.async_create_background_task`), so HA also cancels them on unload/shutdown. Setup tolerates damaged advisory state: a malformed stored job record is dropped with a warning, and cleanup is best effort per directory. An invalid configuration envelope fails setup with `ConfigEntryError` naming the store to restore or remove, rather than retrying forever. Native Configure aborts with a clear message while the entry is not loaded.
+
+If `homeplan` is already registered by the legacy YAML panel, explain the exact conflicting entry and ask the operator to remove that entry and restart. Do not overwrite an unrelated panel or edit `configuration.yaml` automatically. A duplicate config flow aborts as already configured.
+
+The production panel config contains only source mode, integration API/format metadata and bundle version; no tokens or source credentials. The builder URL is saved once in HA connection settings. The authenticated shell bootstrap may expose this non-secret base URL to signed-in viewers for DEV MODE loading; public panel registration includes no source credentials or tokens. No new Homeplan login is introduced.
+
+### Distribution and builds
+
+Delivered source layout:
+
+```text
+custom_components/homeplan/
+  __init__.py             entry setup/unload and runtime ownership
+  manifest.json           domain/version/config_flow/dependencies/documentation
+  config_flow.py          native HA setup and options
+  const.py                protocol/storage versions and limits
+  http.py                 authenticated routes and authorization
+  source_client.py        builder-only HTTP and bounded transfers
+  artifacts.py            validation, staging, promotion and cleanup
+  runtime.py              jobs, activation, selection and restart recovery
+  validation.py           schema, canonical identity and path validation
+  diagnostics.py          redacted HA-native diagnostics
+  schemas.json            generated shared TypeBox schemas
+  storage.py              revision-aware HA configuration and migration
+  frontend/               generated viewer.js, loader.js and manifest.json
+  brand/                  icon.png, icon@2x.png, logo.png, logo@2x.png (npm run brand:build, committed)
+  strings.json
+  translations/en.json
+packaging/ha3d/           hacs.json and README.md of the generated Marketplace repository
+vite.ha-viewer.config.ts  production viewer build only
+scripts/                  build/package/contract verification commands
+```
+
+Installer compatibility note (owner correction, 2026-11-19; verified against [current Marketplace documentation](https://www.home-assistant.io/integrations/marketplace/)): HA 2026.11+ includes Marketplace, replacing the HACS integration. Current installation instructions use **Settings → Marketplace**, with no separate HACS installation prerequisite. The repository manifest remains `hacs.json`. Marketplace does not accept a repository that also contains an HA app, which is why the integration is published from a generated repository ([distribution and builds](#distribution-and-builds)). This does not change the integration's independently tested runtime minimum.
+
+All integration runtime files ship under its one directory. Root builder source, `node_modules`, Git objects, sample houses, credentials and dev harnesses are absent from the installable artifact. Minimum target is HA 2025.7 / Python 3.13; isolated integration checks use actual HA 2025.7.4 and frontend 20250702.3; the README, integration/Marketplace metadata and validation environment must agree. Do not invent repository URLs, release tags or codeowner handles: use the real release destination at packaging time.
+
+Build the viewer as a single browser ES module from `ha-viewer/entry.ts`, and the loader separately from `ha-viewer/loader.ts`, bundling Lit, Three.js and shared dependencies locally. There are no CDN imports, Vite client URLs, Node imports, React chunks, dev counters, harness controls or Lit development warnings in the production graph. Every lazy import/font/decoder/texture needed by the runtime ships locally or is supplied by HA itself. Keep decoder exclusions consistent with current template import support.
+
+Serve the packaged loader/baseline files with `hass.http.async_register_static_paths` and register the loader through `panel_custom.async_register_panel`, using a versioned entry URL (`?v=<integration-version>-<first 12 hex of loader.js's SHA-256>`, Phase 14.7: the integration version alone did not change between builds, so browsers kept a cached older loader) and an immutable bundle-keyed URL for a downloaded viewer. The mounted viewer creates its own integration client and validates every response with its own schemas; the loader's client is used only for the bootstrap (Phase 14.7: an older loader's schemas rejected fields the newer viewer and store both knew). Entry responses revalidate; hashed files may be immutable. Upgrading Python/integration files requires the documented HA restart; a page reload then loads the new module. An already-running tab must not redefine its custom elements: show “Homeplan was updated. Reload the page.” on a protocol/build mismatch, preserving local data. No hard-refresh ritual should be necessary.
+
+### Release packaging and the Marketplace repository
+
+Marketplace accepts one item per repository and refuses repositories that contain an HA app, so the integration is published from a **generated** repository (`sokarovski/ha3d`) while the source, app and documentation stay in `sokarovski/ha3d-floorplaner`. `npm run ha:package` produces, from the source repository only:
+
+- `dist/homeplan-<version>.zip`: the integration's files **at the archive root**, the layout Marketplace `zip_release` installs into `custom_components/homeplan/` (spike-verified on HA 2026.11.1). The same bytes are written as `dist/ha3d-release/homeplan.zip`, the release asset name `hacs.json` `filename` names. Members are sorted with fixed timestamps, so equal inputs give equal bytes; a `.sha256` file accompanies each.
+- `dist/ha3d/`: the complete content of the generated repository: `custom_components/homeplan/…`, `hacs.json` and `README.md` (from `packaging/ha3d/`, written for Marketplace and manual-ZIP users and linking to the source repository), and a copy of the root `LICENSE`. Release tooling commits exactly this tree and tags it `v<version>`; nobody edits that repository by hand.
+
+**Allowlist (implementation convention).** The package contains exactly the Git-tracked files under `custom_components/homeplan/` plus the named build outputs (`frontend/loader.js`, `frontend/viewer.js`, `frontend/manifest.json`, `schemas.json`, `THIRD_PARTY_NOTICES.md`) and brand images. Any other file in the component folder fails the build (only `__pycache__` is skipped); a missing one fails too. `--release` additionally refuses uncommitted changes to tracked component files. No extra instructions file is placed at the archive root, since it would land inside the integration folder; install instructions live in the generated repository's README and the component's own README.
+
+**One version (implementation convention).** `package.json` `version` is the single release version. `manifest.json` `version` and `const.py` `VERSION` must equal it (`npm run version:check`; also enforced by `build:ha-viewer` and `ha:package`). The viewer bundle manifest takes `version` and `minimumIntegrationVersion` from it, so a downloaded panel bundle from a newer release asks for the matching integration update instead of running against older Python routes.
+
+**Metadata.** `manifest.json` names `documentation` (`https://github.com/sokarovski/ha3d-floorplaner#readme`), `issue_tracker` (`…/ha3d-floorplaner/issues`) and `codeowners` (`@sokarovski`). `hacs.json` (`packaging/ha3d/hacs.json`, not at the source root, where Marketplace would refuse the repository anyway) sets `name: Homeplan`, `zip_release: true`, `filename: homeplan.zip`, `render_readme: true` and `homeassistant: 2025.7.0`, the integration's tested runtime minimum. The Marketplace route itself needs HA 2026.11+; older HA uses the manual ZIP. Data lives outside the integration folder (`/config/homeplan`, `.storage`), so a Marketplace update replacing that folder keeps houses and settings and no `persistent_directory` is needed.
+
+**Brand images (implementation convention).** `npm run brand:build` renders every image from `brand/ha3d-logo.svg` with `sharp`, deterministically: the integration's `brand/icon.png` (256), `icon@2x.png` (512), `logo.png` (256) and `logo@2x.png` (512; the logo is the square icon, avoiding font-dependent text), the app's root `icon.png` (128) and `logo.png` (256), `brand/social-preview.png` (1280×640, for both GitHub repositories), and the builder's `public/favicon.svg` (a copy of the logo). Outputs are committed, like the built-in templates, because the ZIP, the generated repository and the app's Docker build context need them without running Node.
+
+### Discovered Homeplan app
+
+The Homeplan HA app announces itself through Supervisor discovery with the payload in [publishing](publishing.md#supervisor-discovery-payload): `{ "host", "port", "api" }`. The integration's `hassio` config-flow step handles it:
+
+1. **Validate** the payload: `host` a non-empty name, `port` an integer 1–65535, `api` equal to the integration's API protocol (`1`); otherwise abort (`invalid_discovery` / `incompatible_app`) without any request. The source URL is `http://<host>:<port>/`, the app's internal address for server-to-server traffic only (never a browser URL).
+2. **Probe** the app with the same `GET /api/capabilities` read Connect relies on (10 s bound); it must offer `houseSnapshots`. An unreachable or incompatible app aborts (`cannot_connect` / `incompatible_app`) and is retried at its next announcement.
+3. The flow uses the single unique ID `homeplan`, so discovery never creates a second entry; a re-announcement while a card is pending adds no second card, and an ignored discovery stays ignored.
+
+Cases (decided 2026-11-19):
+
+| State | Behavior |
+| --- | --- |
+| (a) No entry | HA shows **Discovered: Homeplan**; one confirmation (HA's standard discovery confirmation) creates the entry. The URL is handed to the first runtime setup in the entry data, applied once through the one configuration store (`origin: "discovered"`) and removed from the entry. A retained configuration with a manual URL (reinstallation) still wins. |
+| (b) Entry, no saved URL | Applied **automatically** after the probe, without a form: there is nothing to overwrite, the operator already chose to install Homeplan, and HA's convention updates a discovered host of an existing entry. Selected house, bindings, dashboard and copies are untouched. |
+| (b′) Entry whose URL was itself discovered and the app's address changed | Updated automatically the same way (generation advances; Connect/Use reconfirm the source as for any URL change). |
+| (c) Entry with a manual URL | **Never overwritten**; aborts `manual_source_kept` without probing. The address is remembered in memory and native **Configure** offers **Use the discovered Homeplan app**, which switches the one URL to it (`origin: "discovered"`). |
+| Same URL re-announced | No probe, no write. |
+
+Origin is metadata on the one connection record, `connection.origin`: `manual` (typed in House setup or Configure), `discovered`, or null with no URL; it is not a second writable URL. A stored envelope from before discovery support is upgraded in place on load: an existing URL becomes `manual`, none stays null, and nothing else changes. House setup shows **Found automatically: the Homeplan app on this Home Assistant** under a discovered URL; Configure's description and diagnostics (`connectionOrigin`, `discoveredAppOffered`, never the address) show the origin. Editing the URL by hand makes it manual.
+
+**DEV MODE and the app (owner, 2026-11-19).** DEV MODE is a developer feature for a builder running locally (`npm run dev`) and does not apply to the Homeplan app. While `origin` is `discovered`, House setup hides the DEV MODE toggle and shows "DEV MODE is for a Floor Builder running on your own computer", and the connection API refuses enabling it (`400 validation`). Applying a discovered URL turns DEV MODE off (only reachable from a state without a manual URL). With a manual URL DEV MODE behaves as before.
+
+**Install order.** HA reads the Supervisor's existing discovery messages only at its own start and otherwise when an app posts one; an integration installed without a restart therefore misses an earlier announcement (spike finding). HA exposes no public/stable helper for a custom integration to list discovery messages (the Supervisor client inside the `hassio` component is internal), so the integration does not query it. Instead the app re-announces on every start and every 15 minutes, replacing its earlier message, and an HA restart also replays it. Manual **Add integration** is never blocked by a pending discovery card; with the entry present and no URL, the next announcement fills the URL (case b). Removing the app deletes its discovery message but never the entry (its unique ID is not the message's), so local copies and settings stay.
+
+If the discovered app later stops, the panel behaves as for any unavailable source: local copies keep working, and House setup reports the source unavailable and accepts a manual URL.
+
+### Panel frontend development mode
+
+There is **one DEV MODE**, owned by the House setup connection record together with the **one Floor Builder URL**. It is off by default. Do not retain `panelFrontend`, a separate Vite URL, an independently editable data mode, or per-panel copies of these settings. Native integration Configure is a recovery editor for this same record; it calls the same serialized/revision-aware storage operation.
+
+The shared URL identifies a Floor Builder server exposing both the viewer module and API under the same base/deployment prefix. In development this is typically Vite (for example `http://builder.local:5173/` with its existing `/api` proxy). Resolve `ha-viewer/entry.ts` under that base for executable code, and `api/` for data. Connect checks the capabilities needed for the chosen operation; enabling DEV MODE additionally requires a compatible browser-executable viewer entry, not a React builder HTML fallback. A source that only exports houses can still supply local house upgrades, but cannot enter DEV MODE until it exposes the viewer entry too.
+
+| Saved DEV MODE                                            | Effective mode on fresh load | Viewer code                                                                | House data                                                                       |
+| --------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Off                                                       | Local                        | Latest compatible verified local frontend bundle, otherwise shipped bundle | Selected stored house snapshot                                                   |
+| On and complete remote load succeeds                      | Remote development           | Viewer module/imports from the saved URL                                   | Current server working document/assets from that URL                             |
+| On and source/module/house is unavailable or incompatible | Local fallback               | Verified local frontend, otherwise shipped bundle                          | Last stored snapshot of that same selected house; if none, setup/recovery screen |
+
+Keep DEV MODE enabled through fallback; clearly display **Local fallback — development server unavailable**, the local copy/build identity and Retry. A later full browser reload/Retry tries the remote source again. No silent fallback and no auto-polling are implied. Turning DEV MODE off persists immediately and requests a full browser reload; it uses existing local code/data without downloading a new copy or resetting bindings. Remote changes do not become durable local data automatically. If the selected house has no local copy, show the gradient/setup screen with a clear **No local copy yet** message and offer Connect/Upgrade; do not substitute another house.
+
+A small **packaged loader/recovery shell** remains the HA-registered `homeplan-panel`. It reads saved connection/selection state, resolves a single effective mode for the load, and launches one viewer implementation. This stable shell is not the bundled viewer application; DEV MODE must actually load the remote UI/module tree. Refactor the current `main.ts` registration boundary so the shell and viewer implementation cannot compete for the same custom-element tag. Define a versioned entry/initialization handshake shared by shipped, downloaded and dev frontends; verify it before mounting.
+
+Fallback is selected by the browser's actual load outcome as well as HA source reachability; an HA-side probe alone cannot prove browser reachability/CORS/TLS. Prefer preflight before evaluating application code. If a failure occurs after remote code may have registered elements, do not evaluate a competing local application in that document: record a per-tab one-load local-recovery intent and perform one full page reload. The shell consumes it, mounts local once, shows the fallback reason and prevents reload loops. A user-initiated retry/new refresh may attempt remote again. If a running remote session loses an asset/data request, retain the current scene with a stale/error indication and offer Reload using local copy; do not swap renderer/document/code midway through a frame.
+
+Saving the toggle changes the policy for the **current selected house on the next full load**, without another Use this house click. Changing only the toggle does not invalidate a connected house list or source identity; changing the URL does. Dirty Settings must be saved or the mode switch canceled before its code reload. Keep binding/dashboard drafts intact on a failed save. The normal footer remains for those drafts, while committed connection controls have their documented immediate-save behavior.
+
+The remote module renders the panel's HTML/styles inside HA's custom-element host (`embed_iframe: false`); do not embed the React builder or replace HA with the builder's `index.html`. Native HA `hass`, themes, entity subscriptions and action handling remain available. Remote code imports use the dev origin and revalidate on page refresh, so UI edits appear without rebuilding/reinstalling the integration. Do not require HMR. The browser and HA must reach the saved URL; configure CORS for the HA origin, and use HTTPS with a browser-trusted certificate when HA is HTTPS. Native recovery and the local shell never depend on that remote origin.
+
+The selected house ID is one HA-owned value. DEV MODE changes effective transport/code, not ownership: all bindings, dashboard and viewer settings remain in HA, with the same stable target IDs. One-time migration markers apply in either mode and remote refresh never reapplies source preferences. A source generation records only saved URL changes; session/load generations distinguish refreshes. No second persisted `selection.sourceMode` can disagree with DEV MODE.
+
+## State ownership
+
+| Data                                                                         | Authority                                       | Persistence                                       |
+| ---------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------- |
+| Saved geometry/materials/IDs and used assets                                 | Builder explicit Git Save, frozen into HA       | `homeplan/houses/<houseId>/<snapshotId>/`         |
+| Remote development geometry/assets/code                                      | Current configured Floor Builder                | Runtime cache only; refreshed each load           |
+| Selected house, dashboard, bindings, room tabs/views                         | HA installation                                 | One versioned HA Store envelope                   |
+| Floor Builder URL, its origin and the single DEV MODE                        | Same HA record from House setup/native recovery/discovery | `connection: { builderUrl, devMode, generation, origin }` |
+| Current/previous snapshot and frontend bundle pointers, import markers | HA installation | Same atomic HA configuration envelope |
+| Active/recent jobs | HA installation | Separate HA Store `homeplan.jobs`; pointers reconcile lost final acknowledgements |
+| Upgraded production frontend bundles                                         | Verified local artifact bytes                   | `homeplan/frontend/<bundleId>/`                   |
+| Packaged loader, baseline viewer and Python                                  | Installed custom integration                    | `custom_components/homeplan/`                     |
+| Effective remote/local/fallback mode and in-progress Settings drafts         | Viewer shell/session                            | Transient; fallback is visibly identified         |
+| Tip dismissal and experimental cutaway                                       | Existing browser-local policy                   | Existing browser keys                             |
+
+The configuration envelope has `schemaVersion`, monotonic `revision`, `viewer`, `connection`, `dashboard`, `bindings`, `imports`, `houses`, `houseSources`, and `frontend` (active/previous downloaded bundle plus compatibility metadata). The connection defaults to `{ builderUrl: null, devMode: false, generation: 0, origin: null }`; generation advances on URL changes only, including a discovered URL. `viewer.houseId` is the single selected house ID. `houseSources` remembers the source URL explicitly selected/imported for each house; it guards against reusing the same ID from an unrelated source; an effective load mode is derived from DEV MODE and actual load success, never another persisted toggle. The browser's authenticated bootstrap response includes the connection policy/base URL needed to load remote code (already browser-visible by definition), but never credentials. Admin-only connection editing and native recovery share the same storage operation. All accepted mutations, migration and artifact activation use one serialized revision-aware read/modify/write path so concurrent binding saves cannot be lost.
+
+Bootstrap includes a nullable recovery notice; restoring a verified prior house/frontend is visible in the panel.
+
+A configuration write supplies the revision read with its editing baseline, not a revision fetched immediately before sending a stale draft. A mismatch returns `409 staleRevision`; keep the draft and offer reload/reapply, without silently retrying it. Settings' changed-kind merge semantics remain those of [bindings](bindings.md#storage-and-migration). Successful writes return the new envelope/revision. No per-user preference store or new Homeplan role system is introduced.
+
+### Authentication and access
+
+HA authenticates house JSON, manifests, asset bytes and config reads. Data routes use HA's authenticated request handling; same-origin cookies must not be assumed to authenticate a Three.js/image request. Fetch private bytes through HA's current authenticated transport (or an injected fetch adapter with current Authorization headers), checking session refresh behavior.
+
+All configuration/connection mutations, Connect, Use this house, house Upgrade, Upgrade panel, import, source discovery/check and integration options require HA's existing admin privilege. Ordinary authenticated HA users can view the house and perform actions HA already permits. Hide edit/import/update controls for non-admins and enforce the same rule on the server. Native HA service calls retain HA authorization. This uses HA's existing security boundary; it does not add Homeplan accounts (D12). No authentication is added to the standalone builder API by this phase.
+
+Only the executable bundle and generic icons are public static assets. House data never appears under `/local`, `www`, an unauthenticated static path, URL query tokens or diagnostics. Disable shared/public caching of private responses (`Cache-Control: private, no-store` initially). Keep revision identity in in-memory cache keys even without HTTP caching.
+
+## Saved revisions and transfer identity
+
+House Upgrade means **the latest explicit Save**, not autosaved working writes. Resolve Git HEAD once under the source house lock, then read `house.json`, images and house-template files from that immutable commit tree. Never pair a committed document with current filesystem assets. Creation's initial commit is a valid saved revision. Invalid/missing history is a source error; never silently substitute the working file.
+
+A snapshot records:
+
+- `sourceRevisionId`: full Git commit hash, the owner-visible saved identity.
+- `documentRevision`: the integer inside that commit's `house.json`, for diagnostics; it is not a freshness clock.
+- `savedAt`: Git commit time; a restore creates a new commit and counts as a new save.
+- `snapshotId`: SHA-256 of the canonical transfer manifest identity, including file hashes and the frozen built-in versions.
+- `createdAt` on the source and `importedAt` in HA: transfer/copy times, separate from saved time.
+
+Do not order commit hashes or infer “newer” from the document counter. Availability means source HEAD differs from the locally copied commit on the configured source. A changed source address may identify different history for the same house ID: show “Different saved revision available” and require explicit Upgrade. Only label a commit newer after confirming it follows the local commit in the same history.
+
+Built-in version bytes must be immutable in production releases. The exporter resolves each referenced built-in's ID/version and freezes its bytes into the export. A changed hash under an unchanged version is reported as a source asset-version inconsistency, not silently substituted. Initial export records the producer version and hashes; dev rebuild-in-place behavior is confined to the dev workflow.
+
+### Transfer manifest
+
+Version 1 contains `formatVersion`, `snapshotId`, `houseId`, `houseSchemaVersion`, `producerVersion`, `requiredViewerProtocol`, `sourceRevisionId`, `documentRevision`, `savedAt`, `createdAt`, `migration` (captured preferences revision, viewer and dashboard seeds), `files`, and `resources`. Each file has `path`, `byteSize`, lowercase hex `sha256`, and an allowlisted `mediaType`. `resources` maps image IDs and template ID/version pairs to manifest paths; include the minimal metadata needed by `HouseSource`, not live server index URLs. Paths are UTF-8 relative slash-separated names. File inventory order and resource-key order are canonicalized for hashing; the hash excludes `snapshotId` and the transfer creation time. The source commit and every file hash participate in identity.
+
+An illustrative layout (names below are placeholders, not valid sample IDs):
+
+```text
+/config/homeplan/houses/<houseId>/
+  <snapshotId>/
+    manifest.json
+    house.json
+    bindings.json
+    templates/<templateId>/<version>/model.glb
+    templates/<templateId>/<version>/model.gltf
+    templates/<templateId>/<version>/geometry.bin
+    templates/<templateId>/<version>/textures/<file>
+    images/<imageId>/<file>
+  .staging-<jobId>/
+```
+
+`manifest.json` does not list itself in `files`. `bindings.json` is a frozen **migration seed** captured from builder preferences with its source preferences revision. It is included in the file hashes but never read as the active bindings after migration. The active HA `Store` is authoritative. The same saved house may have different transfer identities if migration-seed bytes differ; neither this nor a copy time change means a newer geometric revision.
+
+Export only referenced assets, traversing the entire committed house: all material image references, instance material overrides, carpets, fixtures, stairs and wall openings, plus buffers/textures referenced by each used template. Validate template metadata and required extensions with the existing rules. Embedded data URIs are permitted only under existing asset limits. Relative glTF dependencies must resolve inside the exported version's dependency tree. Reject remote/absolute/file URLs, path traversal, unexpected dependencies and missing files. Retain semantic `house.json` unchanged; no derived RealFloor/RealWall meshes are persisted.
+
+**Built-in textures (Phase 17.1).** A material image ID with the reserved `builtinimg_` prefix is an app-owned built-in texture, not an entry of the house's `textures/images.json`. The exporter freezes the used ones from the running app's `server/builtin-materials/` exactly like a house image: `images/<imageId>/<imageId>.png` in `files` and `{ id, path }` in `resources.images` (built-ins and uploads together, sorted by ID). The local viewer therefore renders them from the copy with the builder stopped; DEV MODE fetches them from the builder's ordinary image route. Like built-in templates, their bytes come from the app, not the house's commit, so an app upgrade that regenerates a texture changes the next export's hash. The IDs match the ordinary ID pattern, so the manifest schema, `schemas.json` and the integration's ID checks accept them unchanged (no integration reinstall needed).
+
+House glTF URI rewrites are packaging-only, deterministic and covered by manifest hashes. The normal builder serving layer rewrites glTF relative URLs for its own endpoints; do not export those HTTP-rewritten documents. Use saved raw files and rewrite to the frozen layout. Original imports, drafts, unused template versions, thumbnails not used by the viewer, Git history and render/PNG exports are not copied.
+
+### Source API responsibilities
+
+The rules in this section apply to normal local-copy mode. The one DEV MODE reads remote code and the working document through the source API, with visible local fallback as specified [below](#dev-mode-remote-house-data).
+
+The source creates a bounded frozen export from one Git commit and one captured migration seed, then serves its immutable manifest/files by snapshot ID. Creation and downloads use the [source routes](../architecture/api.md#phase-11-snapshot-transfer-and-integration-api); the current document route cannot implement this contract.
+
+A source check only reads revision metadata; it must not create a transfer, call Save, or download assets. First import discovers the source house list, picks a valid house and creates an export. House Upgrade creates an export of the latest saved revision for the chosen local house. If Save occurs during transfer, finish the pinned export and later report that another save is available. Expired source exports may be recreated explicitly; never switch revisions midway through a retry.
+
+## Atomic house Upgrade and job lifecycle
+
+1. An admin starts an import/Upgrade for a house. Return a job ID promptly and serialize jobs per house. Duplicate starts return the running job, not a second transfer. Source and snapshot identity are fixed on that job. A start that cannot resolve the configured source is refused before any job is recorded. Every job ends terminal: an unexpected defect marks it failed with code `internal` and is logged.
+2. Obtain/validate the source manifest and compatibility before downloading large files. Check resource IDs, file count, byte totals, uniqueness, URI closure and allowed paths/types. Verify available disk space for the staged copy while retaining current/previous copies.
+3. Download to a fresh staging directory. Stream with declared and actual byte limits, bounded concurrency, timeouts and cancellation; hash each file as it is written. Do not trust `Content-Length` alone or accept unlisted files. No archive extraction is needed for v1.
+4. Validate the final document, template metadata, manifest resources and dependency closure. Verify sizes/checksums after transfer. A partial/corrupt/incompatible house never becomes current. Surface the resource/path involved without exposing host paths or credentials.
+5. Rename the complete staging directory to its immutable snapshot ID on the same filesystem. Flush writes as supported. Under the configuration lock, read the **latest** HA configuration and atomically save the new active pointer, prior pointer, copy metadata, and any first-import configuration/markers. Concurrent binding changes are retained.
+6. Only after the durable pointer write report completion. A failure leaves the old pointer selected. A crash after directory promotion but before activation leaves an unreferenced complete copy, which startup cleanup can inspect or remove; it never implies activation.
+7. The initiating viewer loads the committed snapshot through a revision-pinned source session. Keep the old rendered view until replacement resources are ready. On client render/validation failure, keep/recover the previous display and offer Retry; a failed browser swap does not undo HA's durable successful import silently.
+
+`current` is the active snapshot ID in the one HA configuration envelope, **not a second writable symlink or text pointer**. This avoids a transaction across pointer files and HA settings. A fresh load resolves it once; document and all asset requests use the resulting snapshot ID, even if house Upgrade completes meanwhile. `HouseSource` cache keys and the renderer's caches include source/house/snapshot identity; ID/version alone cannot distinguish copied assets from another source/session.
+
+Initial conventions: at most 2 concurrent file downloads per job; 15 s connection timeout, 60 s no-progress timeout and 10 min total deadline; at most 10,000 files, 128 MiB per asset, 64 MiB house JSON, 1 GiB total, and 256 KiB manifest. The migration seed/config envelopes are capped at 16 MiB. Measure before tightening/raising them. A 4–5 MB reference-house estimate is an observation from the brief, not an upload limit or acceptance budget. Source and HA advertise effective limits; the stricter bound wins. Large JSON parsing/validation and artifact file checks run in HA's executor, not the event loop; one compiled validator is kept per schema, and a verified manifest inventory is cached per immutable artifact directory (each served file is still checked, so a removed copy answers `410`).
+
+Retain current and previous complete snapshots per house, plus any formerly active copy for at least 24 h after its deactivation so open tabs can finish. Repeated updates within that grace period require additional disk headroom; refuse a house Upgrade that cannot preserve protected copies. A pinned old tab gets `410 snapshotExpired` after eventual cleanup and offers Reload; it never fetches assets from current as a fallback. Staging and abandoned source exports have bounded lifetimes (initial convention: 24 h). Cleanup cannot delete an active job, current/previous protected directory, or a file being served. Startup marks interrupted jobs failed and removes abandoned staging safely; it validates the selected snapshot before serving. If corrupt, use a verified previous copy and report recovery; otherwise show a repair/import error without calling the builder automatically. Cleanup also visits house directories that have no configuration entry (failed first imports, removed houses) and expires their copies after the same 24 h grace; a house with an active job is skipped.
+
+Cancellation/unload before activation abandons staging and leaves current/configuration unchanged. If activation has committed, return completed even if the client disconnects; job status and current metadata reconcile uncertain outcomes. Keep a bounded completed-job history (convention: last 20 terminal jobs plus up to four active transfers in HA storage) for reload recovery; no resume of partial transfers in v1. Failed jobs may be retried explicitly with a new job ID.
+
+## One-time configuration migration
+
+Migration covers `homeAssistant.viewer`, `homeAssistant.dashboard` and each imported house's `homeAssistant.bindings[houseId]`, including `lights`, `objects`, `effects`, `areas`, `bubbles`, state mappings/fallbacks, presence, room tabs and saved views, and from Phase 16.1 the house's main view (`dashboard.mainViews[houseId]`, optional; a snapshot made before 16.1 has none). Apply existing additive default migrations before validation; keep unknown HA-owned action fields that the current schema permits. Copy identifiers and values, never infer entity names from object labels.
+
+Capture one preferences envelope/revision from the source during initial import. The frozen `bindings.json` is that house's binding seed; viewer/dashboard seeds are in the same transfer manifest's `migration` field. Exclude builder appearance/editor preferences and every secret/connection field. Only the target house is imported as local geometry; filter per-house dashboard maps to each imported target. Only an explicit successful Use this house changes `viewer.houseId`; Upgrade of a non-selected house never selects it, and the source preferences selection cannot redirect it.
+
+Use two kinds of durable markers: a global setup/dashboard seed marker, and a marker for each house's bindings/dashboard maps. They are written in the **same HA Store save** as imported settings and the first verified copy pointer (or validated remote selection), after successful resource validation. Existing HA values always win. “Missing” is determined by markers/field presence, never by empty/null values: an intentionally emptied binding map, null dashboard or changed selected house must not trigger another import.
+
+A failed import before activation writes no markers or selection. Retry reads the same captured seed for that export; an interrupted activation is reconciled against the durable envelope. No UI can edit an unimported house while its first activation/migration is in progress. A previous explicit HA configuration save establishes ownership of the fields it sets so first import cannot later overwrite them.
+
+Later house Upgrade replaces geometry/assets only. It never reapplies `bindings.json`, viewer/dashboard seeds or source preferences, even if the source bindings changed. Development builder preferences continue working for the standalone harness; there is no bidirectional synchronization. Missing object/area IDs leave orphan mappings stored but ignored, with a diagnostic count after house Upgrade; renames and moves preserve their stable bindings. A clone has a new house ID and receives no automatic binding inheritance. Missing HA entities keep the existing unavailable/fallback behavior.
+
+## Viewer data adapter and private assets
+
+Keep `houseSource.ts` the sole URL/transport boundary. It may delegate to transport/decoder helpers, but neither Lit elements nor renderer modules construct endpoint URLs. Add a production factory that consumes the current HA connection/authenticated request facilities. Read the one saved DEV MODE and per-load effective mode from the shell; validated panel config provides bootstrap/module metadata, not a second writable mode setting. Wait for both panel configuration and HA transport readiness regardless of setter order.
+
+Extend `HouseSource` with typed local snapshot status, source availability, job start/status and config revision support as needed by the API. Existing method concepts stay; do not mirror all builder resource clients into the panel. A local house load returns a pinned snapshot session used by `templateUrl`/image loading or their replacement resource handles; a remote DEV MODE load returns a fresh generation-tagged document/asset session. Define disposal/cancellation for every session. Changing house/source disposes subscriptions and ignores late responses. The remote DEV MODE adapter keeps configuration in HA too; it must not reuse the standalone dev adapter's builder-owned preferences writes.
+
+For local copies, use framework-free injected asset loading in `src/renderer/`: authenticated byte loading plus `GLTFLoader.parse` with a `LoadingManager` that resolves only manifest-listed dependencies, and fetch-to-blob decoding for private images/textures (or an equivalent verified transport). Every nested buffer/image uses the same authentication and pin. A synchronous `templateUrl` method alone is insufficient. Resolve dependencies from the resource map, not arbitrary URLs from glTF. Blob URLs are session-owned and revoked after resource disposal, including failures. Keep the builder's public/ordinary HTTP adapter so renderer code imports no HA types, React or stores.
+
+An expired HA session produces sign-in/retry behavior; no long-lived token is copied into `localStorage`, panel config, logs, snapshot JSON or query strings. If auth must be retried, obtain it through HA's supported transport and retry the same pinned resource. Verify in real HA that a cold cache loads a built-in GLB, an imported multi-file glTF and a private material image; top-level JSON success alone is insufficient.
+
+## Settings and source availability
+
+### Floor Builder connection and house selection
+
+First installation opens the existing globe/stage gradient with **Setup your home** and no house/source. The button opens Settings with its **House** node (holding House setup) selected. The connection controls are reachable before a 3D scene exists. Keep the global House setup node available once a house is selected.
+
+House setup contains one **Floor Builder URL** text field, **Connect**, one **DEV MODE** toggle, and the house list directly below the connection controls. Save a valid URL on field commit (blur/Enter); Connect first saves any outstanding edit. Saving the URL alone makes no source request. Connect uses the saved address, shows connecting/connected/error/empty states and lists houses; it neither selects nor imports anything. Invalid or unavailable entries explain the problem. Preserve the saved URL after failure. Normalize an HTTP(S) application base and deployment prefix; reject credentials/schemes/editor-specific paths with a useful hint.
+
+Each house row shows its name, local/source revision/copy status, **Use this house**, and **Upgrade**. Connected source houses and already stored local houses are identified clearly; local houses remain listed when the source is off. Upgrade appears beside every addressable house row, with unavailable/error/retry state when the source cannot supply it. Normal mode needs a valid saved revision/export for use/import; DEV MODE may view a valid working house through its current API. The URL must expose the remote viewer entry too before the unified DEV MODE can load remotely.
+
+With DEV MODE off, **Use this house** reuses an existing verified local copy or imports the latest explicit Save if absent, then selects only on success. With DEV MODE on, it validates/loads the source's current working house and selects it, without pretending the working state is a durable snapshot. A source house first used only in DEV MODE has no local fallback until explicitly upgraded/imported. A failed use preserves the previous selection. Never reinterpret a house ID against a changed URL silently; generation-check Connect/Use/Upgrade and require reconnection/reselection as appropriate.
+
+After a successful use, publish one selected-house/session change: the canvas loads that house and the sidebar immediately populates its current name, tree, rooms, objects, lights, bindings and per-house settings. Do not require reopening Settings, refreshing normal-mode code or recreating the integration. Ignore late results from the previous house and dispose its scene/subscriptions. Keep the same selected house ID across modes. Before replacing a house or reloading code, handle existing unsaved binding/dashboard drafts through Save or Cancel operation; never discard them implicitly.
+
+Connection URL/toggle commits save immediately, independently of the binding/dashboard draft footer; label that behavior. A toggle switch offers a full-page reload and uses the same current selected house automatically on that load. It does not require Connect/Use again for an unchanged URL. Changing the URL invalidates the connection list/source generation; toggling DEV MODE only changes load policy. Native integration Configure is recovery access to the same URL/toggle plus **Restore packaged frontend**, not another independently persisted mode.
+
+### DEV MODE: remote house data
+
+When the unified remote load succeeds, the current viewer module/UI and selected house document/templates/images all come from the saved Floor Builder URL. Every fresh browser/page load or explicit remote reload reads the latest server working data, including edits already working-saved but not explicitly committed to Git. Unsaved edits still only in another tab's memory are unavailable. Use per-load cache identities and revalidation for dev code/assets, including template bytes rebuilt in place; bound requests and detect/report inconsistent mutable dependencies. No background synchronization or geometry write-back is added.
+
+Display **DEV MODE — Remote** in the viewer; House setup shows local/offered frontend identities and copied/source saved revisions with explicit check times. Current working document and build identities are also available through the authenticated transport. Remote refresh never reimports HA configuration; seed migration happens once on the first successfully validated activation in either mode. On source/code/data failure, the local shell uses the visible local fallback behavior [above](#panel-frontend-development-mode), keeping DEV MODE enabled. Remote updates do not overwrite stored house/frontend copies. Turn DEV MODE off and reload to use the local frontend and selected stored snapshot; the latest remotely viewed working state is not saved automatically.
+
+### Local copy status and house upgrades
+
+**Upgrade** beside a house fetches its latest explicit Git Save, complete assets and current authored house settings from the configured source, verifies the copy and atomically replaces that house's stored snapshot. This is the user-facing name for the earlier draft's Update action. It preserves HA-owned bindings/dashboard settings in both modes. A separate Upgrade of another house never changes the current selection. Upgrade of the displayed local house applies its new scene and sidebar reactively after resources are ready; Upgrade while viewing remotely refreshes the stored fallback copy without changing the active remote scene.
+
+Show per-row progress (checking/downloading/verifying/activating), error/Retry, saved revision/date, copied date and the last explicit availability check. Availability is transient UI state from Connect/Upgrade, not a continuously persisted check history. Do not conflate source Git commit, document counter and copy time. A verified identical source returns Already up to date. A source Save during transfer yields one consistent pinned copy and a later availability indication. A failed upgrade, deleted source house or incompatible source leaves the stored copy/HA settings usable. Compare commit ancestry before calling a save newer; unrelated history is Different saved revision available.
+
+**Remembered connection (owner, 2026-11-18):** House settings lists **Room cards** and **Navigation** first and House setup last. A successful Connect (or refresh) is remembered in memory for this browser session only (`ha-viewer/connectionMemory.ts`; nothing new is stored in HA): reopening House settings shows the last status and house list at once and refreshes them in the background. The result counts as connected for 15 minutes (implementation convention); after that it is shown as **Not connected** (data stays visible) until a refresh succeeds. Automatic refresh runs only after a fetch has already succeeded in the session; the first failure, background or manual, switches it off (the data stays, marked **Not refreshed**) until a manual Connect succeeds. Explicit Connect always fetches.
+
+Opening House setup may make one bounded availability check after a URL is configured; explicit Connect/Retry/Check may query again. No continuous source polling or render-loop fetch. An offline check reports Builder unavailable, not Up to date. In local mode ordinary startup/viewing/HA state changes and configuration saves make no source requests. Dirty settings must be saved or Upgrade canceled before replacing the selected house's resources/settings baseline.
+
+## Upgrading the panel frontend from Floor Builder
+
+House setup also has a **Panel** section showing effective frontend (shipped/downloaded/remote), installed local frontend version/build, offered source build, required integration protocol/minimum version, and **Upgrade panel**. It uses the same saved Floor Builder URL, with no second URL or dev toggle. Connect can discover the offer; Upgrade panel is explicit and independent from per-house Upgrade. In DEV MODE it updates the local fallback frontend for later local use, without replacing running remote code.
+
+The source supplies a **built production frontend bundle**, not Vite TypeScript source or the React builder page. Version 1 deliberately bundles all executable dependencies into one self-contained `viewer.js` ES module. Its manifest names the bundle ID/version, entry module, loader/API protocol requirements, minimum integration version and file hash/size. The build generates third-party notices separately; runtime chunks and remote imports are excluded by the producer’s bundled graph. Future split graphs need a new supported format; reject remote imports, paths outside the artifact, unsupported capabilities and incompatible backend requirements. Hash/format rules follow the same canonical file-inventory convention as house transfer but use a distinct frontend format/identity; a frontend bundle does not contain house data, credentials or Python code. The producer's frontend build/version is separate from the house Git revision.
+
+HA downloads to `/config/homeplan/frontend/.staging-<jobId>/`, verifies the whole module tree and promotes it to an immutable `<bundleId>/`. Serve downloaded executable-only resources through a dedicated manifest-allowlisted public code path; never expose house data or arbitrary files alongside them. Atomically update the frontend current/previous pointer in the shared HA envelope, retaining the previous verified bundle and shipped baseline. Retain formerly active frontend bundles for at least 24 h after deactivation and protect in-flight file responses, so older open tabs finish loading their own immutable chunks; account for that disk headroom before accepting another upgrade. No files under `custom_components/homeplan` are overwritten by this operation. Failure/cancel/disk loss leaves the prior pointer intact. Source unavailability leaves local code untouched. Initial frontend limits: 5,000 files, 256 MiB total, 32 MiB per file; tune from actual build output, separately from house limits.
+
+Success shows **Panel upgraded — reload to apply**. A full browser reload through the stable shell loads one implementation from immutable bundle URLs; an already-running viewer never mixes old/new chunks. A native recovery action can clear the downloaded-frontend preference and use the shipped baseline, without deleting houses, bindings or DEV MODE settings. On startup reject a damaged/incompatible downloaded bundle and visibly recover to a verified prior/baseline version. Integration file upgrades re-check downloaded bundle compatibility; they do not blindly preserve an incompatible override.
+
+**Integration update replaces the downloaded viewer (owner, 2026-11-18; implementation convention).** The integration records the shipped bundle ID it last started with in its own HA Store (`homeplan.shipped_frontend`, `{"bundleId"}`), separate from the configuration envelope. On startup, after damaged-bundle recovery, a recorded ID that differs from the current shipped ID means the integration was updated: the downloaded `active` bundle is dropped (moved to `previous`, the same transition as the native restore-packaged action) so the shipped viewer loads. With no record yet (first start under this rule) an `active` bundle whose manifest `createdAt` is not later than the shipped bundle's is dropped the same way; a newer download is kept. The ID is then recorded, so Upgrade panel works normally afterwards and survives restarts until the next integration update. Updates do not delete bundle files; the 24 h retention applies.
+
+This updates the panel's UI/JS/rendering resources only. A frontend needing new Python routes/protocols reports Integration update required and leaves the current version selected. Python dependencies/backend changes use the normal integration installer/update lifecycle; no downloaded Python execution, package installation or self-modification is part of Upgrade panel. The stable loader itself ships with that integration lifecycle.
+
+## Recovery, backup and diagnostics
+
+Include `homeplan/` house snapshots and downloaded frontend bundles and HA-managed `.storage` configuration/config entry data in the documented HA backup procedure. Verify a backup/restore on the supported HA installation type; do not assume every custom backup selection includes the snapshot folder. Restoring both parts must reopen locally with the source stopped. Restoring only one part produces a recoverable missing-copy/settings warning, not implicit source migration or deletion.
+
+Integration removal unloads the panel and retains data by default. Reinstallation can adopt compatible retained data after validating it; explicit permanent data deletion and a rollback browser are deferred. Uninstalling/upgrading files never removes the external snapshot/configuration directories. Unsupported future storage versions fail closed with an actionable upgrade/restore message; do not downgrade or overwrite them. Storage version, transfer format, house schema and viewer protocol are distinct.
+
+Diagnostics expose integration/bundle/protocol versions, snapshot ID and saved/copy times, byte/file counts and job error/stage, and orphan counts. Redact HA state values, action payloads, entity IDs, house contents, source addresses and tokens from downloadable diagnostics by default. Logs report operation and sanitized resource identifiers; no per-file success spam or continuous offline retry loops.
+
+## Compatibility and acceptance
+
+The manifest rejects unsupported transfer/house/template capabilities before activation. An old integration keeps its current copy if a new source needs a newer viewer; the UI recommends upgrading the integration. An older source without snapshot capabilities cannot masquerade as a working-copy export; show the required source version. Bundle protocol mismatches request Reload. Failed config migrations keep the prior persisted bytes and report a repair path.
+
+The phase plan owns the detailed check matrix. The local-mode release gate is a **cold HA/browser restart with the builder and Vite stopped**, followed by working private assets, entity-driven lights/states/effects, actions, dashboards, configuration Save/reload, a failed house Upgrade that preserves the copy, and a later successful explicit Save/Upgrade that preserves HA settings. DEV MODE has a separate gate: change remote UI code and the source working document without a Git Save, refresh and see both, then verify visible local fallback and disabling the one toggle. Panel Upgrade must also cold-start its verified local frontend with the source stopped and HA bindings preserved.
+
+## Platform references
+
+Verify these against the selected HA release during implementation; current upstream `dev` is reference material, not a tested compatibility claim.
+
+- HA documents [native config flows](https://developers.home-assistant.io/docs/config_entries_config_flow_handler/), [options flows](https://developers.home-assistant.io/docs/config_entries_options_flow_handler/) and [config-entry lifecycle](https://developers.home-assistant.io/docs/config_entries_index/).
+- HA's [async static-path guidance](https://developers.home-assistant.io/blog/2024/06/18/async_register_static_paths/) describes `StaticPathConfig` registration.
+- The upstream [panel registration implementation](https://github.com/home-assistant/core/blob/dev/homeassistant/components/panel_custom/__init__.py) exposes programmatic panel registration; [Alarmo's panel](https://github.com/nielsfaber/alarmo/blob/main/custom_components/alarmo/panel.py) is an example of versioned module registration.
+- [Marketplace repository requirements](https://contributors.home-assistant.io/marketplace/reference/repository-structure/), [hacs.json](https://contributors.home-assistant.io/marketplace/reference/hacs-json/) and the [integration guide](https://contributors.home-assistant.io/marketplace/guides/integrations/) (checked 2026-11-19): the runtime lives within its component directory, `manifest.json` needs `version`, `documentation`, `issue_tracker`, `codeowners`, brand images go in `brand/`, `zip_release` installs the release asset named by `filename`. Default-catalog listing is a separate submission (hassfest and the HACS action must pass).
+- App [services discovery](https://contributors.home-assistant.io/apps/guides/services-discovery/): the integration's `hassio` step receives a `HassioServiceInfo` with the app's `config`, `name`, `slug` and `uuid`.
+
+## Delivered verification and remaining acceptance
+
+The focused scripts use synthetic temporary Git/HA stores and an isolated Chromium profile; they never install on or modify a real HA installation. Current results: 16 source snapshot checks, 82 storage/auth/HTTP/recovery/discovery checks against real HA 2025.7.4 APIs (discovery cases a/b/c, the DEV MODE rule and the origin upgrade run through HA's real config-entry flow manager), and 20 browser checks including private multi-file glTF/images, remote UI/current data, reactive sidebar and visible offline fallback. The package check verifies the allowlisted inventory, version agreement, frontend hashes and ZIP integrity. Full commands and limitations are in the [component instructions](../../custom_components/homeplan/README.md).
+
+The delivered viewer is approximately 1.82 MB uncompressed (442 KB gzip), and the stable loader 359 KB (84 KB gzip), separate from house assets. These are measured build sizes, not a house performance budget. Compatibility with other HA versions, physical device interactions, representative-house performance and a full backup/restore are not covered by these automated checks.

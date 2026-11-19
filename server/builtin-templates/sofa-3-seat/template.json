@@ -1,0 +1,8 @@
+{
+  "id": "sofa-3-seat",
+  "label": "Sofa, 3 Seats",
+  "kind": "sofa",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg"
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Window Style 1">
+<g stroke-width="0.6" stroke-linejoin="round">
+<polygon points="30.8,207.2 225.2,207.2 225.2,48.8" fill="rgb(203,203,203)" stroke="rgb(203,203,203)" fill-opacity="0.25" stroke-opacity="0"/>
+<polygon points="30.8,207.2 225.2,48.8 30.8,48.8" fill="rgb(203,203,203)" stroke="rgb(203,203,203)" fill-opacity="0.25" stroke-opacity="0"/>
+<polygon points="124.4,207.2 131.6,207.2 131.6,48.8" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="124.4,207.2 131.6,48.8 124.4,48.8" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="20.0,218.0 30.8,218.0 30.8,38.0" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="20.0,218.0 30.8,38.0 20.0,38.0" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="225.2,218.0 236.0,218.0 236.0,38.0" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="225.2,218.0 236.0,38.0 225.2,38.0" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="30.8,218.0 225.2,218.0 225.2,207.2" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="30.8,218.0 225.2,207.2 30.8,207.2" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="30.8,48.8 225.2,48.8 225.2,38.0" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+<polygon points="30.8,48.8 225.2,38.0 30.8,38.0" fill="rgb(203,203,203)" stroke="rgb(203,203,203)"/>
+</g>
+</svg>

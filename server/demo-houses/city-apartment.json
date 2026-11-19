@@ -1,0 +1,5390 @@
+{
+  "schemaVersion": 6,
+  "revision": 0,
+  "id": "h_5zlhk2r2ao",
+  "name": "Demo: City apartment",
+  "units": "mm",
+  "capMaterial": {
+    "pbrMetallicRoughness": {
+      "baseColorFactor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughnessFactor": 0.9,
+      "metallicFactor": 0
+    },
+    "extras": {
+      "homeplan": {
+        "tileSizeMm": {
+          "x": 1000,
+          "y": 1000
+        },
+        "rotationDeg": 0,
+        "offsetMm": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    }
+  },
+  "environment": {
+    "location": {
+      "latitudeDeg": 52.52,
+      "longitudeDeg": 13.405,
+      "timeZone": "Europe/Berlin"
+    },
+    "northRotationDeg": 0,
+    "sun": {
+      "timeMode": "fixed",
+      "fixedLocalDateTime": "2020-05-20T16:00:00"
+    }
+  },
+  "materialPresets": [],
+  "floors": [
+    {
+      "id": "f_hiueqewgew",
+      "name": "Apartment",
+      "positionMm": {
+        "x": 0,
+        "y": 0
+      },
+      "elevationMm": 0,
+      "slabThicknessMm": 200,
+      "slabMaterial": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            0.62,
+            0.62,
+            0.6,
+            1
+          ],
+          "roughnessFactor": 0.95,
+          "metallicFactor": 0
+        },
+        "extras": {
+          "homeplan": {
+            "tileSizeMm": {
+              "x": 1000,
+              "y": 1000
+            },
+            "rotationDeg": 0,
+            "offsetMm": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        }
+      },
+      "areas": [
+        {
+          "id": "a_p49np5bari",
+          "name": "Living, kitchen and dining",
+          "positionMm": {
+            "x": 3200,
+            "y": 3700
+          },
+          "rotationDeg": 0,
+          "floor": {
+            "id": "fs_em5uoaebly",
+            "material": {
+              "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                  "imageId": "builtinimg_oakparquet"
+                },
+                "baseColorFactor": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "roughnessFactor": 0.55,
+                "metallicFactor": 0
+              },
+              "extras": {
+                "homeplan": {
+                  "tileSizeMm": {
+                    "x": 1600,
+                    "y": 1600
+                  },
+                  "rotationDeg": 0,
+                  "offsetMm": {
+                    "x": 0,
+                    "y": 0
+                  }
+                }
+              }
+            },
+            "shapes": [
+              {
+                "id": "s_klftm9qfcd",
+                "type": "polygon",
+                "positionMm": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotationDeg": 0,
+                "vertices": [
+                  {
+                    "id": "v_mifcqdzw8b",
+                    "x": -3200,
+                    "y": -3700
+                  },
+                  {
+                    "id": "v_um1myogrz7",
+                    "x": 3200,
+                    "y": -3700
+                  },
+                  {
+                    "id": "v_61yak860m2",
+                    "x": 3200,
+                    "y": 300
+                  },
+                  {
+                    "id": "v_jhcdfo36a2",
+                    "x": -600,
+                    "y": 300
+                  },
+                  {
+                    "id": "v_voov5gpum4",
+                    "x": -600,
+                    "y": 3700
+                  },
+                  {
+                    "id": "v_tf3kc4fq8y",
+                    "x": -3200,
+                    "y": 3700
+                  }
+                ]
+              }
+            ],
+            "carpets": [
+              {
+                "id": "c_doejgotzal",
+                "name": "Kitchen tiles",
+                "positionMm": {
+                  "x": -1900,
+                  "y": 2000
+                },
+                "rotationDeg": 0,
+                "material": {
+                  "pbrMetallicRoughness": {
+                    "baseColorTexture": {
+                      "imageId": "builtinimg_greytiles"
+                    },
+                    "baseColorFactor": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "roughnessFactor": 0.35,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1200,
+                        "y": 1200
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "shapes": [
+                  {
+                    "id": "s_1jim6k4zgc",
+                    "type": "rectangle",
+                    "positionMm": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "rotationDeg": 0,
+                    "widthMm": 2600,
+                    "heightMm": 3400
+                  }
+                ]
+              },
+              {
+                "id": "c_8xzn6vchs5",
+                "name": "Living rug",
+                "positionMm": {
+                  "x": 1350,
+                  "y": -1700
+                },
+                "rotationDeg": 0,
+                "material": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.55,
+                      0.5,
+                      0.45,
+                      1
+                    ],
+                    "roughnessFactor": 1,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "shapes": [
+                  {
+                    "id": "s_hwptxa50gl",
+                    "type": "rectangle",
+                    "positionMm": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "rotationDeg": 0,
+                    "widthMm": 1800,
+                    "heightMm": 2600
+                  }
+                ]
+              }
+            ]
+          },
+          "walls": [
+            {
+              "id": "w_ujv6r91bev",
+              "sourceEdge": {
+                "shapeId": "s_klftm9qfcd",
+                "edge": "v_mifcqdzw8b>v_um1myogrz7"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_ydajc37szn",
+                  "name": "Balcony door",
+                  "templateId": "sliding-door-double",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 1500,
+                    "bottomMm": 0
+                  },
+                  "parameters": {
+                    "widthMm": 1660,
+                    "heightMm": 2260
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "frame": {
+                      "preset": "Anthracite"
+                    }
+                  }
+                },
+                {
+                  "id": "o_srkybncx45",
+                  "name": "Living window",
+                  "templateId": "window-casement",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 4700,
+                    "bottomMm": 800
+                  },
+                  "parameters": {
+                    "widthMm": 1600,
+                    "heightMm": 1450,
+                    "wings": "two"
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "frame": {
+                      "preset": "Anthracite"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "w_ni9vnu25wl",
+              "sourceEdge": {
+                "shapeId": "s_klftm9qfcd",
+                "edge": "v_um1myogrz7>v_61yak860m2"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_g4n23cngb0",
+              "sourceEdge": {
+                "shapeId": "s_klftm9qfcd",
+                "edge": "v_61yak860m2>v_jhcdfo36a2"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_6aj3u6cjja",
+                  "name": "Living door",
+                  "templateId": "interior-door",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 600,
+                    "bottomMm": 0
+                  },
+                  "parameters": {
+                    "widthMm": 850,
+                    "heightMm": 2050,
+                    "panelStyle": "half-glazed"
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "leaf": {
+                      "preset": "White"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "w_rurh6dp2cf",
+              "sourceEdge": {
+                "shapeId": "s_klftm9qfcd",
+                "edge": "v_jhcdfo36a2>v_voov5gpum4"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_x2yqsg2qlm",
+              "sourceEdge": {
+                "shapeId": "s_klftm9qfcd",
+                "edge": "v_voov5gpum4>v_tf3kc4fq8y"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_gcag7qbzfz",
+                  "name": "Kitchen window",
+                  "templateId": "window-casement",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 1000,
+                    "bottomMm": 1000
+                  },
+                  "parameters": {
+                    "widthMm": 1000,
+                    "heightMm": 1200
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "frame": {
+                      "preset": "Anthracite"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "w_lgct8n0owc",
+              "sourceEdge": {
+                "shapeId": "s_klftm9qfcd",
+                "edge": "v_tf3kc4fq8y>v_mifcqdzw8b"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.93,
+                      0.91,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_aj50rwcr07",
+                  "name": "Dining window",
+                  "templateId": "window-casement",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 5400,
+                    "bottomMm": 800
+                  },
+                  "parameters": {
+                    "widthMm": 1200,
+                    "heightMm": 1450
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "frame": {
+                      "preset": "Anthracite"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "objects": [
+            {
+              "id": "o_vs6fk4ub1h",
+              "name": "Fridge freezer",
+              "templateId": "fridge-freezer-column",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 350,
+                "y": 0
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_o5812k8tkb",
+              "name": "Sink",
+              "templateId": "kitchen-sink-base",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "fronts": {
+                  "preset": "Sage green"
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 950,
+                "y": 0
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_gy3okscpaj",
+              "name": "Base cabinet",
+              "templateId": "kitchen-base-cabinet",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 600
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "fronts": {
+                  "preset": "Sage green"
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1500,
+                "y": 0
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_xecit5f229",
+              "name": "Oven and hob",
+              "templateId": "kitchen-oven-hob",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2100,
+                "y": 0
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_33xi8y34vv",
+              "name": "Drawers",
+              "templateId": "kitchen-drawer-unit",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 600
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "fronts": {
+                  "preset": "Sage green"
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2700,
+                "y": 0
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_p74n4626bm",
+              "name": "Upper cabinet",
+              "templateId": "kitchen-upper-cabinet",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 1100
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "fronts": {
+                  "preset": "Sage green"
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1250,
+                "y": 0
+              },
+              "elevationMm": 1500,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_izrk4vuipe",
+              "name": "Extractor",
+              "templateId": "kitchen-extractor-strip",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2100,
+                "y": 0
+              },
+              "elevationMm": 1460,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_oqafy8aam3",
+              "name": "Upper cabinet 2",
+              "templateId": "kitchen-upper-cabinet",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 600
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "fronts": {
+                  "preset": "Sage green"
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2700,
+                "y": 0
+              },
+              "elevationMm": 1500,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_tv639zomrh",
+              "name": "Backsplash",
+              "templateId": "tile-backsplash",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 2300,
+                "heightMm": 600
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1850,
+                "y": 0
+              },
+              "elevationMm": 900,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_uszbjiea7i",
+              "name": "Dining table",
+              "templateId": "table-dining",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -1900,
+                "y": -1700
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_om7ixirl9d",
+              "name": "Dining chair 1",
+              "templateId": "dining-chair",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -1900,
+                "y": -874
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_ogvdigflvr",
+              "name": "Dining chair 2",
+              "templateId": "dining-chair",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -1900,
+                "y": -2526
+              },
+              "elevationMm": 0,
+              "rotationDeg": 180
+            },
+            {
+              "id": "o_lx2r6jhvij",
+              "name": "Dining chair 3",
+              "templateId": "dining-chair",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -2726,
+                "y": -1700
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_7103ouj3md",
+              "name": "Dining chair 4",
+              "templateId": "dining-chair",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -1074,
+                "y": -1700
+              },
+              "elevationMm": 0,
+              "rotationDeg": 270
+            },
+            {
+              "id": "o_28ag4f2jci",
+              "name": "Sideboard",
+              "templateId": "sideboard-cabinet",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 900
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "fronts": {
+                  "preset": "Oak"
+                }
+              },
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -2896,
+                "y": -200
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_bl17omi9w9",
+              "name": "Small picture 1",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 300,
+                "heightMm": 400,
+                "surface": "Picture",
+                "frameWidthMm": 18,
+                "matWidthMm": 45
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Oak"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.55,
+                      0.62,
+                      0.5,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 3480,
+                "y": 0
+              },
+              "elevationMm": 1450,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_9gyapqpfi4",
+              "name": "Small picture 2",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 300,
+                "heightMm": 400,
+                "surface": "Picture",
+                "frameWidthMm": 18,
+                "matWidthMm": 45
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Oak"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.82,
+                      0.66,
+                      0.45,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 3900,
+                "y": 0
+              },
+              "elevationMm": 1450,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_k5busskzwe",
+              "name": "Small picture 3",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 300,
+                "heightMm": 400,
+                "surface": "Picture",
+                "frameWidthMm": 18,
+                "matWidthMm": 45
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Oak"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.45,
+                      0.52,
+                      0.65,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_lgct8n0owc",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 4320,
+                "y": 0
+              },
+              "elevationMm": 1450,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_g4347f114k",
+              "name": "Sofa",
+              "templateId": "sofa",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 2100
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 300,
+                "y": -1700
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_kzpw7kz6qw",
+              "name": "Coffee table",
+              "templateId": "coffee-table",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "wood": {
+                  "preset": "Oak"
+                }
+              },
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 1500,
+                "y": -1700
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_q6txv2x668",
+              "name": "Armchair",
+              "templateId": "sofa",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 900
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 1500,
+                "y": -3050
+              },
+              "elevationMm": 0,
+              "rotationDeg": 180
+            },
+            {
+              "id": "o_julezl0jyk",
+              "name": "TV",
+              "templateId": "wall-tv",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 1400,
+                "heightMm": 800
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_ni9vnu25wl",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2000,
+                "y": 0
+              },
+              "elevationMm": 1050,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_945ooli29s",
+              "name": "TV shelf",
+              "templateId": "drawer-shelf",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 1800,
+                "drawers": 4
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 2990,
+                "y": -1700
+              },
+              "elevationMm": 0,
+              "rotationDeg": 270
+            },
+            {
+              "id": "o_0441ps0u4z",
+              "name": "Monstera",
+              "templateId": "plant-monstera",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 2850,
+                "y": -3400
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_zy0ei1ea3g",
+              "name": "Snake plant",
+              "templateId": "plant-snake",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -350,
+                "y": 50
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_46pg6vgyc5",
+              "name": "Gallery frame 1",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 400,
+                "heightMm": 500,
+                "surface": "Picture",
+                "frameWidthMm": 20,
+                "matWidthMm": 50
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Oak"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.7,
+                      0.42,
+                      0.25,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_g4n23cngb0",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1400,
+                "y": 0
+              },
+              "elevationMm": 1350,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_50mlxohope",
+              "name": "Gallery frame 2",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 300,
+                "heightMm": 300,
+                "surface": "Picture",
+                "frameWidthMm": 20,
+                "matWidthMm": 40
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "White"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.2,
+                      0.3,
+                      0.45,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_g4n23cngb0",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1850,
+                "y": 0
+              },
+              "elevationMm": 1450,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_kyflzzz2r8",
+              "name": "Gallery frame 3",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 600,
+                "heightMm": 700,
+                "surface": "Picture",
+                "frameWidthMm": 25,
+                "matWidthMm": 80
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Anthracite"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.85,
+                      0.75,
+                      0.55,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_g4n23cngb0",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2400,
+                "y": 0
+              },
+              "elevationMm": 1250,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_9l4p8ka27a",
+              "name": "Gallery frame 4",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 300,
+                "heightMm": 400,
+                "surface": "Picture",
+                "frameWidthMm": 20,
+                "matWidthMm": 40
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "White"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.35,
+                      0.5,
+                      0.35,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_g4n23cngb0",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2950,
+                "y": 0
+              },
+              "elevationMm": 1400,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_6vftxu2f2q",
+              "name": "Gallery frame 5",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 400,
+                "heightMm": 500,
+                "surface": "Picture",
+                "frameWidthMm": 20,
+                "matWidthMm": 50
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Oak"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.6,
+                      0.25,
+                      0.3,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_g4n23cngb0",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 3400,
+                "y": 0
+              },
+              "elevationMm": 1350,
+              "rotationDeg": 0
+            }
+          ],
+          "lights": [
+            {
+              "id": "l_7k40k8vmej",
+              "name": "Kitchen ceiling",
+              "fixture": {
+                "templateId": "ceiling-light-round",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": -1700,
+                "y": 2000
+              },
+              "elevationMm": 2700,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 1500,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            },
+            {
+              "id": "l_e88l5laq6s",
+              "name": "Under-cabinet strip",
+              "fixture": {
+                "templateId": "linear-strip",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "linear",
+                "lengthMm": 2200,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": -2900,
+                "y": 1850
+              },
+              "elevationMm": 1490,
+              "rotationDeg": 90,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "colorTemperature",
+                  "rgb"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 900,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 3000,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            },
+            {
+              "id": "l_cfwp3nyuex",
+              "name": "Dining pendant",
+              "fixture": {
+                "templateId": "pendant-cone",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": -1900,
+                "y": -1700
+              },
+              "elevationMm": 2700,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 1200,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            },
+            {
+              "id": "l_qj1we5wzpp",
+              "name": "Living pendant",
+              "fixture": {
+                "templateId": "pendant-shade",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 1500,
+                "y": -1700
+              },
+              "elevationMm": 2700,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 1800,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            },
+            {
+              "id": "l_u48n09esbp",
+              "name": "Reading lamp",
+              "fixture": {
+                "templateId": "floor-lamp",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 100,
+                "y": -200
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 900,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            },
+            {
+              "id": "l_vtlz3nu585",
+              "name": "Cove strip",
+              "fixture": null,
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "linear",
+                "lengthMm": 3600,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 1300,
+                "y": 260
+              },
+              "elevationMm": 2650,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "colorTemperature",
+                  "rgb"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 1400,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "a_l7k8db1vs1",
+          "name": "Entrance hall",
+          "positionMm": {
+            "x": 5050,
+            "y": 5750
+          },
+          "rotationDeg": 0,
+          "floor": {
+            "id": "fs_25h7bl1vvs",
+            "material": {
+              "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                  "imageId": "builtinimg_slatetiles"
+                },
+                "baseColorFactor": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "roughnessFactor": 0.6,
+                "metallicFactor": 0
+              },
+              "extras": {
+                "homeplan": {
+                  "tileSizeMm": {
+                    "x": 1200,
+                    "y": 1200
+                  },
+                  "rotationDeg": 0,
+                  "offsetMm": {
+                    "x": 0,
+                    "y": 0
+                  }
+                }
+              }
+            },
+            "shapes": [
+              {
+                "id": "s_5v7b4ciyv9",
+                "type": "polygon",
+                "positionMm": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotationDeg": 0,
+                "vertices": [
+                  {
+                    "id": "v_942wwej43a",
+                    "x": -2350,
+                    "y": -1650
+                  },
+                  {
+                    "id": "v_46aogh4k8q",
+                    "x": 2350,
+                    "y": -1650
+                  },
+                  {
+                    "id": "v_9mqud4y1b1",
+                    "x": 2350,
+                    "y": -450
+                  },
+                  {
+                    "id": "v_csjjvl5y7h",
+                    "x": -50,
+                    "y": -450
+                  },
+                  {
+                    "id": "v_l3wfrbw342",
+                    "x": -50,
+                    "y": 1650
+                  },
+                  {
+                    "id": "v_qjd5o6ozxx",
+                    "x": -2350,
+                    "y": 1650
+                  }
+                ]
+              }
+            ],
+            "carpets": [
+              {
+                "id": "c_rpcj2t16fe",
+                "name": "Hall runner",
+                "positionMm": {
+                  "x": -1200,
+                  "y": 150
+                },
+                "rotationDeg": 0,
+                "material": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.42,
+                      0.24,
+                      0.2,
+                      1
+                    ],
+                    "roughnessFactor": 1,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "shapes": [
+                  {
+                    "id": "s_dsnscavppk",
+                    "type": "rectangle",
+                    "positionMm": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "rotationDeg": 0,
+                    "widthMm": 1000,
+                    "heightMm": 2200
+                  }
+                ]
+              }
+            ]
+          },
+          "walls": [
+            {
+              "id": "w_txahow4etk",
+              "sourceEdge": {
+                "shapeId": "s_5v7b4ciyv9",
+                "edge": "v_942wwej43a>v_46aogh4k8q"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_a7fyvdrjm9",
+              "sourceEdge": {
+                "shapeId": "s_5v7b4ciyv9",
+                "edge": "v_46aogh4k8q>v_9mqud4y1b1"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_fkix81b49f",
+              "sourceEdge": {
+                "shapeId": "s_5v7b4ciyv9",
+                "edge": "v_9mqud4y1b1>v_csjjvl5y7h"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_djew181i7e",
+              "sourceEdge": {
+                "shapeId": "s_5v7b4ciyv9",
+                "edge": "v_csjjvl5y7h>v_l3wfrbw342"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_viai7ducpq",
+              "sourceEdge": {
+                "shapeId": "s_5v7b4ciyv9",
+                "edge": "v_l3wfrbw342>v_qjd5o6ozxx"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_ynz47dy8sw",
+                  "name": "Front door",
+                  "templateId": "door-entrance",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 1150,
+                    "bottomMm": 0
+                  },
+                  "parameters": {
+                    "widthMm": 1000,
+                    "heightMm": 2100
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {}
+                }
+              ]
+            },
+            {
+              "id": "w_j848vrw1ol",
+              "sourceEdge": {
+                "shapeId": "s_5v7b4ciyv9",
+                "edge": "v_qjd5o6ozxx>v_942wwej43a"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.76,
+                      0.69,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            }
+          ],
+          "objects": [
+            {
+              "id": "o_ttarjleuak",
+              "name": "Shoe cabinet",
+              "templateId": "shoe-cabinet",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 1200,
+                "sections": 2
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -2205,
+                "y": -150
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_ubacysivau",
+              "name": "Hall mirror",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 450,
+                "heightMm": 1450,
+                "surface": "Mirror",
+                "frameWidthMm": 20,
+                "matWidthMm": 0
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_j848vrw1ol",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 900,
+                "y": 0
+              },
+              "elevationMm": 350,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_u3ow91rdly",
+              "name": "Coat cupboard",
+              "templateId": "tall-cabinet-doors",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 600
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -240,
+                "y": 650
+              },
+              "elevationMm": 0,
+              "rotationDeg": 270
+            },
+            {
+              "id": "o_4atez7mkpq",
+              "name": "Leafy plant",
+              "templateId": "plant-leafy",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -2050,
+                "y": -1350
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            }
+          ],
+          "lights": [
+            {
+              "id": "l_gfqt5f6tc7",
+              "name": "Hall ceiling",
+              "fixture": {
+                "templateId": "ceiling-light-round",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": -1200,
+                "y": 550
+              },
+              "elevationMm": 2700,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 900,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            },
+            {
+              "id": "l_vcbv9m0vqz",
+              "name": "Corridor ceiling",
+              "fixture": {
+                "templateId": "ceiling-light-round",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 850,
+                "y": -1050
+              },
+              "elevationMm": 2700,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 900,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "a_ojcsjmajiz",
+          "name": "Bedroom",
+          "positionMm": {
+            "x": 8250,
+            "y": 2000
+          },
+          "rotationDeg": 0,
+          "floor": {
+            "id": "fs_2ig7396chg",
+            "material": {
+              "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                  "imageId": "builtinimg_oakparquet"
+                },
+                "baseColorFactor": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "roughnessFactor": 0.55,
+                "metallicFactor": 0
+              },
+              "extras": {
+                "homeplan": {
+                  "tileSizeMm": {
+                    "x": 1600,
+                    "y": 1600
+                  },
+                  "rotationDeg": 0,
+                  "offsetMm": {
+                    "x": 0,
+                    "y": 0
+                  }
+                }
+              }
+            },
+            "shapes": [
+              {
+                "id": "s_y4s6x3tjj2",
+                "type": "polygon",
+                "positionMm": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotationDeg": 0,
+                "vertices": [
+                  {
+                    "id": "v_j4isesiws9",
+                    "x": -1750,
+                    "y": -2000
+                  },
+                  {
+                    "id": "v_p4crriho8i",
+                    "x": 1750,
+                    "y": -2000
+                  },
+                  {
+                    "id": "v_a2ykqvwn87",
+                    "x": 1750,
+                    "y": 2000
+                  },
+                  {
+                    "id": "v_hdprvdy8pn",
+                    "x": -1750,
+                    "y": 2000
+                  }
+                ]
+              }
+            ],
+            "carpets": [
+              {
+                "id": "c_nygbawz71b",
+                "name": "Bedroom rug",
+                "positionMm": {
+                  "x": 350,
+                  "y": 0
+                },
+                "rotationDeg": 0,
+                "material": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.78,
+                      0.74,
+                      0.68,
+                      1
+                    ],
+                    "roughnessFactor": 1,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "shapes": [
+                  {
+                    "id": "s_pn6ekmdf95",
+                    "type": "rectangle",
+                    "positionMm": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "rotationDeg": 0,
+                    "widthMm": 2200,
+                    "heightMm": 2800
+                  }
+                ]
+              }
+            ]
+          },
+          "walls": [
+            {
+              "id": "w_4pqvd2et0k",
+              "sourceEdge": {
+                "shapeId": "s_y4s6x3tjj2",
+                "edge": "v_j4isesiws9>v_p4crriho8i"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.62,
+                      0.7,
+                      0.58,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_an99rbqrkz",
+                  "name": "Bedroom window",
+                  "templateId": "window-casement",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 1750,
+                    "bottomMm": 800
+                  },
+                  "parameters": {
+                    "widthMm": 1400,
+                    "heightMm": 1450,
+                    "wings": "two",
+                    "secondWingMm": 500
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "frame": {
+                      "preset": "Anthracite"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "w_jwqdxrkpp6",
+              "sourceEdge": {
+                "shapeId": "s_y4s6x3tjj2",
+                "edge": "v_p4crriho8i>v_a2ykqvwn87"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.62,
+                      0.7,
+                      0.58,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_v0tpsdblgj",
+              "sourceEdge": {
+                "shapeId": "s_y4s6x3tjj2",
+                "edge": "v_a2ykqvwn87>v_hdprvdy8pn"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.62,
+                      0.7,
+                      0.58,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.62,
+                      0.7,
+                      0.58,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_oio97g4xlu",
+                  "name": "Bedroom door",
+                  "templateId": "interior-door",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 3080,
+                    "bottomMm": 0
+                  },
+                  "parameters": {
+                    "widthMm": 800,
+                    "heightMm": 2050
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "leaf": {
+                      "preset": "White"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "w_xigpqf1jcp",
+              "sourceEdge": {
+                "shapeId": "s_y4s6x3tjj2",
+                "edge": "v_hdprvdy8pn>v_j4isesiws9"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.62,
+                      0.7,
+                      0.58,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.62,
+                      0.7,
+                      0.58,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            }
+          ],
+          "objects": [
+            {
+              "id": "o_kx4b9g6jfj",
+              "name": "Bed",
+              "templateId": "bed-double",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 685,
+                "y": 0
+              },
+              "elevationMm": 0,
+              "rotationDeg": 270
+            },
+            {
+              "id": "o_3qjh1zl5z8",
+              "name": "Bedside table 1",
+              "templateId": "bedside-table-hokksund",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 1585,
+                "y": -1245
+              },
+              "elevationMm": 0,
+              "rotationDeg": 270
+            },
+            {
+              "id": "o_84v1dw8d1t",
+              "name": "Bedside table 2",
+              "templateId": "bedside-table-hokksund",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 1585,
+                "y": 1245
+              },
+              "elevationMm": 0,
+              "rotationDeg": 270
+            },
+            {
+              "id": "o_uoudvmj7kl",
+              "name": "Picture over the bed 1",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 300,
+                "heightMm": 400,
+                "surface": "Picture",
+                "frameWidthMm": 18,
+                "matWidthMm": 45
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Oak"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.55,
+                      0.62,
+                      0.5,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_jwqdxrkpp6",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1580,
+                "y": 0
+              },
+              "elevationMm": 1250,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_wpfhp42s7p",
+              "name": "Picture over the bed 2",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 300,
+                "heightMm": 400,
+                "surface": "Picture",
+                "frameWidthMm": 18,
+                "matWidthMm": 45
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Oak"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.82,
+                      0.66,
+                      0.45,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_jwqdxrkpp6",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2000,
+                "y": 0
+              },
+              "elevationMm": 1250,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_j4uraer5kb",
+              "name": "Picture over the bed 3",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 300,
+                "heightMm": 400,
+                "surface": "Picture",
+                "frameWidthMm": 18,
+                "matWidthMm": 45
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {
+                "frame": {
+                  "preset": "Oak"
+                },
+                "picture": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.45,
+                      0.52,
+                      0.65,
+                      1
+                    ],
+                    "roughnessFactor": 0.8,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_jwqdxrkpp6",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 2420,
+                "y": 0
+              },
+              "elevationMm": 1250,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_nmjj1nygj1",
+              "name": "Wardrobe 1",
+              "templateId": "wardrobe-two-door",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 1000
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -1454,
+                "y": 500
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_n9lo65kytb",
+              "name": "Wardrobe 2",
+              "templateId": "wardrobe-two-door",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 1000
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -1454,
+                "y": -500
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_1izfvfxjko",
+              "name": "Snake plant",
+              "templateId": "plant-snake",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 1600,
+                "y": -1740
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            }
+          ],
+          "lights": [
+            {
+              "id": "l_8rijsy31mn",
+              "name": "Bedroom pendant",
+              "fixture": {
+                "templateId": "pendant-shade",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 150,
+                "y": 0
+              },
+              "elevationMm": 2700,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 1400,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            },
+            {
+              "id": "l_py4gjc5c0j",
+              "name": "Headboard glow",
+              "fixture": null,
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "linear",
+                "lengthMm": 1800,
+                "widthMm": 12,
+                "facingDeg": 180
+              },
+              "positionMm": {
+                "x": 1735,
+                "y": 0
+              },
+              "elevationMm": 1000,
+              "rotationDeg": 90,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "colorTemperature",
+                  "rgb"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 500,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2400,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "a_1h9tc23a18",
+          "name": "Bathroom",
+          "positionMm": {
+            "x": 8750,
+            "y": 5750
+          },
+          "rotationDeg": 0,
+          "floor": {
+            "id": "fs_b6d7k7cbaz",
+            "material": {
+              "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                  "imageId": "builtinimg_whitetiles"
+                },
+                "baseColorFactor": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "roughnessFactor": 0.25,
+                "metallicFactor": 0
+              },
+              "extras": {
+                "homeplan": {
+                  "tileSizeMm": {
+                    "x": 600,
+                    "y": 600
+                  },
+                  "rotationDeg": 0,
+                  "offsetMm": {
+                    "x": 0,
+                    "y": 0
+                  }
+                }
+              }
+            },
+            "shapes": [
+              {
+                "id": "s_my878lgmf0",
+                "type": "polygon",
+                "positionMm": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotationDeg": 0,
+                "vertices": [
+                  {
+                    "id": "v_mgq4p4zl2g",
+                    "x": -1250,
+                    "y": -1650
+                  },
+                  {
+                    "id": "v_942ln17r9c",
+                    "x": 1250,
+                    "y": -1650
+                  },
+                  {
+                    "id": "v_0pvkxytvwx",
+                    "x": 1250,
+                    "y": 1650
+                  },
+                  {
+                    "id": "v_e283u3ldcr",
+                    "x": -1250,
+                    "y": 1650
+                  }
+                ]
+              }
+            ],
+            "carpets": []
+          },
+          "walls": [
+            {
+              "id": "w_v355x5o2a4",
+              "sourceEdge": {
+                "shapeId": "s_my878lgmf0",
+                "edge": "v_mgq4p4zl2g>v_942ln17r9c"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.82,
+                      0.86,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.6,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.82,
+                      0.86,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.6,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_4dp0iektvr",
+              "sourceEdge": {
+                "shapeId": "s_my878lgmf0",
+                "edge": "v_942ln17r9c>v_0pvkxytvwx"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.82,
+                      0.86,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.6,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_r7f5uy2evy",
+                  "name": "Bathroom window",
+                  "templateId": "window-casement",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 2450,
+                    "bottomMm": 1300
+                  },
+                  "parameters": {
+                    "widthMm": 700,
+                    "heightMm": 900
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "glass": {
+                      "preset": "Frosted glass"
+                    },
+                    "frame": {
+                      "preset": "White"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "w_g4p5jjgftu",
+              "sourceEdge": {
+                "shapeId": "s_my878lgmf0",
+                "edge": "v_0pvkxytvwx>v_e283u3ldcr"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.82,
+                      0.86,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.6,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_mokkg960x6",
+              "sourceEdge": {
+                "shapeId": "s_my878lgmf0",
+                "edge": "v_e283u3ldcr>v_mgq4p4zl2g"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.82,
+                      0.86,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.6,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.82,
+                      0.86,
+                      0.86,
+                      1
+                    ],
+                    "roughnessFactor": 0.6,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_q75zy89bwd",
+                  "name": "Bathroom door",
+                  "templateId": "interior-door",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 2700,
+                    "bottomMm": 0
+                  },
+                  "parameters": {
+                    "widthMm": 750,
+                    "heightMm": 2050
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "leaf": {
+                      "preset": "White"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "objects": [
+            {
+              "id": "o_y01yq3wroa",
+              "name": "Bathtub",
+              "templateId": "bathtub",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 900,
+                "y": 800
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_dzzpcmj1ah",
+              "name": "Shower rail",
+              "templateId": "shower-rail",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_4dp0iektvr",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1850,
+                "y": 0
+              },
+              "elevationMm": 700,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_ysh5bzplc5",
+              "name": "Toilet",
+              "templateId": "toilet-high-cistern",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -450,
+                "y": 1318
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_ga3wwkya2t",
+              "name": "Basin",
+              "templateId": "basin-pedestal",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 150,
+                "y": -1420
+              },
+              "elevationMm": 0,
+              "rotationDeg": 180
+            },
+            {
+              "id": "o_o6187akc6y",
+              "name": "Mirror and light",
+              "templateId": "frame",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 600,
+                "heightMm": 800,
+                "surface": "Mirror",
+                "matWidthMm": 0,
+                "lightBar": true
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_v355x5o2a4",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1400,
+                "y": 0
+              },
+              "elevationMm": 1100,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_0mhcx6ych0",
+              "name": "Tall cabinet",
+              "templateId": "tall-cabinet-doors",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -1060,
+                "y": 1150
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_ighe9vo99n",
+              "name": "Towel radiator",
+              "templateId": "radiator-ribbed",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 500,
+                "heightMm": 1200
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_mokkg960x6",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 1700,
+                "y": 0
+              },
+              "elevationMm": 150,
+              "rotationDeg": 0
+            }
+          ],
+          "lights": [
+            {
+              "id": "l_8kstfb52jm",
+              "name": "Bathroom ceiling",
+              "fixture": {
+                "templateId": "ceiling-light-round",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 0,
+                "y": 0
+              },
+              "elevationMm": 2700,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 1200,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 3500,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            },
+            {
+              "id": "l_juv0bgsqja",
+              "name": "Mirror light",
+              "fixture": null,
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 150,
+                "y": -1500
+              },
+              "elevationMm": 1950,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 400,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 3500,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "a_2fqp4o8oba",
+          "name": "Utility",
+          "positionMm": {
+            "x": 6250,
+            "y": 6400
+          },
+          "rotationDeg": 0,
+          "floor": {
+            "id": "fs_no62dazgil",
+            "material": {
+              "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                  "imageId": "builtinimg_greytiles"
+                },
+                "baseColorFactor": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "roughnessFactor": 0.35,
+                "metallicFactor": 0
+              },
+              "extras": {
+                "homeplan": {
+                  "tileSizeMm": {
+                    "x": 1200,
+                    "y": 1200
+                  },
+                  "rotationDeg": 0,
+                  "offsetMm": {
+                    "x": 0,
+                    "y": 0
+                  }
+                }
+              }
+            },
+            "shapes": [
+              {
+                "id": "s_bo6nsxpko5",
+                "type": "polygon",
+                "positionMm": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotationDeg": 0,
+                "vertices": [
+                  {
+                    "id": "v_3fyw6flgs2",
+                    "x": -1150,
+                    "y": -1000
+                  },
+                  {
+                    "id": "v_cly0v1e1r7",
+                    "x": 1150,
+                    "y": -1000
+                  },
+                  {
+                    "id": "v_xrusfzbnq6",
+                    "x": 1150,
+                    "y": 1000
+                  },
+                  {
+                    "id": "v_v9mbsq99bp",
+                    "x": -1150,
+                    "y": 1000
+                  }
+                ]
+              }
+            ],
+            "carpets": []
+          },
+          "walls": [
+            {
+              "id": "w_giodc8bw3v",
+              "sourceEdge": {
+                "shapeId": "s_bo6nsxpko5",
+                "edge": "v_3fyw6flgs2>v_cly0v1e1r7"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.96,
+                      0.95,
+                      0.93,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.96,
+                      0.95,
+                      0.93,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_wf719me8l1",
+                  "name": "Utility door",
+                  "templateId": "interior-door",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 500,
+                    "bottomMm": 0
+                  },
+                  "parameters": {
+                    "widthMm": 800,
+                    "heightMm": 2050
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {
+                    "leaf": {
+                      "preset": "White"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "w_k6yck8klhk",
+              "sourceEdge": {
+                "shapeId": "s_bo6nsxpko5",
+                "edge": "v_cly0v1e1r7>v_xrusfzbnq6"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.96,
+                      0.95,
+                      0.93,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.96,
+                      0.95,
+                      0.93,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_k6pnhkeaw7",
+              "sourceEdge": {
+                "shapeId": "s_bo6nsxpko5",
+                "edge": "v_xrusfzbnq6>v_v9mbsq99bp"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 250,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.96,
+                      0.95,
+                      0.93,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": [
+                {
+                  "id": "o_diim2wolm1",
+                  "name": "Utility window",
+                  "templateId": "window-casement",
+                  "templateVersion": 1,
+                  "placement": {
+                    "distanceAlongWallMm": 1100,
+                    "bottomMm": 1500
+                  },
+                  "parameters": {
+                    "widthMm": 800,
+                    "heightMm": 600
+                  },
+                  "flip": {
+                    "x": false,
+                    "z": false
+                  },
+                  "materialOverrides": {}
+                }
+              ]
+            },
+            {
+              "id": "w_y2iwhclg27",
+              "sourceEdge": {
+                "shapeId": "s_bo6nsxpko5",
+                "edge": "v_v9mbsq99bp>v_3fyw6flgs2"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 2700,
+              "thicknessMm": 100,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.96,
+                      0.95,
+                      0.93,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.96,
+                      0.95,
+                      0.93,
+                      1
+                    ],
+                    "roughnessFactor": 0.9,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            }
+          ],
+          "objects": [
+            {
+              "id": "o_9vtjw80t0c",
+              "name": "Washing machine",
+              "templateId": "washing-machine",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 700,
+                "y": 674
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_dr4i4d7t00",
+              "name": "Tumble dryer",
+              "templateId": "tumble-dryer",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 50,
+                "y": 691
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_nldsseoz27",
+              "name": "Shelves",
+              "templateId": "tall-cabinet-open-shelves",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -918,
+                "y": 500
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_y5bad7tnk7",
+              "name": "Water heater",
+              "templateId": "water-heater-wall",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "wall",
+                "wallId": "w_k6yck8klhk",
+                "hostSide": "interior"
+              },
+              "positionMm": {
+                "x": 600,
+                "y": 0
+              },
+              "elevationMm": 1100,
+              "rotationDeg": 0
+            }
+          ],
+          "lights": [
+            {
+              "id": "l_s8sz298ej5",
+              "name": "Utility ceiling",
+              "fixture": {
+                "templateId": "ceiling-light-square",
+                "templateVersion": 1
+              },
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 0,
+                "y": 0
+              },
+              "elevationMm": 2700,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 1000,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 4000,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "a_8dnje3jx6d",
+          "name": "Balcony",
+          "positionMm": {
+            "x": 1600,
+            "y": -950
+          },
+          "rotationDeg": 0,
+          "floor": {
+            "id": "fs_71ro0r8y1y",
+            "material": {
+              "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                  "imageId": "builtinimg_decking"
+                },
+                "baseColorFactor": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "roughnessFactor": 0.8,
+                "metallicFactor": 0
+              },
+              "extras": {
+                "homeplan": {
+                  "tileSizeMm": {
+                    "x": 1160,
+                    "y": 1160
+                  },
+                  "rotationDeg": 0,
+                  "offsetMm": {
+                    "x": 0,
+                    "y": 0
+                  }
+                }
+              }
+            },
+            "shapes": [
+              {
+                "id": "s_08zuvsvu0h",
+                "type": "polygon",
+                "positionMm": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotationDeg": 0,
+                "vertices": [
+                  {
+                    "id": "v_dtslgpt4fp",
+                    "x": -1300,
+                    "y": -700
+                  },
+                  {
+                    "id": "v_dkvxgyh7qe",
+                    "x": 1300,
+                    "y": -700
+                  },
+                  {
+                    "id": "v_9lbenglaab",
+                    "x": 1300,
+                    "y": 700
+                  },
+                  {
+                    "id": "v_bthpu635ni",
+                    "x": -1300,
+                    "y": 700
+                  }
+                ]
+              }
+            ],
+            "carpets": []
+          },
+          "walls": [
+            {
+              "id": "w_nwxlkwq8ld",
+              "sourceEdge": {
+                "shapeId": "s_08zuvsvu0h",
+                "edge": "v_dtslgpt4fp>v_dkvxgyh7qe"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 1050,
+              "thicknessMm": 150,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_u71pc1nmg6",
+              "sourceEdge": {
+                "shapeId": "s_08zuvsvu0h",
+                "edge": "v_dkvxgyh7qe>v_9lbenglaab"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 1050,
+              "thicknessMm": 150,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            },
+            {
+              "id": "w_d0fqbvt7fh",
+              "sourceEdge": {
+                "shapeId": "s_08zuvsvu0h",
+                "edge": "v_bthpu635ni>v_dtslgpt4fp"
+              },
+              "spanMm": {
+                "start": {
+                  "anchor": "start",
+                  "offsetMm": 0
+                },
+                "end": {
+                  "anchor": "end",
+                  "offsetMm": 0
+                }
+              },
+              "heightMm": 1050,
+              "thicknessMm": 150,
+              "alignment": "outside",
+              "materials": {
+                "interior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                },
+                "exterior": {
+                  "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                      0.8,
+                      0.79,
+                      0.76,
+                      1
+                    ],
+                    "roughnessFactor": 0.95,
+                    "metallicFactor": 0
+                  },
+                  "extras": {
+                    "homeplan": {
+                      "tileSizeMm": {
+                        "x": 1000,
+                        "y": 1000
+                      },
+                      "rotationDeg": 0,
+                      "offsetMm": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "objects": []
+            }
+          ],
+          "objects": [
+            {
+              "id": "o_69i64i1e4q",
+              "name": "Bistro table",
+              "templateId": "bar-table",
+              "templateVersion": 1,
+              "parameters": {
+                "widthMm": 800,
+                "depthMm": 600,
+                "heightMm": 750
+              },
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 850,
+                "y": -400
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            },
+            {
+              "id": "o_cbbhrnxrj0",
+              "name": "Stool 1",
+              "templateId": "stool-three-leg",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 450,
+                "y": -400
+              },
+              "elevationMm": 0,
+              "rotationDeg": 90
+            },
+            {
+              "id": "o_urbfraeynb",
+              "name": "Stool 2",
+              "templateId": "stool-three-leg",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": 900,
+                "y": 100
+              },
+              "elevationMm": 0,
+              "rotationDeg": 180
+            },
+            {
+              "id": "o_d6e4mwv6lr",
+              "name": "Planter",
+              "templateId": "plant-leafy",
+              "templateVersion": 1,
+              "parameters": {},
+              "flip": {
+                "x": false,
+                "z": false
+              },
+              "materialOverrides": {},
+              "attachment": {
+                "host": "floor"
+              },
+              "positionMm": {
+                "x": -1040,
+                "y": -490
+              },
+              "elevationMm": 0,
+              "rotationDeg": 0
+            }
+          ],
+          "lights": [
+            {
+              "id": "l_kz5wspjomo",
+              "name": "Balcony light",
+              "fixture": null,
+              "fixtureVisible": true,
+              "geometry": {
+                "type": "point",
+                "lengthMm": 1000,
+                "widthMm": 12
+              },
+              "positionMm": {
+                "x": 0,
+                "y": 530
+              },
+              "elevationMm": 2300,
+              "rotationDeg": 0,
+              "spot": {
+                "tiltDeg": 0,
+                "beamAngleDeg": 40,
+                "softEdge": 0.4
+              },
+              "renderCapabilities": {
+                "colorModes": [
+                  "fixedWhite",
+                  "colorTemperature"
+                ]
+              },
+              "defaults": {
+                "enabled": true,
+                "brightness": 1,
+                "outputLumens": 350,
+                "color": {
+                  "mode": "colorTemperature",
+                  "kelvin": 2700,
+                  "rgb": [
+                    255,
+                    255,
+                    255
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "lightGroups": [],
+      "guides": []
+    }
+  ],
+  "defaultWallHeightMm": 2700
+}

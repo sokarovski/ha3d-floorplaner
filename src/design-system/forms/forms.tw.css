@@ -1,0 +1,90 @@
+@layer components {
+  [data-schema-form] {
+    @apply flex flex-col gap-3;
+  }
+
+  [data-schema-form][data-schema-form-live] {
+    @apply gap-1;
+  }
+
+  [data-schema-fields] {
+    @apply flex flex-col gap-3;
+  }
+
+  [data-schema-form][data-schema-form-live] [data-schema-fields] {
+    @apply gap-2 py-1;
+  }
+
+  /* Property groups: sentence-case titles over an inset section, 24 px apart, no dividers (Phase 5.6/5.7). */
+  [data-property-group] {
+    @apply mt-5 first:mt-0;
+  }
+
+  [data-property-group-heading] {
+    @apply m-0;
+  }
+
+  /* 14 px (Phase 19.7): one step above the 13 px section titles of composite editors inside the group. */
+  [data-property-group-trigger] {
+    @apply flex h-8 w-full cursor-default items-center gap-1.5 text-sm font-semibold text-foreground outline-none;
+  }
+
+  [data-property-group-trigger] [data-icon] {
+    @apply text-muted;
+  }
+
+  [data-property-group-trigger][data-focus-visible] {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-property-group-trigger] [data-icon] {
+    @apply transition-transform;
+  }
+
+  [data-property-group][data-expanded] [data-property-group-trigger] [data-icon] {
+    @apply rotate-90;
+  }
+
+  /* No background or inner margin (owner): the fields use the panel's full width; space and the group
+     title separate groups. */
+  [data-property-group-panel] {
+    @apply flex flex-col gap-3 pt-1;
+  }
+
+  [data-property-group-panel][aria-hidden="true"] {
+    @apply hidden;
+  }
+
+  /* Two inline-labelled fields in one row (Phase 5.8): their titles on the left, the fields side by side. */
+  [data-schema-field-pair] {
+    @apply grid grid-cols-[7rem_minmax(0,1fr)] items-start gap-x-3;
+  }
+
+  [data-schema-field-pair-label] {
+    @apply truncate pt-2 text-[13px] text-muted;
+  }
+
+  [data-schema-field-pair-fields] {
+    @apply grid min-w-0 grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))] gap-2;
+  }
+
+  [data-property-panel] {
+    @apply flex flex-col gap-2;
+  }
+
+  [data-property-panel-subtitle] {
+    @apply text-[13px] text-muted;
+  }
+
+  [data-property-panel-empty] {
+    @apply py-6 text-center text-sm text-muted;
+  }
+
+  [data-form-popup-description] {
+    @apply mb-3 text-sm text-muted;
+  }
+
+  [data-form-popup-banner] {
+    @apply mt-3;
+  }
+}

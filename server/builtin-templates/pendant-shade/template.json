@@ -1,0 +1,14 @@
+{
+  "id": "pendant-shade",
+  "label": "Shade Pendant Light",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Lighting",
+  "tags": ["pendant", "drum", "shade", "ceiling", "light"],
+  "product": {
+    "name": "Drum shade pendant light",
+    "description": "A fabric drum shade on a thin suspension. Drop and diameter are adjustable."
+  }
+}

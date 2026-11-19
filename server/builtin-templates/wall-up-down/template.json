@@ -1,0 +1,14 @@
+{
+  "id": "wall-up-down",
+  "label": "Up-Down Wall Light",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Lighting",
+  "tags": ["outdoor", "exterior", "wall", "sconce", "up down", "cylinder", "facade", "light"],
+  "product": {
+    "name": "Outdoor up/down wall light",
+    "description": "A metal cylinder that washes the facade above and below it. Mounts on the outside of a wall."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "shower-rail",
+  "label": "Shower Rail with Rain Head",
+  "kind": "shower",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Bathroom",
+  "tags": ["shower", "rail", "mixer", "rain head", "handset"],
+  "product": {
+    "description": "Wall rail with a lower mixer, a rain arm and square head at the top, and a hose handset."
+  }
+}

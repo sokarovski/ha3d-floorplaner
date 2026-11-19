@@ -1,0 +1,14 @@
+{
+  "id": "tall-cabinet-doors",
+  "label": "Tall Cabinet with Doors",
+  "kind": "cabinet",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Storage",
+  "tags": ["tall", "cabinet", "bathroom", "doors", "basket"],
+  "product": {
+    "name": "Tall cabinet with two lower and two upper doors",
+    "description": "A tall narrow cabinet with a basket in the open compartment between the lower and upper doors."
+  }
+}

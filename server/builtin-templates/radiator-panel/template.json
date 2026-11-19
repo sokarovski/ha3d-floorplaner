@@ -1,0 +1,13 @@
+{
+  "id": "radiator-panel",
+  "label": "Panel Radiator",
+  "kind": "radiator",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Heating and cooling",
+  "tags": ["radiator", "heating", "panel", "convector"],
+  "product": {
+    "description": "Vertical-panel radiator with a top grille; the number of 100 mm panels follows the width."
+  }
+}

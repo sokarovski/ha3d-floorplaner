@@ -1,0 +1,38 @@
+@layer components {
+  /* A surface region (Phase 5.6): no borders; its title is sentence case in the foreground colour. */
+  [data-panel] {
+    @apply flex min-h-0 flex-1 flex-col bg-surface text-foreground;
+  }
+
+  [data-panel-header] {
+    @apply flex h-11 shrink-0 items-center justify-between gap-2 px-4 pt-1;
+  }
+
+  [data-panel-title] {
+    @apply flex min-w-0 items-center gap-2 text-[15px] font-semibold text-foreground;
+  }
+
+  [data-panel-title] [data-icon] {
+    @apply shrink-0 text-muted;
+  }
+
+  [data-panel-title-text] {
+    @apply truncate;
+  }
+
+  [data-panel-actions] {
+    @apply flex items-center gap-1;
+  }
+
+  [data-panel-body] {
+    @apply min-h-0 flex-1;
+  }
+
+  [data-panel-body][data-panel-scroll] {
+    @apply overflow-auto;
+  }
+
+  [data-panel-body][data-panel-padded] {
+    @apply px-4 pt-1 pb-4;
+  }
+}

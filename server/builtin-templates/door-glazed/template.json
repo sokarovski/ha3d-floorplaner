@@ -1,0 +1,14 @@
+{
+  "id": "door-glazed",
+  "label": "Glazed Door",
+  "kind": "door",
+  "contract": "Wallable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Openings",
+  "tags": ["door", "glass", "glazed", "aluminium", "utility", "blind", "venetian blind"],
+  "product": {
+    "description": "Hinged door with a full-height glass leaf in a slim frame (aluminium or timber), lever or long bar handles, and an optional venetian blind on the leaf.",
+    "notes": "Flip left/right for the hinge side and inside/outside for the swing side; the blind is fixed to the leaf and swings with it."
+  }
+}

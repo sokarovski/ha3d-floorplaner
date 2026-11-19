@@ -1,0 +1,108 @@
+@layer components {
+  /* Relative so the floating "AI agent instructions" link (styled in floorBuilder.tw.css) sits at its bottom right. */
+  [data-houses-page] {
+    @apply relative flex h-full min-h-0 flex-col;
+  }
+
+  [data-houses-header] {
+    @apply mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 pt-8 pb-2;
+  }
+
+  [data-houses-title] {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  [data-houses-actions] {
+    @apply flex items-center gap-2;
+  }
+
+  [data-houses-main] {
+    @apply mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col gap-6 overflow-auto px-8 pt-4 pb-8;
+  }
+
+  [data-house-grid] {
+    @apply grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-5;
+  }
+
+  /* Borderless cards on the canvas with a soft lift on hover (Phase 5.10); the menu shows on hover. */
+  [data-house-card] {
+    @apply relative flex min-h-40 flex-col rounded-card bg-surface text-foreground transition-[box-shadow,transform];
+  }
+
+  [data-house-card]:hover {
+    @apply -translate-y-0.5 shadow-floating;
+  }
+
+  [data-house-card][data-house-card-invalid] {
+    @apply bg-warning-surface;
+  }
+
+  [data-house-card-menu] {
+    @apply opacity-0 transition-opacity;
+  }
+
+  [data-house-card]:hover [data-house-card-menu],
+  [data-house-card]:focus-within [data-house-card-menu] {
+    @apply opacity-100;
+  }
+
+  [data-house-card][data-house-card-skeleton] {
+    @apply animate-pulse bg-hover;
+  }
+
+  [data-house-card-link] {
+    @apply flex flex-1 flex-col gap-1 rounded-card p-5 pr-12 outline-none;
+  }
+
+  [data-house-card-link]:focus-visible {
+    @apply outline-2 outline-offset-2 outline-focus;
+  }
+
+  [data-house-card-icon] {
+    @apply mb-3 inline-flex size-10 items-center justify-center rounded-control bg-selection text-on-selection;
+  }
+
+  [data-house-card][data-house-card-invalid] [data-house-card-icon] {
+    @apply bg-warning-surface text-warning;
+  }
+
+  [data-house-card-name] {
+    @apply truncate text-[17px] font-semibold;
+  }
+
+  [data-house-card-meta] {
+    @apply text-[13px] text-muted;
+  }
+
+  [data-house-card-menu] {
+    @apply absolute top-3 right-3;
+  }
+
+  [data-houses-empty] {
+    @apply flex flex-col items-center gap-3 py-16 text-muted;
+  }
+
+  [data-trash-table] {
+    @apply w-full border-collapse text-left text-sm;
+  }
+
+  [data-trash-table] th {
+    @apply px-3 py-2 text-[13px] font-semibold text-muted;
+  }
+
+  [data-trash-table] td {
+    @apply bg-surface px-3 py-3 first:rounded-l-control last:rounded-r-control;
+  }
+
+  [data-trash-table] {
+    @apply border-separate border-spacing-y-1;
+  }
+
+  [data-trash-actions] {
+    @apply flex justify-end gap-2;
+  }
+
+  [data-visually-hidden] {
+    @apply sr-only;
+  }
+}

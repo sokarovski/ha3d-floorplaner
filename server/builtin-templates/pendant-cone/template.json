@@ -1,0 +1,14 @@
+{
+  "id": "pendant-cone",
+  "label": "Cone Pendant Light",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Lighting",
+  "tags": ["pendant", "cone", "ceiling", "light"],
+  "product": {
+    "name": "Cone pendant light",
+    "description": "A metal cone shade on a cord with a wooden collar. Drop and diameter are adjustable."
+  }
+}

@@ -1,0 +1,28 @@
+# Home Assistant app configuration (spec/home-assistant/publishing.md#app-packaging-and-ingress).
+# No `image` key: the Supervisor builds the Dockerfile on the device. `version` equals package.json (npm run app:check).
+name: Homeplan
+version: "0.1.0"
+slug: homeplan
+description: Draw your home in 3D and show it, with live devices, in Home Assistant.
+url: https://github.com/sokarovski/ha3d-floorplaner
+arch:
+  - amd64
+  - aarch64
+# Docker's init (tini) runs as PID 1 and forwards SIGTERM to the Node server, which shuts down gracefully.
+init: true
+startup: application
+boot: auto
+# The builder opens only in the HA sidebar; no host port is mapped.
+ingress: true
+ingress_port: 8099
+# Template and image uploads can be large; stream them instead of buffering in the Supervisor.
+ingress_stream: true
+panel_icon: mdi:floor-plan
+panel_title: Homeplan
+# Supervisor discovery for the `homeplan` integration (POST /discovery, GET /addons/self/info).
+hassio_api: true
+discovery:
+  - homeplan
+# /data (houses, per-house Git history, preferences) is the app's private storage and is part of HA backups.
+backup: hot
+timeout: 20

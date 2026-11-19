@@ -1,0 +1,14 @@
+{
+  "id": "shoe-cabinet",
+  "label": "Shoe Cabinet",
+  "kind": "cabinet",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Storage",
+  "tags": ["shoe", "cabinet", "hallway", "low", "doors"],
+  "product": {
+    "name": "Low shoe cabinet with doors",
+    "description": "A low cabinet whose front is divided into equal doors with bar handles."
+  }
+}

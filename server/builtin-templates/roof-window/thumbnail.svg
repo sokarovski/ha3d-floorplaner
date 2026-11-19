@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Roof window">
+<g stroke-width="0.6" stroke-linejoin="round">
+<polygon points="56.6,236.0 63.9,236.0 63.9,20.0" fill="rgb(199,199,199)" stroke="rgb(199,199,199)"/>
+<polygon points="56.6,236.0 63.9,20.0 56.6,20.0" fill="rgb(199,199,199)" stroke="rgb(199,199,199)"/>
+<polygon points="192.1,236.0 199.4,236.0 199.4,20.0" fill="rgb(199,199,199)" stroke="rgb(199,199,199)"/>
+<polygon points="192.1,236.0 199.4,20.0 192.1,20.0" fill="rgb(199,199,199)" stroke="rgb(199,199,199)"/>
+<polygon points="63.9,236.0 192.1,236.0 192.1,228.7" fill="rgb(199,199,199)" stroke="rgb(199,199,199)"/>
+<polygon points="63.9,236.0 192.1,228.7 63.9,228.7" fill="rgb(199,199,199)" stroke="rgb(199,199,199)"/>
+<polygon points="63.9,27.3 192.1,27.3 192.1,20.0" fill="rgb(199,199,199)" stroke="rgb(199,199,199)"/>
+<polygon points="63.9,27.3 192.1,20.0 63.9,20.0" fill="rgb(199,199,199)" stroke="rgb(199,199,199)"/>
+<polygon points="69.4,223.2 186.6,223.2 186.6,32.8" fill="rgb(203,203,203)" stroke="rgb(203,203,203)" fill-opacity="0.25" stroke-opacity="0"/>
+<polygon points="69.4,223.2 186.6,32.8 69.4,32.8" fill="rgb(203,203,203)" stroke="rgb(203,203,203)" fill-opacity="0.25" stroke-opacity="0"/>
+<polygon points="56.6,236.0 69.4,236.0 69.4,20.0" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="56.6,236.0 69.4,20.0 56.6,20.0" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="186.6,236.0 199.4,236.0 199.4,20.0" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="186.6,236.0 199.4,20.0 186.6,20.0" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="69.4,236.0 186.6,236.0 186.6,223.2" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="69.4,236.0 186.6,223.2 69.4,223.2" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="69.4,32.8 186.6,32.8 186.6,20.0" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="69.4,32.8 186.6,20.0 69.4,20.0" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+</g>
+</svg>

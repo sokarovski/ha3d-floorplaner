@@ -1,0 +1,13 @@
+{
+  "id": "fridge-freezer-column",
+  "label": "Fridge Freezer Column",
+  "kind": "kitchen",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Kitchen",
+  "tags": ["kitchen", "fridge", "freezer", "appliance", "refrigerator"],
+  "product": {
+    "description": "70 cm freestanding fridge-freezer, 1870 mm, top freezer, water dispenser; flip for the handle side."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "wall-lantern",
+  "label": "Wall Lantern",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Lighting",
+  "tags": ["outdoor", "exterior", "wall", "lantern", "coach light", "porch", "light"],
+  "product": {
+    "name": "Outdoor wall lantern",
+    "description": "A classic glazed coach lantern on a wall arm, for porches and entrances. Mounts on the outside of a wall."
+  }
+}

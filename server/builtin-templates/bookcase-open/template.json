@@ -1,0 +1,14 @@
+{
+  "id": "bookcase-open",
+  "label": "Open Bookcase",
+  "kind": "bookcase",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Storage",
+  "tags": ["bookcase", "shelf", "shelves", "open", "low"],
+  "product": {
+    "name": "Open bookcase",
+    "description": "An open shelving unit with adjustable height, width, and number of shelves; books stand on the bottom shelf."
+  }
+}

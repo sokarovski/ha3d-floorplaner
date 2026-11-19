@@ -1,0 +1,14 @@
+{
+  "id": "interior-door",
+  "label": "Hinged Interior Door",
+  "kind": "door",
+  "contract": "Wallable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Openings",
+  "tags": ["door", "interior", "hinged", "flush", "glazed", "oak", "wenge"],
+  "product": {
+    "description": "Hinged interior door in a lining that fits the wall depth: flat, fully glazed, or half-glazed leaf, with lever handles on both sides.",
+    "notes": "Flip left/right for the hinge side and inside/outside for the swing side; the open angle turns the leaf about its hinges."
+  }
+}

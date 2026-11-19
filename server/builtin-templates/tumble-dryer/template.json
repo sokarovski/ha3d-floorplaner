@@ -1,0 +1,16 @@
+{
+  "id": "tumble-dryer",
+  "label": "Tumble Dryer",
+  "kind": "tumbleDryer",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Appliances",
+  "tags": ["tumble dryer", "dryer", "laundry", "appliance", "beko"],
+  "product": {
+    "manufacturer": "Beko",
+    "name": "Tumble dryer",
+    "code": "DSX83410",
+    "description": "Free-standing 60 cm front-loading tumble dryer with a round door and a water tank drawer."
+  }
+}

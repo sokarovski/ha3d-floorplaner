@@ -1,0 +1,14 @@
+{
+  "id": "bed-slat-double",
+  "label": "Slat Bed",
+  "kind": "bed",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Beds",
+  "tags": ["bed", "double", "slat", "bedroom", "mattress"],
+  "product": {
+    "name": "Slat bed with headboard",
+    "description": "A wooden slat bed with headboard slats, a mattress, a blanket, and two pillows. Standard sizes 120, 140, 160, and 180 cm wide."
+  }
+}

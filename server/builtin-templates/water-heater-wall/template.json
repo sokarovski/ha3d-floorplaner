@@ -1,0 +1,13 @@
+{
+  "id": "water-heater-wall",
+  "label": "Wall-Mounted Water Heater",
+  "kind": "waterHeater",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Bathroom",
+  "tags": ["water heater", "boiler", "tank", "wall", "hot water", "lcd"],
+  "product": {
+    "description": "Rounded wall-mounted electric water heater with a small LCD panel low on the front and two connections below."
+  }
+}

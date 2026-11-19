@@ -1,0 +1,55 @@
+@layer components {
+  /* relative: a visually hidden label (sr-only, absolutely positioned) stays inside its field. Without it the label
+     is placed against the page and made the editor page scrollable, so opening a menu slid it out of view
+     (Phase 7.6 fix). */
+  [data-form-field] {
+    @apply relative flex flex-col gap-1.5;
+  }
+
+  [data-form-field][data-form-field-inline] {
+    @apply grid grid-cols-[7rem_minmax(0,1fr)] items-start gap-x-3 gap-y-1;
+  }
+
+  [data-form-field-label] {
+    @apply text-[13px] text-muted;
+  }
+
+  [data-form-field][data-form-field-inline] > [data-form-field-label] {
+    @apply truncate pt-2;
+  }
+
+  /* Section (Phase 19.7): a composite editor's title (a roof's Top / Underside / Sides material) is a 13 px
+     semibold sentence-case heading in foreground with space above, so stacked sections read as separate
+     blocks; group headers (14 px, chevron) stay above it. Space, not lines (Phase 5.6). */
+  [data-form-field][data-form-field-section] {
+    @apply gap-2 not-first:mt-3;
+  }
+
+  [data-form-field][data-form-field-section] > [data-form-field-label] {
+    @apply pt-1 text-[13px] font-semibold text-foreground;
+  }
+
+  [data-form-field-label][data-form-field-label-hidden] {
+    @apply sr-only;
+  }
+
+  [data-form-field-required] {
+    @apply text-danger;
+  }
+
+  [data-form-field-control] {
+    @apply flex min-w-0 flex-col gap-1;
+  }
+
+  [data-form-field-hint] {
+    @apply font-mono text-xs text-muted tabular-nums;
+  }
+
+  [data-form-field-description] {
+    @apply text-xs text-muted;
+  }
+
+  [data-form-field-error] {
+    @apply text-xs text-danger;
+  }
+}

@@ -1,0 +1,42 @@
+@layer components {
+  /* A floating rounded rail (Phase 5.6): surface and shadow, no border. */
+  [data-toolbox] {
+    @apply flex shrink-0 gap-1 rounded-2xl bg-surface p-1.5 text-foreground shadow-floating;
+  }
+
+  [data-toolbox-tools],
+  [data-toolbox-footer] {
+    @apply flex gap-1;
+  }
+
+  [data-toolbox][data-toolbox-vertical] {
+    @apply min-h-0 w-14 shrink flex-col items-center;
+  }
+
+  /* The tools scroll when the rail is short; the footer stays pinned at the bottom. */
+  [data-toolbox][data-toolbox-vertical] [data-toolbox-tools] {
+    @apply min-h-0 w-full flex-col items-center overflow-y-auto;
+    scrollbar-width: none;
+  }
+
+  [data-toolbox][data-toolbox-vertical] [data-toolbox-footer] {
+    @apply w-full shrink-0 flex-col items-center;
+  }
+
+  [data-toolbox][data-toolbox-horizontal],
+  [data-toolbox][data-toolbox-horizontal] [data-toolbox-tools] {
+    @apply w-full flex-row items-center;
+  }
+
+  [data-toolbox][data-toolbox-horizontal] [data-toolbox-footer] {
+    @apply flex-row items-center;
+  }
+
+  [data-toolbox-separator] {
+    @apply my-1 h-px w-6 shrink-0 bg-border;
+  }
+
+  [data-toolbox][data-toolbox-horizontal] [data-toolbox-separator] {
+    @apply mx-1 my-0 h-6 w-px;
+  }
+}

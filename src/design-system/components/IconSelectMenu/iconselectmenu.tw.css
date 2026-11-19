@@ -1,0 +1,39 @@
+@layer components {
+  /* The trigger looks like an IconButton with a small chevron: the current choice's icon, then the menu. */
+  [data-icon-select-menu] {
+    @apply inline-flex h-9 shrink-0 cursor-default items-center justify-center gap-0.5 rounded-control bg-transparent pr-1 pl-2 text-foreground transition-[background-color,box-shadow] outline-none;
+  }
+
+  [data-icon-select-menu][data-hovered] {
+    box-shadow: inset 0 0 0 999px var(--ui-color-hover);
+  }
+
+  [data-icon-select-menu][data-pressed] {
+    box-shadow: inset 0 0 0 999px var(--ui-color-pressed);
+  }
+
+  [data-icon-select-menu][data-focus-visible] {
+    @apply outline-2 outline-offset-1 outline-focus;
+  }
+
+  /* "Active": the same tonal fill as a secondary IconButton (a toggle that is on). */
+  [data-icon-select-menu][data-icon-select-menu-active] {
+    @apply bg-selection text-on-selection;
+  }
+
+  [data-icon-select-menu-chevron] {
+    @apply inline-flex text-muted;
+  }
+
+  [data-icon-select-menu][data-icon-select-menu-active] [data-icon-select-menu-chevron] {
+    @apply text-on-selection;
+  }
+
+  [data-icon-select-menu-check] {
+    @apply inline-flex size-4 items-center justify-center text-primary;
+  }
+
+  [data-icon-select-menu-separator] {
+    @apply mx-1 my-1.5 h-px bg-pressed;
+  }
+}

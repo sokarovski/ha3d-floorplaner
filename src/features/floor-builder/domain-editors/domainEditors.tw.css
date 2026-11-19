@@ -1,0 +1,159 @@
+@layer components {
+  /* Its fields sit directly in the property group's section, like every other group (owner, Phase 5
+     follow-up): no box of its own. */
+  [data-material-editor] {
+    @apply flex flex-col gap-3;
+  }
+
+  [data-material-editor-header] {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  [data-material-editor-swatch] {
+    @apply text-[13px] text-muted;
+  }
+
+  /* Two rows (owner): the current texture, then the button to change it. */
+  [data-image-editor] {
+    @apply flex flex-col items-start gap-2;
+  }
+
+  [data-image-editor-current] {
+    @apply flex min-w-0 items-center gap-2 text-sm;
+  }
+
+  [data-image-editor-none] {
+    @apply text-sm text-muted;
+  }
+
+  [data-image-editor-thumb] {
+    @apply size-9 shrink-0 rounded-control object-cover shadow-[inset_0_0_0_1px_rgb(0_0_0/8%)];
+  }
+
+  [data-image-picker-heading] {
+    @apply mb-2 text-sm font-semibold text-foreground not-first:mt-5;
+  }
+
+  [data-image-picker-grid] {
+    @apply grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-3;
+  }
+
+  [data-image-picker-item] {
+    @apply flex flex-col gap-1.5 rounded-card bg-canvas p-2 text-left text-sm text-foreground outline-none;
+  }
+
+  [data-image-picker-item]:hover {
+    @apply bg-hover;
+  }
+
+  [data-image-picker-item]:focus-visible {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-image-picker-item][aria-selected="true"] {
+    @apply bg-selection ring-2 ring-primary;
+  }
+
+  [data-image-picker-thumb] {
+    @apply aspect-square w-full rounded-control object-cover;
+  }
+
+  [data-image-picker-name] {
+    @apply truncate;
+  }
+
+  [data-image-picker-empty] {
+    @apply py-6 text-center text-muted;
+  }
+}
+
+@layer components {
+  [data-location-editor] {
+    @apply flex flex-col gap-3;
+  }
+
+  [data-location-hint] {
+    @apply text-xs text-muted;
+  }
+}
+
+@layer components {
+  [data-template-thumb] {
+    @apply bg-surface object-contain p-2;
+  }
+
+  [data-template-thumb-empty] {
+    @apply aspect-square w-full rounded bg-hover;
+  }
+
+  [data-template-picker-bar] {
+    @apply sticky top-0 z-10 -mx-6 mb-3 flex flex-wrap items-center gap-3 bg-surface-raised px-6 pt-1 pb-3;
+  }
+
+  [data-template-picker-bar] > [data-input] {
+    @apply max-w-md min-w-60 flex-1;
+  }
+
+  [data-template-picker-sources] {
+    @apply flex gap-1;
+  }
+
+  [data-template-picker-count] {
+    @apply ml-auto text-sm text-muted;
+  }
+
+  /* Categories the listed objects declare (Phase 9.1): filter chips with a count each, All first. */
+  [data-template-picker-categories] {
+    @apply mb-3 flex flex-wrap gap-1.5;
+  }
+
+  [data-template-picker-category] {
+    @apply inline-flex h-8 cursor-default items-center gap-1.5 rounded-full bg-input px-3 text-sm text-foreground outline-none;
+  }
+
+  [data-template-picker-category][data-hovered] {
+    @apply bg-hover;
+  }
+
+  [data-template-picker-category][data-selected] {
+    @apply bg-selection text-on-selection;
+  }
+
+  [data-template-picker-category][data-focus-visible] {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-template-picker-category-count] {
+    @apply font-mono text-xs text-muted tabular-nums;
+  }
+
+  [data-template-picker-category][data-selected] [data-template-picker-category-count] {
+    @apply text-on-selection;
+  }
+
+  [data-template-picker-group] + [data-template-picker-group] {
+    @apply mt-5;
+  }
+
+  [data-template-picker-group-title] {
+    @apply mb-2 text-sm font-semibold text-foreground;
+  }
+
+  [data-image-picker-grid][data-template-picker-grid] {
+    @apply grid-cols-[repeat(auto-fill,minmax(10rem,1fr))];
+  }
+
+  [data-template-meta] {
+    @apply text-xs text-muted;
+  }
+}
+
+@layer components {
+  [data-template-version-editor] {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  [data-template-version-label] {
+    @apply min-w-0 flex-1 truncate text-sm;
+  }
+}

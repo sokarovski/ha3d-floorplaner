@@ -1,0 +1,14 @@
+{
+  "id": "tree-ornamental",
+  "label": "Ornamental Tree",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["outdoor", "garden", "tree", "ornamental", "japanese maple", "cherry", "blossom", "small tree"],
+  "product": {
+    "name": "Ornamental Tree",
+    "description": "A small ornamental tree with a layered umbrella crown: Japanese maple or flowering cherry."
+  }
+}

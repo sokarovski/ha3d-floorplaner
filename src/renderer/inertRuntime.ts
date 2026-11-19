@@ -1,0 +1,55 @@
+// The runtime returned when WebGL2 is unavailable: every call is a safe no-op so hosts need no branches.
+import type { CameraSnapshot, ViewportRuntime } from "./runtimeTypes";
+
+const emptySnapshot: CameraSnapshot = {
+  mode: "top",
+  position: { x: 0, y: 0, z: 0 },
+  target: { x: 0, y: 0, z: 0 },
+  up: { x: 0, y: 1, z: 0 },
+  fovDeg: null,
+  orthoHeightM: null,
+  aspect: 1,
+};
+
+const noop = (): void => undefined;
+
+export const createInertRuntime = (reason: string): ViewportRuntime => ({
+  setScene: noop,
+  setViewMode: noop,
+  setNavigation: noop,
+  setPrimaryDrag: noop,
+  stopCameraFollow: () => false,
+  setLightsFocus: noop,
+  setLightsOn: noop,
+  setEffectsOn: noop,
+  setVisibility: noop,
+  setLightPinsVisible: noop,
+  setLightFixturesVisible: noop,
+  setSurfaceTexturesVisible: noop,
+  setViewInsets: noop,
+  instanceBounds: () => null,
+  cameraPreset: noop,
+  setFaceView: noop,
+  facePointAt: () => null,
+  frame: noop,
+  setSelection: noop,
+  setIsolation: noop,
+  setWallsVisible: noop,
+  lookFromAxis: noop,
+  setHelpers: noop,
+  setOverlay: noop,
+  setAreaPreviewTransform: noop,
+  setHouseOverview: noop,
+  setFloorPreviewOffsets: noop,
+  setRoofView: noop,
+  setSun: noop,
+  pick: () => null,
+  planPointAt: () => null,
+  screenPointOf: () => null,
+  heightOnVertical: () => null,
+  worldUnitsPerPixel: () => 1,
+  cameraSnapshot: () => emptySnapshot,
+  exportRenderScene: () => Promise.reject(new Error(`The 3D viewport is unavailable: ${reason}`)),
+  exportPng: () => Promise.reject(new Error(`The 3D viewport is unavailable: ${reason}`)),
+  dispose: noop,
+});

@@ -1,0 +1,13 @@
+{
+  "id": "kitchen-base-cabinet",
+  "label": "Base Cabinet",
+  "kind": "kitchen",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Kitchen",
+  "tags": ["kitchen", "cabinet", "base unit", "worktop", "door", "drawer"],
+  "product": {
+    "description": "Fitted kitchen base unit with plinth, worktop, and aluminium channel-rail handles; one door with a top drawer, two doors with a drawer, or one tall door."
+  }
+}

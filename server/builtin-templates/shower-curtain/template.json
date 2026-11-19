@@ -1,0 +1,13 @@
+{
+  "id": "shower-curtain",
+  "label": "Shower Curtain",
+  "kind": "curtain",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Bathroom",
+  "tags": ["curtain", "shower", "fabric", "gathered", "rod"],
+  "product": {
+    "description": "Gathered fabric shower curtain on a rod, with hooks; the folds follow the width."
+  }
+}

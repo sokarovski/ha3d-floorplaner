@@ -1,0 +1,60 @@
+@layer components {
+  /* Filled, not outlined (Phase 5.6): a quiet fill, and a 2 px focus ring while editing. */
+  [data-input] {
+    @apply flex h-9 min-w-0 items-center rounded-control bg-input text-foreground transition-[box-shadow];
+  }
+
+  [data-input]:focus-within {
+    @apply outline-2 -outline-offset-2 outline-focus;
+  }
+
+  [data-input][data-input-invalid] {
+    @apply outline-2 -outline-offset-2 outline-danger;
+  }
+
+  [data-input][data-input-disabled] {
+    @apply opacity-60;
+  }
+
+  [data-input-control] {
+    @apply h-full w-full min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-disabled-foreground;
+  }
+
+  [data-input-control]:read-only {
+    @apply text-muted;
+  }
+
+  [data-input-control][data-input-mono] {
+    @apply font-mono tabular-nums;
+  }
+
+  [data-input-control][data-input-end] {
+    @apply text-right;
+  }
+
+  [data-input-suffix] {
+    @apply pr-3 text-xs text-muted;
+  }
+
+  /* Adornments inside the field (Phase 5.8): a short label or icon before, a keycap or icon after. */
+  [data-input-start] {
+    @apply flex shrink-0 cursor-text items-center pl-3 text-xs font-semibold text-muted select-none;
+  }
+
+  [data-input-start] + [data-input-control] {
+    @apply pl-2;
+  }
+
+  [data-input-end-slot] {
+    @apply flex shrink-0 cursor-text items-center pr-2 select-none;
+  }
+
+  /* Axis-coloured inline labels (X red, Y green), matching the inference cues and the view gizmo. */
+  [data-input-start] [data-axis="x"] {
+    @apply text-axis-x;
+  }
+
+  [data-input-start] [data-axis="y"] {
+    @apply text-axis-y;
+  }
+}

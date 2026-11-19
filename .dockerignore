@@ -1,0 +1,29 @@
+# Build context for the Home Assistant app image (Dockerfile). Only source needed to build and run the server and
+# the built clients goes in; private data, history, planning notes and credentials never do.
+.git
+.gitignore
+.github
+.claude
+.vscode
+.idea
+.DS_Store
+**/.DS_Store
+*.log
+.env
+.env.*
+.homeplan-data
+node_modules
+dist
+# The integration's sources stay (the viewer build checks its version); its generated files do not.
+custom_components/homeplan/frontend
+custom_components/homeplan/schemas.json
+custom_components/homeplan/THIRD_PARTY_NOTICES.md
+hacs.json
+packaging
+__pycache__
+**/__pycache__
+.mypy_cache
+.ruff_cache
+*.zip
+*.sha256
+spec

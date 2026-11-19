@@ -1,0 +1,9 @@
+{
+  "id": "staircase-straight",
+  "label": "Straight Staircase",
+  "kind": "staircase",
+  "contract": "Staircasable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Stairs"
+}

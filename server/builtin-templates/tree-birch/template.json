@@ -1,0 +1,14 @@
+{
+  "id": "tree-birch",
+  "label": "Birch",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["outdoor", "garden", "tree", "birch", "silver birch", "deciduous", "slender"],
+  "product": {
+    "name": "Birch",
+    "description": "A slender silver birch: white bark with dark bands, an airy upright crown."
+  }
+}

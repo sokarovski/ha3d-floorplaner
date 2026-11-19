@@ -1,0 +1,14 @@
+{
+  "id": "drawer-shelf",
+  "label": "Low Drawer Shelf",
+  "kind": "cabinet",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Storage",
+  "tags": ["drawers", "shelf", "low", "ledge", "cabinet"],
+  "product": {
+    "name": "Low drawer cabinet with ledge",
+    "description": "A 21 cm high row of push-to-open drawers under a continuous ledge that is deeper at the back."
+  }
+}

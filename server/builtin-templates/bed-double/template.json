@@ -1,0 +1,8 @@
+{
+  "id": "bed-double",
+  "label": "Double Bed",
+  "kind": "bed",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg"
+}

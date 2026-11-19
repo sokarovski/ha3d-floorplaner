@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Desk">
+<g stroke-width="0.6" stroke-linejoin="round">
+<polygon points="20.0,87.4 236.0,87.4 236.0,83.6" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="20.0,87.4 236.0,83.6 20.0,83.6" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="20.0,172.4 24.8,172.4 24.8,87.4" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="20.0,172.4 24.8,87.4 20.0,87.4" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="231.2,172.4 236.0,172.4 236.0,87.4" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="231.2,172.4 236.0,87.4 231.2,87.4" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+</g>
+</svg>

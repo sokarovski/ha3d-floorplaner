@@ -1,0 +1,400 @@
+/* The showcase website's single Tailwind entry. It composes the builder's authoritative tokens and the few
+   design-system component styles the page uses, without the application stylesheet (editor, workbench and
+   feature styles). Utilities are only used through @apply, so no source files are scanned. */
+@import "tailwindcss" source(none);
+@import "../../src/design-system/styles/tokens.tw.css";
+@import "../../src/design-system/styles/base.tw.css";
+@import "../../src/design-system/components/Button/button.tw.css";
+@import "../../src/design-system/components/Icon/icon.tw.css";
+@import "../../src/design-system/components/Spinner/spinner.tw.css";
+
+@layer base {
+  /* A scrolling document rather than the builder's full-height app shell. */
+  html,
+  body,
+  #root {
+    @apply h-auto min-h-full;
+  }
+
+  html {
+    scroll-padding-top: 5rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    @apply text-base leading-relaxed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold tracking-tight text-foreground;
+    text-wrap: balance;
+  }
+
+  a {
+    @apply rounded-sm text-primary underline decoration-1 underline-offset-2;
+  }
+
+  a:hover {
+    @apply text-primary-hover;
+  }
+
+  code {
+    @apply rounded bg-input px-1 py-0.5 font-mono text-[0.9em];
+  }
+
+  main:focus {
+    outline: none;
+  }
+}
+
+@layer components {
+  /* Header */
+  [data-site-header] {
+    @apply sticky top-0 z-(--z-menu) bg-canvas/90 backdrop-blur;
+  }
+
+  [data-site-header-inner] {
+    @apply mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-6;
+  }
+
+  [data-site-brand] {
+    @apply flex items-center gap-2 text-base font-semibold text-foreground no-underline;
+  }
+
+  [data-site-brand] img {
+    @apply size-8;
+  }
+
+  [data-site-nav] {
+    @apply flex flex-wrap items-center gap-x-1 gap-y-1 text-sm;
+  }
+
+  [data-site-nav] a {
+    @apply rounded-control px-3 py-1.5 font-medium text-foreground no-underline;
+  }
+
+  [data-site-nav] a:hover {
+    box-shadow: inset 0 0 0 999px var(--ui-color-hover);
+  }
+
+  [data-site-skip-link] {
+    @apply absolute top-2 left-2 -translate-y-20 rounded-control bg-primary px-4 py-2 text-on-primary no-underline;
+  }
+
+  [data-site-skip-link]:focus-visible {
+    @apply translate-y-0 text-on-primary;
+  }
+
+  /* Link styled as the builder's button (the shared Button is an action, not a link). */
+  [data-site-link-button] {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-control px-5 text-sm font-medium whitespace-nowrap no-underline transition-[background-color,box-shadow];
+  }
+
+  [data-site-link-button]:hover {
+    box-shadow: inset 0 0 0 999px var(--ui-color-hover);
+  }
+
+  [data-site-link-button]:active {
+    box-shadow: inset 0 0 0 999px var(--ui-color-pressed);
+  }
+
+  [data-site-link-button][data-site-link-button-primary] {
+    @apply bg-primary text-on-primary;
+  }
+
+  [data-site-link-button][data-site-link-button-primary]:hover {
+    @apply bg-primary-hover text-on-primary shadow-none;
+  }
+
+  [data-site-link-button][data-site-link-button-secondary] {
+    @apply bg-selection text-on-selection;
+  }
+
+  /* Introduction */
+  [data-site-intro-inner] {
+    @apply mx-auto grid max-w-6xl items-center gap-10 px-4 pt-10 pb-16 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:pt-16;
+  }
+
+  [data-site-intro-text] {
+    @apply flex flex-col gap-5;
+  }
+
+  [data-site-intro-logo] {
+    @apply size-20 sm:size-24;
+  }
+
+  [data-site-intro] h1 {
+    @apply text-4xl leading-tight sm:text-5xl;
+  }
+
+  [data-site-actions] {
+    @apply flex flex-wrap gap-3;
+  }
+
+  [data-site-lead] {
+    @apply max-w-3xl text-lg text-muted;
+  }
+
+  /* Sections */
+  [data-site-section] {
+    @apply py-16 sm:py-20;
+  }
+
+  [data-site-section][data-site-section-surface] {
+    @apply bg-surface;
+  }
+
+  [data-site-section-inner] {
+    @apply mx-auto flex max-w-6xl flex-col gap-10 px-4 sm:px-6;
+  }
+
+  [data-site-section-header] {
+    @apply flex flex-col gap-3;
+  }
+
+  [data-site-section-header] h2 {
+    @apply text-3xl sm:text-4xl;
+  }
+
+  [data-site-grid] {
+    @apply grid gap-4 sm:gap-6;
+  }
+
+  [data-site-grid][data-site-grid-2] {
+    @apply lg:grid-cols-2;
+  }
+
+  [data-site-grid][data-site-grid-3] {
+    @apply md:grid-cols-3;
+  }
+
+  [data-site-split] {
+    @apply grid gap-8 lg:grid-cols-2;
+  }
+
+  [data-site-stack] {
+    @apply flex flex-col gap-6;
+  }
+
+  [data-site-card] {
+    @apply flex flex-col gap-3 rounded-card bg-surface p-6;
+  }
+
+  [data-site-section-surface] [data-site-card] {
+    @apply bg-canvas;
+  }
+
+  [data-site-card] h3,
+  [data-site-prose] h3,
+  [data-site-flow-text] h3 {
+    @apply text-xl;
+  }
+
+  [data-site-card] p,
+  [data-site-prose] p,
+  [data-site-flow-text] p {
+    @apply text-muted;
+  }
+
+  [data-site-card-icon] {
+    @apply inline-flex size-11 items-center justify-center rounded-control bg-selection text-on-selection;
+  }
+
+  [data-site-prose] {
+    @apply flex flex-col gap-2;
+  }
+
+  [data-site-note] {
+    @apply max-w-3xl text-sm text-muted;
+  }
+
+  /* Lists */
+  [data-site-checklist] {
+    @apply grid gap-4 md:grid-cols-2;
+  }
+
+  [data-site-checklist] li {
+    @apply flex items-start gap-3 rounded-card bg-canvas p-5;
+  }
+
+  [data-site-checklist] li [data-icon] {
+    @apply mt-1 size-5 text-primary;
+  }
+
+  [data-site-steps] {
+    @apply flex list-none flex-col gap-4 p-0;
+    counter-reset: site-step;
+  }
+
+  [data-site-steps] > li {
+    @apply relative pl-10;
+    counter-increment: site-step;
+  }
+
+  [data-site-steps] > li::before {
+    @apply absolute top-0 left-0 inline-flex size-7 items-center justify-center rounded-full bg-selection text-sm font-semibold text-on-selection;
+    content: counter(site-step);
+  }
+
+  [data-site-steps] strong {
+    @apply block text-foreground;
+  }
+
+  [data-site-requirement] {
+    @apply rounded-control bg-info-surface px-3 py-2 text-sm text-info;
+  }
+
+  [data-site-install-summary] {
+    @apply text-foreground;
+  }
+
+  [data-site-code] {
+    @apply my-3 overflow-x-auto rounded-control bg-input p-4 font-mono text-sm leading-6 text-foreground;
+  }
+
+  [data-site-code] code {
+    @apply bg-transparent p-0 text-[1em];
+  }
+
+  [data-site-definitions] {
+    @apply grid gap-4 md:grid-cols-2;
+  }
+
+  [data-site-definitions] > div {
+    @apply flex flex-col gap-1 rounded-card bg-canvas p-5;
+  }
+
+  [data-site-definitions] dt {
+    @apply font-semibold text-foreground;
+  }
+
+  [data-site-definitions] dd {
+    @apply text-muted;
+  }
+
+  /* Prompt */
+  [data-site-prompt] {
+    @apply flex flex-col gap-3 rounded-card bg-selection p-6;
+  }
+
+  [data-site-prompt-label] {
+    @apply text-[13px] font-semibold text-on-selection;
+  }
+
+  [data-site-prompt-text] {
+    @apply text-xl font-medium text-on-selection;
+  }
+
+  [data-site-prompt-actions] {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  [data-site-prompt-actions] [data-button][data-button-secondary] {
+    @apply bg-surface text-foreground;
+  }
+
+  [data-site-prompt-status] {
+    @apply text-sm text-on-selection;
+  }
+
+  [data-site-details] {
+    @apply rounded-card bg-surface p-5;
+  }
+
+  [data-site-details] summary {
+    @apply cursor-pointer rounded-sm font-semibold text-foreground;
+  }
+
+  [data-site-details] p {
+    @apply mt-3 text-muted;
+  }
+
+  /* How it works */
+  [data-site-flow] {
+    @apply flex list-none flex-col gap-12 p-0;
+  }
+
+  [data-site-flow-step] {
+    @apply grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-10;
+  }
+
+  [data-site-flow-text] {
+    @apply flex flex-col gap-3;
+  }
+
+  [data-site-flow-number] {
+    @apply inline-flex size-9 items-center justify-center rounded-full bg-primary font-semibold text-on-primary;
+  }
+
+  /* Figures and placeholders */
+  [data-site-figure] {
+    @apply flex flex-col gap-2;
+  }
+
+  [data-site-figure-image] {
+    @apply block h-auto w-full rounded-card shadow-(--shadow-floating);
+  }
+
+  [data-site-placeholder] {
+    @apply flex aspect-16/10 w-full flex-col items-center justify-center gap-2 rounded-card border-2 border-dashed border-border-strong bg-input text-sm font-medium text-muted;
+  }
+
+  [data-site-placeholder][data-site-placeholder-wide] {
+    @apply aspect-16/7;
+  }
+
+  [data-site-subsection] {
+    @apply flex flex-col gap-5 rounded-card bg-canvas p-6 sm:p-8;
+  }
+
+  [data-site-subsection] h3 {
+    @apply text-2xl;
+  }
+
+  [data-site-subsection] > p {
+    @apply max-w-3xl text-muted;
+  }
+
+  [data-site-figure] figcaption {
+    @apply text-sm text-muted;
+  }
+
+  [data-site-figure-note] {
+    @apply italic;
+  }
+
+  [data-site-clip] {
+    @apply relative;
+  }
+
+  [data-site-clip-control] {
+    @apply absolute right-3 bottom-3;
+  }
+
+  /* Footer */
+  [data-site-footer] {
+    @apply bg-canvas py-10 text-sm text-muted;
+  }
+
+  [data-site-footer-inner] {
+    @apply mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:px-6;
+  }
+
+  [data-site-footer-links] {
+    @apply flex flex-wrap gap-x-6 gap-y-2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-site-link-button],
+  [data-button] {
+    transition: none;
+  }
+}

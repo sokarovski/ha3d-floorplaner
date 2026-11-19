@@ -1,0 +1,14 @@
+{
+  "id": "sliding-door-double",
+  "label": "Sliding Balcony Door",
+  "kind": "door",
+  "contract": "Wallable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Openings",
+  "tags": ["door", "sliding", "balcony", "patio", "two leaf", "blind", "venetian blind"],
+  "product": {
+    "description": "Two-leaf sliding door: closed, both leaves sit flush either side of a centre post; opening pops the sliding leaf into the room and slides it in front of the fixed one. Each leaf has a venetian blind that tilts open or closed.",
+    "notes": "Flip left/right to slide the other leaf; the blinds are fixed to the leaves and move with them."
+  }
+}

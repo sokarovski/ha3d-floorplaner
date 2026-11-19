@@ -1,0 +1,14 @@
+{
+  "id": "coffee-table",
+  "label": "Coffee Table on Rollers",
+  "kind": "table",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Tables",
+  "tags": ["coffee table", "living room", "rollers", "wheels", "low table", "shelf"],
+  "product": {
+    "name": "Cremona coffee table",
+    "description": "Low open coffee table: a top board, a bottom shelf, and two end boards, standing on four small rollers."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "bed-slat-single",
+  "label": "Single Bed",
+  "kind": "bed",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Beds",
+  "tags": ["bed", "single", "children", "bedroom", "mattress"],
+  "product": {
+    "name": "Single bed with slatted headboard",
+    "description": "A low single bed on short legs with a slatted headboard, a mattress, a folded blanket, and a pillow. Standard widths 80, 90, and 100 cm."
+  }
+}

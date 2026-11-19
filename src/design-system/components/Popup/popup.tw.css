@@ -1,0 +1,49 @@
+@layer components {
+  [data-popup-overlay] {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-overlay p-6;
+  }
+
+  /* The size sets the minimum width (capped by the screen); the popup grows to fit its footer buttons,
+     while the header and body never widen it (they wrap/scroll inside). Footer buttons wrap last.
+     Phase 5.6: 16 px radius, generous padding, no header or footer dividers. */
+  [data-popup-modal] {
+    @apply flex max-h-full w-fit max-w-full min-w-[min(32rem,100%)] flex-col overflow-hidden rounded-popup bg-surface-raised text-foreground shadow-floating outline-none;
+  }
+
+  [data-popup-modal][data-popup-sm] {
+    @apply min-w-[min(24rem,100%)];
+  }
+
+  [data-popup-modal][data-popup-lg] {
+    @apply min-w-[min(56rem,100%)];
+  }
+
+  /* Large browsers (Phase 7.8): a fixed share of the window, so the content can scroll inside it. */
+  [data-popup-modal][data-popup-xl] {
+    @apply h-[min(85vh,60rem)] w-[min(80rem,100%)];
+  }
+
+  [data-popup-modal][data-popup-xl] > [data-popup] {
+    @apply flex-1;
+  }
+
+  [data-popup] {
+    @apply flex min-h-0 flex-col outline-none;
+  }
+
+  [data-popup-header] {
+    @apply flex shrink-0 [contain:inline-size] items-center justify-between gap-3 pt-4 pr-3 pb-1 pl-6;
+  }
+
+  [data-popup-title] {
+    @apply truncate text-lg font-semibold;
+  }
+
+  [data-popup-body] {
+    @apply min-h-0 flex-1 overflow-auto px-6 py-3 [contain:inline-size];
+  }
+
+  [data-popup-footer] {
+    @apply flex shrink-0 flex-wrap items-center justify-end gap-2 px-6 pt-3 pb-5;
+  }
+}

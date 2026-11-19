@@ -1,0 +1,13 @@
+{
+  "id": "toilet-high-cistern",
+  "label": "Toilet with High Cistern",
+  "kind": "toilet",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Bathroom",
+  "tags": ["toilet", "wc", "cistern", "high-level", "old style"],
+  "product": {
+    "description": "Floor-standing toilet with a wall-high cistern, a flush pipe, and a pull chain."
+  }
+}

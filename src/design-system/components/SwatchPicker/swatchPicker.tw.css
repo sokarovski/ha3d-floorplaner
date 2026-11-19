@@ -1,0 +1,48 @@
+@layer components {
+  /* Named finishes as swatches (Phase 9.1): a wrapping row, each a round colour with its name under it. */
+  [data-swatch-picker] {
+    @apply flex flex-wrap gap-2;
+  }
+
+  [data-swatch-option] {
+    @apply flex w-16 cursor-default flex-col items-center gap-1 rounded-control p-1 text-center outline-none;
+  }
+
+  [data-swatch-option][data-hovered] {
+    @apply bg-hover;
+  }
+
+  [data-swatch-option][data-focus-visible] {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-swatch-option][data-disabled] {
+    @apply opacity-60;
+  }
+
+  [data-swatch-color] {
+    @apply size-8 rounded-full bg-(--swatch-color) shadow-[inset_0_0_0_1px_rgb(0_0_0/12%)];
+  }
+
+  [data-swatch-option][data-selected] [data-swatch-color] {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-surface;
+  }
+
+  /* A finish with a texture: its base colour under fine diagonal lines. */
+  [data-swatch-color][data-swatch-textured] {
+    @apply bg-[repeating-linear-gradient(45deg,rgb(255_255_255/35%)_0_2px,transparent_2px_6px),var(--swatch-color)];
+  }
+
+  /* A custom choice (own colour or texture): a colour wheel. */
+  [data-swatch-color][data-swatch-custom] {
+    @apply bg-[conic-gradient(#e5484d,#f5d90a,#30a46c,#0091ff,#8e4ec6,#e5484d)];
+  }
+
+  [data-swatch-label] {
+    @apply line-clamp-2 text-xs leading-tight text-foreground;
+  }
+
+  [data-swatch-option][data-selected] [data-swatch-label] {
+    @apply font-medium text-primary;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "kitchen-oven-hob",
+  "label": "Oven and Hob Cabinet",
+  "kind": "kitchen",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Kitchen",
+  "tags": ["kitchen", "oven", "hob", "induction", "cooker", "appliance"],
+  "product": {
+    "description": "60 cm base unit with a built-in electric oven and a four-zone induction hob in the worktop."
+  }
+}

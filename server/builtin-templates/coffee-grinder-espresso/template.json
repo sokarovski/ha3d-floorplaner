@@ -1,0 +1,15 @@
+{
+  "id": "coffee-grinder-espresso",
+  "label": "Coffee Grinder and Espresso Machine",
+  "kind": "kitchen",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Kitchen",
+  "tags": ["kitchen", "coffee", "espresso", "grinder", "appliance", "worktop"],
+  "product": {
+    "manufacturer": "Eureka; Gaggia",
+    "name": "Mignon grinder and Classic Pro espresso machine",
+    "description": "Coffee corner for the worktop: Eureka Mignon burr grinder beside a Gaggia Classic Pro (placed at 900 mm)."
+  }
+}

@@ -1,0 +1,372 @@
+@layer components {
+  /* Phase 13.2: the header never grows past its cell; the title and the tools shrink, Save never leaves. */
+  [data-builder-header] {
+    @apply flex h-14 min-w-0 items-center gap-4 px-4;
+  }
+
+  [data-builder-back] {
+    @apply inline-flex shrink-0 h-9 items-center gap-1 rounded-control px-2.5 text-sm text-muted;
+  }
+
+  [data-builder-back]:hover {
+    @apply bg-hover text-foreground;
+  }
+
+  [data-builder-title] {
+    @apply flex min-w-0 flex-1 items-baseline gap-3;
+  }
+
+  [data-builder-house-name] {
+    @apply truncate text-[15px] font-semibold;
+  }
+
+  [data-builder-floor-name] {
+    @apply truncate text-sm text-muted;
+  }
+
+  [data-builder-mode] {
+    @apply shrink-0 rounded-full bg-selection px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-on-selection;
+  }
+
+  [data-editor-bar] {
+    @apply ml-3 flex min-w-0 shrink items-center gap-1.5 rounded-full bg-surface py-1 pr-1 pl-3.5 text-[13px] text-muted shadow-raised;
+  }
+
+  [data-editor-bar] strong {
+    @apply font-medium text-foreground;
+  }
+
+  [data-editor-bar-label] {
+    @apply mr-1 min-w-0 truncate whitespace-nowrap;
+  }
+
+  /* The tools may scroll sideways at very narrow widths (thin scrollbar), never the page. */
+  [data-builder-header-actions] {
+    @apply flex min-w-0 items-center gap-1.5 overflow-x-auto;
+    scrollbar-width: thin;
+  }
+
+  [data-builder-header-commit] {
+    @apply flex shrink-0 items-center gap-1.5;
+  }
+
+  /* Floating at the viewport's bottom right (owner, Phase 13.2), clear of the gizmo at the bottom left.
+     The Houses screen reuses it at its own bottom right. */
+  [data-agent-instructions] {
+    @apply absolute right-2 bottom-2 z-20 rounded-control bg-surface-raised/80 px-2 py-1 text-xs whitespace-nowrap text-muted shadow-raised;
+  }
+
+  [data-agent-instructions]:hover {
+    @apply bg-surface-raised text-foreground;
+  }
+
+  [data-agent-instructions]:focus-visible {
+    @apply outline-2 outline-offset-2 outline-focus;
+  }
+
+  [data-builder-segment] {
+    @apply mr-2 flex shrink-0 gap-0.5 rounded-control bg-input p-0.5;
+  }
+
+  [data-builder-header-actions] > * {
+    @apply shrink-0;
+  }
+
+  [data-save-status] {
+    @apply mx-2 flex items-center gap-1.5 text-xs whitespace-nowrap;
+  }
+
+  [data-save-status-dot] {
+    @apply size-2 rounded-full bg-muted;
+  }
+
+  [data-save-status][data-save-status-tone="success"] [data-save-status-dot] {
+    @apply bg-success;
+  }
+
+  [data-save-status][data-save-status-tone="warning"] [data-save-status-dot] {
+    @apply bg-warning;
+  }
+
+  [data-save-status][data-save-status-tone="danger"] {
+    @apply text-danger;
+  }
+
+  [data-save-status][data-save-status-tone="danger"] [data-save-status-dot] {
+    @apply bg-danger;
+  }
+
+  [data-status-bar] {
+    @apply flex items-center gap-2 text-xs text-muted;
+  }
+
+  [data-status-hint]:empty {
+    @apply hidden;
+  }
+
+  [data-status-hint] {
+    @apply min-w-0 flex-1 truncate;
+  }
+
+  [data-status-notice] {
+    @apply flex items-center gap-1 rounded-full py-1 pr-1 pl-3 shadow-floating;
+  }
+
+  [data-status-notice][data-status-tone="danger"] {
+    @apply bg-danger-surface text-danger;
+  }
+
+  [data-status-notice][data-status-tone="warning"] {
+    @apply bg-warning-surface text-warning;
+  }
+
+  [data-status-notice][data-status-tone="info"] {
+    @apply bg-info-surface text-info;
+  }
+
+  [data-builder-viewport-placeholder] {
+    @apply flex h-full items-center justify-center text-muted;
+  }
+
+  [data-builder-error] {
+    @apply mx-auto flex max-w-xl flex-col gap-3 p-8;
+  }
+
+  [data-selection-details] {
+    @apply mt-3 flex flex-col gap-2;
+  }
+
+  [data-selection-facts] {
+    @apply grid grid-cols-[7.5rem_minmax(0,1fr)] gap-x-2 gap-y-1 text-sm;
+  }
+
+  [data-selection-fact] {
+    @apply contents;
+  }
+
+  [data-selection-fact] dt {
+    @apply text-xs text-muted;
+  }
+
+  [data-selection-fact] dd {
+    @apply font-mono text-xs tabular-nums;
+  }
+}
+
+@layer components {
+  [data-library-list] {
+    @apply flex flex-col gap-1;
+  }
+
+  [data-library-item] {
+    @apply flex items-center gap-2 text-sm;
+  }
+
+  [data-library-name] {
+    @apply min-w-0 flex-1 truncate;
+  }
+
+  [data-library-empty] {
+    @apply text-xs text-muted;
+  }
+}
+
+@layer components {
+  [data-builder-viewport] {
+    @apply relative h-full w-full;
+  }
+
+  [data-viewport-readout] {
+    @apply pointer-events-none absolute z-10 rounded-control bg-foreground px-2.5 py-1 font-mono text-xs text-canvas shadow-floating tabular-nums;
+    left: var(--readout-x, 0);
+    top: var(--readout-y, 0);
+  }
+
+  [data-builder-viewport][data-cursor="pushPull"] canvas {
+    cursor: ns-resize;
+  }
+
+  [data-builder-viewport][data-cursor="trim"] canvas,
+  [data-builder-viewport][data-cursor="split"] canvas {
+    cursor: col-resize;
+  }
+
+  [data-builder-viewport][data-cursor="move"] canvas {
+    cursor: move;
+  }
+
+  /* Resize handles show their on-screen drag direction (Phase 5.15). */
+  [data-builder-viewport][data-cursor="resizeEW"] canvas {
+    cursor: ew-resize;
+  }
+
+  [data-builder-viewport][data-cursor="resizeNS"] canvas {
+    cursor: ns-resize;
+  }
+
+  [data-builder-viewport][data-cursor="resizeNWSE"] canvas {
+    cursor: nwse-resize;
+  }
+
+  [data-builder-viewport][data-cursor="resizeNESW"] canvas {
+    cursor: nesw-resize;
+  }
+
+  /* Rotate grips: a circular arrow with a white halo so it reads on light and dark views. */
+  [data-builder-viewport][data-cursor="rotate"] canvas {
+    cursor:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke-linecap='round' stroke-linejoin='round'><g stroke='white' stroke-width='4'><path d='M20 12a8 8 0 1 1-2.34-5.66'/><path d='M20 4v4.5h-4.5'/></g><g stroke='black' stroke-width='2'><path d='M20 12a8 8 0 1 1-2.34-5.66'/><path d='M20 4v4.5h-4.5'/></g></svg>")
+        12 12,
+      grab;
+  }
+
+  /* Shift flips Auto-select so the next press selects (Phase 5.3): an arrow with a dashed selection box. */
+  [data-builder-viewport][data-cursor="willSelect"] canvas {
+    cursor:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none' stroke-linejoin='round'><path d='M3 2l12 9-6 1-3 6z' fill='black' stroke='white' stroke-width='1.5'/><rect x='15' y='15' width='10' height='10' rx='1.5' fill='white' stroke='%231d4ed8' stroke-width='2' stroke-dasharray='3 2'/></svg>")
+        3 2,
+      default;
+  }
+
+  /* Camera tools (Phase 5.13): an open hand for Pan (and Space held), a closed hand while any camera drag
+     runs, and the orbit symbol for Orbit, also while dragging. */
+  [data-builder-viewport][data-cursor="pan"] canvas {
+    cursor: grab;
+  }
+
+  [data-builder-viewport] canvas[data-camera-drag] {
+    cursor: grabbing;
+  }
+
+  [data-builder-viewport][data-cursor="orbit"] canvas {
+    cursor:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke-linecap='round' stroke-linejoin='round'><g stroke='white' stroke-width='4'><path d='M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM3.5 12.5c0 2.5 3.8 4.5 8.5 4.5s8.5-2 8.5-4.5S16.7 8 12 8M17.5 5.5l2.5 2.5-3.2 1'/></g><g stroke='black' stroke-width='2'><path d='M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM3.5 12.5c0 2.5 3.8 4.5 8.5 4.5s8.5-2 8.5-4.5S16.7 8 12 8M17.5 5.5l2.5 2.5-3.2 1'/></g></svg>")
+        12 12,
+      move;
+  }
+
+  /* The view gizmo sits in the corner with Fit to screen centred below it (owner, Phase 4.6). */
+  /* Bottom-left, left-aligned with the floating toolbox above them (owner, Phase 5 follow-up): the
+     orientation gizmo, with the camera buttons stacked above it. The left inset is for fitting the content,
+     not for these controls. */
+  [data-viewport-gizmo] {
+    @apply absolute bottom-2 left-2 z-30;
+  }
+
+  [data-viewport-hint] {
+    @apply pointer-events-none absolute bottom-3 z-10 max-w-lg rounded-control bg-surface-raised px-3 py-1.5 text-xs text-muted shadow-floating;
+    /* Right of the gizmo (72 px) at the bottom-left. */
+    left: 92px;
+  }
+}
+
+@layer components {
+  [data-history] {
+    @apply grid h-[60vh] grid-cols-[18rem_minmax(0,1fr)] gap-4;
+  }
+
+  [data-history-list] {
+    @apply flex min-h-0 flex-col gap-1 overflow-auto;
+  }
+
+  [data-history-item] {
+    @apply flex items-center gap-1 rounded-control p-1;
+  }
+
+  [data-history-item][data-history-selected] {
+    @apply bg-selection ring-2 ring-primary;
+  }
+
+  [data-history-select] {
+    @apply flex min-w-0 flex-1 flex-col items-start text-left;
+  }
+
+  [data-history-message] {
+    @apply w-full truncate text-sm font-medium text-foreground;
+  }
+
+  [data-history-meta] {
+    @apply text-xs text-muted;
+  }
+
+  [data-history-diff] {
+    @apply flex min-h-0 flex-col gap-3 overflow-auto;
+  }
+
+  [data-history-file-name] {
+    @apply text-sm font-semibold;
+  }
+
+  [data-history-file-status] {
+    @apply font-normal text-muted;
+  }
+
+  [data-history-changes] {
+    @apply w-full border-separate border-spacing-y-1 text-left text-xs;
+  }
+
+  [data-history-changes] th {
+    @apply px-2 py-1.5 font-semibold text-muted;
+  }
+
+  [data-history-changes] td {
+    @apply bg-canvas px-2 py-1.5 align-top font-mono break-all first:rounded-l-control last:rounded-r-control;
+  }
+
+  [data-history-empty] {
+    @apply text-sm text-muted;
+  }
+}
+
+@layer components {
+  [data-render-result] {
+    @apply flex flex-col gap-2;
+  }
+
+  [data-render-image] {
+    @apply max-h-[60vh] w-full rounded-card bg-canvas object-contain;
+  }
+
+  [data-render-progress] {
+    @apply flex items-center gap-3 py-6;
+  }
+}
+
+@layer components {
+  [data-roof-profile] {
+    @apply h-auto w-full touch-none rounded-card bg-canvas select-none;
+  }
+
+  [data-roof-profile-help] {
+    @apply mb-2 text-sm text-muted;
+  }
+
+  [data-roof-profile-ground] {
+    @apply stroke-border-strong;
+    stroke-width: 2;
+  }
+
+  [data-roof-profile-guide] {
+    @apply stroke-guide;
+    stroke-dasharray: 4 4;
+  }
+
+  [data-roof-profile-wall] {
+    @apply fill-hover stroke-border-strong;
+  }
+
+  [data-roof-profile-cut] {
+    @apply stroke-warning;
+    stroke-width: 2;
+    stroke-dasharray: 8 4;
+  }
+
+  [data-roof-profile-handle] {
+    @apply cursor-grab fill-warning stroke-surface;
+    stroke-width: 2;
+  }
+
+  [data-roof-profile-label] {
+    @apply fill-foreground font-mono text-xs;
+  }
+}

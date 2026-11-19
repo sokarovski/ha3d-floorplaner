@@ -1,0 +1,14 @@
+{
+  "id": "ceiling-light-square",
+  "label": "Square Ceiling Light",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Lighting",
+  "tags": ["ceiling", "flush", "square", "light"],
+  "product": {
+    "name": "Flush square ceiling light",
+    "description": "A square flush-mounted ceiling light with a frosted diffuser."
+  }
+}

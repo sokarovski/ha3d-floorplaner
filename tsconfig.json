@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    "src",
+    "shared",
+    "server",
+    "scripts",
+    "ha-viewer",
+    "vite.config.ts",
+    "vite.ha-viewer.config.ts",
+    "website",
+    "vite.website.config.ts"
+  ]
+}

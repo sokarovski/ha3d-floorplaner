@@ -1,0 +1,14 @@
+{
+  "id": "wall-tv",
+  "label": "Wall TV",
+  "kind": "tv",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Electronics",
+  "tags": ["tv", "television", "screen", "display", "wall"],
+  "product": {
+    "name": "Flat wall-mounted television",
+    "description": "A slim flat-panel TV for the wall. Any width and height; the screen shows the bound app in Home Assistant."
+  }
+}

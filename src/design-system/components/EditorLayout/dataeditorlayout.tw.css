@@ -1,0 +1,83 @@
+@layer components {
+  /* Phase 5.6: the editor sits on the canvas; header, viewport, tree, and properties are separated by space
+     and rounded surfaces, not lines. */
+  [data-editor-layout] {
+    @apply grid h-full min-h-0 min-w-0 gap-2 bg-canvas p-2 pt-0;
+    grid-template-columns: minmax(0, 1fr) 25rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "header header"
+      "viewport side";
+  }
+
+  [data-editor-layout-header] {
+    grid-area: header;
+    /* min-w-0: a grid item's automatic minimum would otherwise widen the page to its content (13.2). */
+    @apply -mx-2 min-w-0 bg-canvas;
+  }
+
+  /* The toolbox floats over the viewport's left edge (owner, Phase 5 follow-up): same grid cell, above it.
+     The viewport is told how much of it is covered, so fitting centres in the uncovered part. */
+  [data-editor-layout-toolbox] {
+    grid-area: viewport;
+    /* Ends above the viewport's axis gizmo (72 px at the bottom-left, plus its margin and a gap). */
+    @apply pointer-events-none z-20 m-2 flex max-h-[calc(100%-6.5rem)] min-h-0 flex-col items-start self-start justify-self-start;
+  }
+
+  [data-editor-layout-toolbox] > * {
+    @apply pointer-events-auto min-h-0;
+  }
+
+  [data-editor-layout-viewport] {
+    grid-area: viewport;
+    @apply relative min-h-0 min-w-0 overflow-hidden rounded-card bg-surface;
+  }
+
+  /* The tree's share of the column comes from --side-split (Phase 7.4: a draggable splitter, kept in the
+     editor preferences). The splitter sits in the gap between the two panels. */
+  [data-editor-layout-side] {
+    grid-area: side;
+    @apply grid min-h-0;
+    grid-template-rows: minmax(6rem, var(--side-split, 40%)) 0.5rem minmax(6rem, 1fr);
+  }
+
+  [data-editor-layout-side]:not(:has([data-editor-layout-splitter])) {
+    grid-template-rows: minmax(10rem, 40%) minmax(0, 1fr);
+    @apply gap-2;
+  }
+
+  [data-editor-layout-splitter] {
+    @apply relative cursor-row-resize touch-none rounded-full outline-none;
+  }
+
+  [data-editor-layout-splitter]::after {
+    content: "";
+    @apply absolute top-1/2 left-1/2 h-1 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-pressed opacity-0 transition-opacity;
+  }
+
+  [data-editor-layout-splitter]:hover::after,
+  [data-editor-layout-splitter][data-dragging]::after,
+  [data-editor-layout-splitter]:focus-visible::after {
+    @apply opacity-100;
+  }
+
+  [data-editor-layout-splitter]:focus-visible {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-editor-layout-overview],
+  [data-editor-layout-properties] {
+    @apply flex min-h-0 flex-col overflow-hidden rounded-card bg-surface;
+  }
+
+  /* The status line floats over the viewport's bottom centre (owner): it takes no row of its own, so the
+     viewport and panels reach the bottom. Only its notices are visible. */
+  [data-editor-layout-status] {
+    grid-area: viewport;
+    @apply pointer-events-none z-30 mb-3 self-end justify-self-center;
+  }
+
+  [data-editor-layout-status] > * {
+    @apply pointer-events-auto;
+  }
+}

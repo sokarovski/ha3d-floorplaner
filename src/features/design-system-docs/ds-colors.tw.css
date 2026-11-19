@@ -1,0 +1,143 @@
+/* Generated from tokens.tw.css: one selector per role so /ds swatches use the real token machinery. */
+@layer components {
+  [data-ds-swatch-wrap] {
+    @apply inline-block align-middle;
+  }
+
+  [data-ds-swatch][data-ds-swatch-role="canvas"] {
+    background-color: var(--ui-color-canvas);
+  }
+  [data-ds-swatch][data-ds-swatch-role="surface"] {
+    background-color: var(--ui-color-surface);
+  }
+  [data-ds-swatch][data-ds-swatch-role="surface-raised"] {
+    background-color: var(--ui-color-surface-raised);
+  }
+  [data-ds-swatch][data-ds-swatch-role="input"] {
+    background-color: var(--ui-color-input);
+  }
+  [data-ds-swatch][data-ds-swatch-role="foreground"] {
+    background-color: var(--ui-color-foreground);
+  }
+  [data-ds-swatch][data-ds-swatch-role="muted"] {
+    background-color: var(--ui-color-muted);
+  }
+  [data-ds-swatch][data-ds-swatch-role="disabled-foreground"] {
+    background-color: var(--ui-color-disabled-foreground);
+  }
+  [data-ds-swatch][data-ds-swatch-role="border"] {
+    background-color: var(--ui-color-border);
+  }
+  [data-ds-swatch][data-ds-swatch-role="border-strong"] {
+    background-color: var(--ui-color-border-strong);
+  }
+  [data-ds-swatch][data-ds-swatch-role="hover"] {
+    background-color: var(--ui-color-hover);
+  }
+  [data-ds-swatch][data-ds-swatch-role="pressed"] {
+    background-color: var(--ui-color-pressed);
+  }
+  [data-ds-swatch][data-ds-swatch-role="primary"] {
+    background-color: var(--ui-color-primary);
+  }
+  [data-ds-swatch][data-ds-swatch-role="primary-hover"] {
+    background-color: var(--ui-color-primary-hover);
+  }
+  [data-ds-swatch][data-ds-swatch-role="on-primary"] {
+    background-color: var(--ui-color-on-primary);
+  }
+  [data-ds-swatch][data-ds-swatch-role="selection"] {
+    background-color: var(--ui-color-selection);
+  }
+  [data-ds-swatch][data-ds-swatch-role="on-selection"] {
+    background-color: var(--ui-color-on-selection);
+  }
+  [data-ds-swatch][data-ds-swatch-role="focus"] {
+    background-color: var(--ui-color-focus);
+  }
+  [data-ds-swatch][data-ds-swatch-role="danger"] {
+    background-color: var(--ui-color-danger);
+  }
+  [data-ds-swatch][data-ds-swatch-role="danger-hover"] {
+    background-color: var(--ui-color-danger-hover);
+  }
+  [data-ds-swatch][data-ds-swatch-role="on-danger"] {
+    background-color: var(--ui-color-on-danger);
+  }
+  [data-ds-swatch][data-ds-swatch-role="danger-surface"] {
+    background-color: var(--ui-color-danger-surface);
+  }
+  [data-ds-swatch][data-ds-swatch-role="success"] {
+    background-color: var(--ui-color-success);
+  }
+  [data-ds-swatch][data-ds-swatch-role="success-surface"] {
+    background-color: var(--ui-color-success-surface);
+  }
+  [data-ds-swatch][data-ds-swatch-role="warning"] {
+    background-color: var(--ui-color-warning);
+  }
+  [data-ds-swatch][data-ds-swatch-role="warning-surface"] {
+    background-color: var(--ui-color-warning-surface);
+  }
+  [data-ds-swatch][data-ds-swatch-role="info"] {
+    background-color: var(--ui-color-info);
+  }
+  [data-ds-swatch][data-ds-swatch-role="info-surface"] {
+    background-color: var(--ui-color-info-surface);
+  }
+  [data-ds-swatch][data-ds-swatch-role="overlay"] {
+    background-color: var(--ui-color-overlay);
+  }
+  [data-ds-swatch][data-ds-swatch-role="grid"] {
+    background-color: var(--ui-color-grid);
+  }
+  [data-ds-swatch][data-ds-swatch-role="guide"] {
+    background-color: var(--ui-color-guide);
+  }
+  [data-ds-pairing][data-ds-pairing-id="text-surface"] {
+    @apply bg-surface text-foreground;
+  }
+  [data-ds-pairing][data-ds-pairing-id="muted-surface"] {
+    @apply bg-surface text-muted;
+  }
+  [data-ds-pairing][data-ds-pairing-id="text-canvas"] {
+    @apply bg-canvas text-foreground;
+  }
+  [data-ds-pairing][data-ds-pairing-id="on-primary"] {
+    @apply bg-primary text-on-primary;
+  }
+  [data-ds-pairing][data-ds-pairing-id="on-selection"] {
+    @apply bg-selection text-on-selection;
+  }
+  [data-ds-pairing][data-ds-pairing-id="on-danger"] {
+    @apply bg-danger text-on-danger;
+  }
+  [data-ds-pairing][data-ds-pairing-id="danger-surface"] {
+    @apply bg-danger-surface text-danger;
+  }
+  [data-ds-pairing][data-ds-pairing-id="warning-surface"] {
+    @apply bg-warning-surface text-warning;
+  }
+  [data-ds-pairing][data-ds-pairing-id="success-surface"] {
+    @apply bg-success-surface text-success;
+  }
+  [data-ds-pairing][data-ds-pairing-id="info-surface"] {
+    @apply bg-info-surface text-info;
+  }
+}
+
+@layer components {
+  /* Arbitrary colours (ramps, derived roles) on the Themes page (Phase 5.5). */
+  [data-ds-hex-swatch] {
+    @apply inline-block size-5 rounded-md align-middle shadow-[inset_0_0_0_1px_rgb(0_0_0/10%)];
+    background: var(--swatch, transparent);
+  }
+
+  [data-ds-ramp] {
+    @apply inline-flex gap-1;
+  }
+
+  [data-ds-contrast-fail] {
+    @apply font-semibold text-danger;
+  }
+}

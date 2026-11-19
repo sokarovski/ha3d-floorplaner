@@ -1,0 +1,13 @@
+{
+  "id": "heating-boiler-wall",
+  "label": "Wall Heating Boiler with Plumbing",
+  "kind": "boiler",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Heating and cooling",
+  "tags": ["boiler", "heating", "expansion vessel", "manifold", "valves", "plumbing", "utility"],
+  "product": {
+    "description": "Wall-hung heating boiler with a control box, an expansion vessel, a manometer, and a copper manifold with valved circuits."
+  }
+}

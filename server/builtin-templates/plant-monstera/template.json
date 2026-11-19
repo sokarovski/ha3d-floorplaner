@@ -1,0 +1,14 @@
+{
+  "id": "plant-monstera",
+  "label": "Monstera",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Plants",
+  "tags": ["plant", "monstera", "swiss cheese plant", "broad leaf"],
+  "product": {
+    "name": "Monstera",
+    "description": "Large split leaves on long stems in a pot. One height setting scales the whole plant."
+  }
+}

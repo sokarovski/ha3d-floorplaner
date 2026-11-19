@@ -1,0 +1,8 @@
+{
+  "id": "air-conditioner",
+  "label": "Air Conditioner",
+  "kind": "airConditioner",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg"
+}

@@ -1,0 +1,224 @@
+@layer components {
+  [data-ds-layout] {
+    @apply grid h-full min-h-0 grid-cols-[16rem_minmax(0,1fr)] gap-2 bg-canvas p-2;
+  }
+
+  [data-ds-sidebar] {
+    @apply min-h-0 overflow-auto rounded-card bg-surface p-3;
+  }
+
+  [data-ds-sidebar-title] {
+    @apply mb-4 px-2 pt-1 text-[15px] font-semibold;
+  }
+
+  [data-ds-sidebar-section] {
+    @apply mb-4;
+  }
+
+  [data-ds-sidebar-heading] {
+    @apply px-2 pb-1 text-[13px] font-semibold text-muted;
+  }
+
+  [data-ds-sidebar-link] {
+    @apply block truncate rounded-control px-2.5 py-1.5 text-sm text-foreground;
+  }
+
+  [data-ds-sidebar-link]:hover {
+    @apply bg-hover;
+  }
+
+  [data-ds-sidebar-link][aria-current="page"] {
+    @apply bg-selection text-on-selection;
+  }
+
+  [data-ds-main] {
+    @apply min-h-0 overflow-auto;
+  }
+
+  [data-ds-page] {
+    @apply mx-auto flex max-w-5xl flex-col gap-6 p-8;
+  }
+
+  [data-ds-page] h1 {
+    @apply text-2xl font-semibold;
+  }
+
+  [data-ds-page] h2 {
+    @apply text-lg font-semibold;
+  }
+
+  [data-ds-page] h3 {
+    @apply text-sm font-semibold;
+  }
+
+  [data-ds-page] p,
+  [data-ds-page] li {
+    @apply max-w-3xl leading-relaxed text-foreground;
+  }
+
+  [data-ds-page] ul[data-ds-list] {
+    @apply list-disc pl-5;
+  }
+
+  [data-ds-page] code {
+    @apply rounded-sm bg-hover px-1 font-mono text-xs;
+  }
+
+  [data-ds-lead] {
+    @apply text-base text-muted;
+  }
+
+  [data-ds-example] {
+    @apply flex flex-col gap-3 rounded-card bg-surface p-5;
+  }
+
+  [data-ds-example-header] {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  [data-ds-example-actions] {
+    @apply flex gap-2;
+  }
+
+  [data-ds-example-description] {
+    @apply text-sm text-muted;
+  }
+
+  [data-ds-example-stage] {
+    @apply flex flex-wrap items-start gap-3 rounded-control bg-canvas p-4 text-foreground;
+  }
+
+  [data-theme-sandbox] {
+    @apply rounded-control text-foreground;
+  }
+
+  [data-ds-table] {
+    @apply w-full border-separate border-spacing-y-1 text-left text-sm;
+  }
+
+  [data-ds-table] th {
+    @apply px-3 py-1.5 text-[13px] font-semibold text-muted;
+  }
+
+  [data-ds-table] td {
+    @apply bg-surface px-3 py-2 align-top first:rounded-l-control last:rounded-r-control;
+  }
+
+  [data-ds-swatch] {
+    @apply inline-block size-8 rounded-control shadow-[inset_0_0_0_1px_rgb(0_0_0/10%)];
+  }
+
+  [data-ds-card-grid] {
+    @apply grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3;
+  }
+
+  [data-ds-card] {
+    @apply flex flex-col gap-1 rounded-card bg-surface p-4 text-foreground transition-shadow;
+  }
+
+  [data-ds-card]:hover {
+    @apply shadow-floating;
+  }
+
+  [data-ds-card-title] {
+    @apply font-semibold;
+  }
+
+  [data-ds-card-text] {
+    @apply text-xs text-muted;
+  }
+
+  [data-code-block] {
+    @apply mb-3 flex flex-col gap-1;
+  }
+
+  [data-code-block-label] {
+    @apply text-xs font-semibold text-muted;
+  }
+
+  [data-code-block-pre] {
+    @apply max-h-96 overflow-auto rounded-control bg-canvas p-4 font-mono text-xs leading-relaxed whitespace-pre text-foreground;
+  }
+
+  [data-source-popup-feedback] {
+    @apply mr-auto text-xs text-success;
+  }
+
+  [data-source-popup-explanation] {
+    @apply mb-3 text-sm text-muted;
+  }
+
+  [data-ds-pairing] {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+}
+
+@layer components {
+  [data-ds-example-column] {
+    @apply flex w-full max-w-md flex-col gap-3;
+  }
+
+  [data-ds-example-box] {
+    @apply h-56 w-72 overflow-hidden rounded-card bg-surface shadow-raised;
+  }
+
+  [data-ds-example-toolbox] {
+    @apply flex h-72 gap-4;
+  }
+
+  [data-ds-example-gizmo] {
+    @apply flex items-center gap-6;
+  }
+
+  [data-ds-example-layout] {
+    @apply h-96 w-full overflow-hidden rounded-card bg-surface;
+  }
+
+  [data-ds-example-placeholder] {
+    @apply flex h-full min-h-8 items-center justify-center p-2 text-xs text-muted;
+  }
+}
+
+@layer components {
+  [data-ds-editor-states] {
+    @apply flex w-full max-w-xl flex-col gap-3;
+  }
+
+  [data-ds-editor-unit] {
+    @apply flex items-center gap-1 text-xs text-muted;
+  }
+
+  [data-ds-unit-button] {
+    @apply rounded-full bg-input px-2.5 py-0.5 font-mono text-xs text-foreground;
+  }
+
+  [data-ds-unit-button][aria-pressed="true"] {
+    @apply bg-selection text-on-selection;
+  }
+
+  [data-ds-commit-log] {
+    @apply rounded-control bg-canvas p-3 font-mono text-xs text-muted;
+  }
+
+  [data-ds-two-column] {
+    @apply grid w-full grid-cols-[minmax(0,22rem)_minmax(0,1fr)] gap-4;
+  }
+
+  [data-ds-panel-frame] {
+    @apply h-[36rem] overflow-hidden rounded-card bg-surface;
+  }
+
+  [data-ds-json] {
+    @apply max-h-[36rem] overflow-auto rounded-control bg-canvas p-4 font-mono text-xs whitespace-pre text-foreground;
+  }
+
+  [data-ds-button-row] {
+    @apply flex flex-wrap gap-2;
+  }
+}
+
+@layer components {
+  [data-ds-example-column][data-ds-wide] {
+    @apply max-w-none;
+  }
+}

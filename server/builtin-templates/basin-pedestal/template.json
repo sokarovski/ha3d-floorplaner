@@ -1,0 +1,11 @@
+{
+  "id": "basin-pedestal",
+  "label": "Pedestal Basin",
+  "kind": "basin",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Bathroom",
+  "tags": ["basin", "washbasin", "sink", "pedestal", "mixer"],
+  "product": { "description": "Ceramic washbasin on a pedestal column, with a wall-mounted mixer and spout." }
+}

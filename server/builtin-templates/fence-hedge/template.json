@@ -1,0 +1,13 @@
+{
+  "id": "fence-hedge",
+  "label": "Hedge",
+  "kind": "fence",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["hedge", "bush", "fence", "green", "yard", "garden"],
+  "product": {
+    "description": "Dense evergreen hedge with rounded uneven growth, small folded leaves, shaded inner foliage and woody stems."
+  }
+}

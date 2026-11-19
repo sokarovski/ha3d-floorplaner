@@ -1,0 +1,235 @@
+@layer components {
+  [data-editor-message] {
+    @apply text-xs text-danger;
+  }
+
+  [data-editor-hint] {
+    @apply font-mono text-xs text-muted tabular-nums;
+  }
+
+  [data-editor-row] {
+    @apply flex min-w-0 items-center gap-2;
+  }
+
+  /* X and Y side by side, their axis letters inside the fields (Phase 5.8). */
+  [data-editor-vector] {
+    @apply grid grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))] gap-2;
+  }
+
+  [data-editor-vector-axis] {
+    @apply min-w-0;
+  }
+
+  [data-editor-readonly] {
+    @apply flex min-h-8 items-center text-sm text-foreground;
+  }
+
+  [data-editor-readonly][data-editor-readonly-warning] {
+    @apply text-warning;
+  }
+
+  [data-editor-select-button] {
+    @apply flex h-9 w-full min-w-0 cursor-default items-center justify-between gap-2 rounded-control bg-input px-3 text-left text-sm text-foreground outline-none;
+  }
+
+  [data-editor-select-button][data-focus-visible] {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-editor-select-button][data-disabled] {
+    @apply opacity-60;
+  }
+
+  [data-editor-select-value] {
+    @apply min-w-0 flex-1 truncate;
+  }
+
+  [data-editor-select-value][data-placeholder] {
+    @apply text-muted italic;
+  }
+
+  [data-editor-listbox-popover] {
+    @apply z-40 max-h-72 min-w-(--trigger-width) overflow-auto rounded-card bg-surface-raised p-1.5 shadow-floating outline-none;
+  }
+
+  [data-editor-listbox] {
+    @apply outline-none;
+  }
+
+  [data-editor-option] {
+    @apply flex h-9 cursor-default items-center gap-2 rounded-control px-3 text-sm text-foreground outline-none;
+  }
+
+  [data-editor-option][data-focused] {
+    @apply bg-hover;
+  }
+
+  [data-editor-option][data-selected] {
+    @apply font-medium text-primary;
+  }
+
+  [data-editor-combobox] {
+    @apply flex h-9 w-full items-center rounded-control bg-input;
+  }
+
+  [data-editor-combobox]:focus-within {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-editor-combobox-input] {
+    @apply h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none;
+  }
+
+  [data-editor-chips] {
+    @apply flex flex-wrap gap-1;
+  }
+
+  [data-editor-chip] {
+    @apply inline-flex h-8 cursor-default items-center gap-1 rounded-full bg-input px-3 text-xs text-foreground outline-none;
+  }
+
+  [data-editor-chip][data-selected] {
+    @apply bg-selection text-on-selection;
+  }
+
+  [data-editor-chip][data-focus-visible] {
+    @apply outline-2 outline-focus;
+  }
+
+  /* Quick picks (Phase 9.1): suggested values as a compact chip row under the field. */
+  [data-editor-with-picks] {
+    @apply flex min-w-0 flex-col gap-1.5;
+  }
+
+  [data-editor-quick-picks] {
+    @apply flex flex-wrap gap-1;
+  }
+
+  [data-editor-quick-pick] {
+    @apply inline-flex h-6 cursor-default items-center rounded-full bg-input px-2 font-mono text-xs text-muted tabular-nums outline-none;
+  }
+
+  [data-editor-quick-pick][data-hovered] {
+    @apply bg-hover text-foreground;
+  }
+
+  [data-editor-quick-pick][data-selected] {
+    @apply bg-selection text-on-selection;
+  }
+
+  [data-editor-quick-pick][data-focus-visible] {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-editor-quick-pick][data-disabled] {
+    @apply opacity-60;
+  }
+
+  /* Yes / No (owner, Phase 5 follow-up): a compact segmented control at the field's right edge. */
+  [data-editor-yes-no] {
+    @apply flex w-full justify-end;
+  }
+
+  [data-editor-segmented][data-editor-segmented-compact] {
+    @apply w-auto;
+  }
+
+  [data-editor-segmented][data-editor-segmented-compact] [data-editor-segment] {
+    @apply min-w-14 flex-none;
+  }
+
+  [data-editor-slider] {
+    @apply grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-2;
+  }
+
+  /* Slider (Phase 7.7): a rounded rail, an accent fill up to the value, and a solid thumb with a soft shadow
+     that grows while hovered or dragged. */
+  [data-editor-slider-track] {
+    @apply relative h-7 w-full cursor-pointer;
+  }
+
+  [data-editor-slider-rail],
+  [data-editor-slider-fill] {
+    @apply pointer-events-none absolute top-1/2 left-0 h-1.5 -translate-y-1/2 rounded-full;
+  }
+
+  [data-editor-slider-rail] {
+    @apply w-full bg-pressed;
+  }
+
+  [data-editor-slider-fill] {
+    @apply w-(--slider-fill) bg-primary;
+  }
+
+  [data-editor-slider-thumb] {
+    @apply top-1/2 size-[18px] rounded-full bg-white shadow-[0_1px_3px_rgb(0_0_0/0.3),0_0_0_0.5px_rgb(0_0_0/0.08)] transition-[scale] duration-100;
+  }
+
+  [data-editor-slider-thumb][data-hovered],
+  [data-editor-slider-thumb][data-dragging] {
+    @apply scale-115;
+  }
+
+  [data-editor-slider-thumb][data-focus-visible] {
+    @apply outline-2 outline-offset-2 outline-focus;
+  }
+
+  [data-editor-slider-control][data-disabled] [data-editor-slider-fill] {
+    @apply bg-muted;
+  }
+
+  [data-editor-slider-control][data-disabled] [data-editor-slider-track] {
+    @apply cursor-default opacity-60;
+  }
+
+  [data-editor-color] {
+    @apply flex items-center gap-2;
+  }
+
+  [data-editor-color-swatch] {
+    @apply h-9 w-11 shrink-0 cursor-pointer rounded-control bg-input p-1;
+  }
+
+  [data-editor-dropzone] {
+    @apply flex min-h-20 flex-col items-center justify-center gap-2 rounded-card border border-dashed border-border-strong bg-input p-4 text-center text-sm text-muted outline-none;
+  }
+
+  [data-editor-dropzone][data-drop-target] {
+    @apply border-primary bg-selection text-on-selection;
+  }
+
+  [data-editor-dropzone][data-focus-visible] {
+    @apply outline-2 outline-focus;
+  }
+
+  [data-editor-file-name] {
+    @apply font-medium text-foreground;
+  }
+}
+
+@layer components {
+  /* Segmented choice (Phase 5.9): a filled pill track with the chosen option raised. */
+  [data-editor-segmented] {
+    @apply inline-flex w-full min-w-0 rounded-control bg-input p-0.5;
+  }
+
+  [data-editor-segment] {
+    @apply inline-flex h-8 min-w-0 flex-1 cursor-default items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] px-2 text-[13px] whitespace-nowrap text-muted outline-none;
+  }
+
+  [data-editor-segment][data-hovered]:not([data-selected]):not([data-disabled]) {
+    @apply text-foreground;
+  }
+
+  [data-editor-segment][data-selected] {
+    @apply bg-surface-raised font-medium text-foreground shadow-[0_1px_2px_rgb(0_0_0/12%)];
+  }
+
+  [data-editor-segment][data-focus-visible] {
+    @apply outline-2 -outline-offset-2 outline-focus;
+  }
+
+  [data-editor-segment][data-disabled] {
+    @apply opacity-60;
+  }
+}

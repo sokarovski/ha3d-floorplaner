@@ -1,0 +1,11 @@
+{
+  "id": "fence-picket",
+  "label": "Picket Fence",
+  "kind": "fence",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["fence", "picket", "wood", "yard", "garden"],
+  "product": { "description": "White wooden picket fence; the pickets repeat along the yard's wall." }
+}

@@ -1,0 +1,10 @@
+# Isolated verification environment only; runtime requirements are in the component manifest.
+homeassistant==2025.7.4
+home-assistant-frontend==20250702.3
+# HA 2025.7's aiodns is incompatible with the later pycares 5 API.
+pycares==4.9.0
+jcs==0.2.1
+jsonschema==4.25.1
+ruff==0.17.5
+mypy==2.4.1
+types-jsonschema==4.26.0.20261006

@@ -1,0 +1,14 @@
+{
+  "id": "planter-garden",
+  "label": "Garden Planter",
+  "kind": "planter",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["outdoor", "garden", "planter", "trough", "box", "terrace", "balcony"],
+  "product": {
+    "name": "Garden planter",
+    "description": "A rectangular outdoor planter with low shrubs. The length is adjustable; the finish is choosable."
+  }
+}

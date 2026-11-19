@@ -1,0 +1,14 @@
+node_modules
+dist
+.homeplan-data
+package-lock.json
+spec
+*.md
+server/builtin-templates/**/*.glb
+server/builtin-templates
+server/demo-houses
+
+custom_components/homeplan/frontend
+custom_components/homeplan/schemas.json
+
+custom_components/homeplan/THIRD_PARTY_NOTICES.md

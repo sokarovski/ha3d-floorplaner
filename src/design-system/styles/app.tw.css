@@ -1,0 +1,35 @@
+/* The single Tailwind entry. Every .tw.css file is imported here so all rules share one compilation.
+   Regenerate the import list with: node scripts/sync-styles.mjs */
+@import "tailwindcss";
+@import "./tokens.tw.css";
+@import "./base.tw.css";
+@import "../components/Banner/banner.tw.css";
+@import "../components/Button/button.tw.css";
+@import "../components/EditorLayout/dataeditorlayout.tw.css";
+@import "../components/FormField/dataformfield.tw.css";
+@import "../components/Icon/icon.tw.css";
+@import "../components/IconButton/iconbutton.tw.css";
+@import "../components/IconSelectMenu/iconselectmenu.tw.css";
+@import "../components/Input/input.tw.css";
+@import "../components/Keycap/keycap.tw.css";
+@import "../components/Menu/datamenu.tw.css";
+@import "../components/MenuItem/menuitem.tw.css";
+@import "../components/Panel/datapanel.tw.css";
+@import "../components/Popup/popup.tw.css";
+@import "../components/Spinner/spinner.tw.css";
+@import "../components/SwatchPicker/swatchPicker.tw.css";
+@import "../components/Toolbox/datatoolbox.tw.css";
+@import "../components/ToolButton/toolbutton.tw.css";
+@import "../components/Tooltip/tooltip.tw.css";
+@import "../components/Tree/datatree.tw.css";
+@import "../components/TreeItem/treeitem.tw.css";
+@import "../components/ViewGizmo/viewgizmo.tw.css";
+@import "../forms/forms.tw.css";
+@import "../property-editors/editors.tw.css";
+@import "../../app/pages/appPages.tw.css";
+@import "../../features/design-system-docs/ds-colors.tw.css";
+@import "../../features/design-system-docs/ds.tw.css";
+@import "../../features/floor-builder/domain-editors/domainEditors.tw.css";
+@import "../../features/floor-builder/floorBuilder.tw.css";
+@import "../../features/houses/houses.tw.css";
+@import "../../features/viewport/viewport.tw.css";

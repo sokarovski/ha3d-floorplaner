@@ -1,0 +1,15 @@
+{
+  "id": "bedside-table-hokksund",
+  "label": "Bedside Table with Drawer",
+  "kind": "table",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Beds",
+  "tags": ["bedside", "nightstand", "drawer", "bedroom"],
+  "product": {
+    "manufacturer": "JYSK",
+    "name": "HOKKSUND",
+    "description": "Bedside table with one drawer and splayed legs, 450 × 330 × 550 mm, natural oak look."
+  }
+}

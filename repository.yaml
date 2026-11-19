@@ -1,0 +1,5 @@
+# Home Assistant app repository (Settings → Apps → Install app → Repositories). The app itself is at the root:
+# config.yaml, Dockerfile, DOCS.md, icon.png and logo.png (spec/home-assistant/publishing.md#app-packaging-and-ingress).
+name: Homeplan
+url: https://github.com/sokarovski/ha3d-floorplaner
+maintainer: sokarovski

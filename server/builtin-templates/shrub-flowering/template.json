@@ -1,0 +1,14 @@
+{
+  "id": "shrub-flowering",
+  "label": "Flowering Shrub",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["outdoor", "garden", "shrub", "bush", "flowers", "hydrangea", "rhododendron", "azalea"],
+  "product": {
+    "name": "Flowering Shrub",
+    "description": "A rounded flowering shrub (hydrangea, rhododendron); the flowers' colour is choosable."
+  }
+}

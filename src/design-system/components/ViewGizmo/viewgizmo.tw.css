@@ -1,0 +1,74 @@
+@layer components {
+  [data-view-gizmo] {
+    @apply relative size-[72px] shrink-0 rounded-card bg-surface shadow-floating;
+  }
+
+  [data-view-gizmo] > svg {
+    @apply absolute inset-0 size-full overflow-visible;
+  }
+
+  [data-view-gizmo] line {
+    @apply pointer-events-none;
+  }
+
+  [data-view-gizmo] [data-view-gizmo-line] {
+    stroke-width: 2.25;
+    stroke-linecap: round;
+  }
+
+  [data-view-gizmo] [data-view-gizmo-stub] {
+    @apply opacity-30;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+
+  [data-view-gizmo] g[data-axis="x"] {
+    @apply stroke-axis-x;
+  }
+
+  [data-view-gizmo] g[data-axis="y"] {
+    @apply stroke-axis-y;
+  }
+
+  [data-view-gizmo] g[data-axis="z"] {
+    @apply stroke-axis-z;
+  }
+
+  [data-view-gizmo] g[data-behind] {
+    @apply opacity-40;
+  }
+
+  [data-view-gizmo-tip] {
+    @apply flex size-4 cursor-default items-center justify-center rounded-full text-[9px] leading-none font-semibold text-white outline-none select-none;
+  }
+
+  [data-view-gizmo-tip][data-axis="x"] {
+    @apply bg-axis-x;
+  }
+
+  [data-view-gizmo-tip][data-axis="y"] {
+    @apply bg-axis-y;
+  }
+
+  [data-view-gizmo-tip][data-axis="z"] {
+    @apply bg-axis-z;
+  }
+
+  [data-view-gizmo-tip][data-behind] {
+    @apply opacity-50;
+  }
+
+  [data-view-gizmo-tip][data-hovered] {
+    @apply scale-125;
+  }
+
+  [data-view-gizmo-tip][data-focus-visible] {
+    @apply outline-2 outline-offset-1 outline-focus;
+  }
+
+  [data-view-gizmo-north] {
+    @apply pointer-events-none fill-muted text-[9px] font-semibold select-none;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+}

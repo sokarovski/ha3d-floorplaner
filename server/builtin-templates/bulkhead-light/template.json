@@ -1,0 +1,14 @@
+{
+  "id": "bulkhead-light",
+  "label": "Bulkhead Light",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Lighting",
+  "tags": ["outdoor", "exterior", "wall", "bulkhead", "oval", "porch", "garage", "light"],
+  "product": {
+    "name": "Outdoor bulkhead light",
+    "description": "A robust oval bulkhead with an opal diffuser behind an eyelid grille. Mounts on the outside of a wall."
+  }
+}

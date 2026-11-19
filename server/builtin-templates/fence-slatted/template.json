@@ -1,0 +1,13 @@
+{
+  "id": "fence-slatted",
+  "label": "Horizontal Timber Fence",
+  "kind": "fence",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["fence", "yard", "garden", "timber", "slats", "privacy", "horizontal", "cedar"],
+  "product": {
+    "description": "Warm timber privacy slats with narrow shadow gaps, bevelled board edges, dark posts and visible fixings."
+  }
+}

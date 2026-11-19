@@ -1,0 +1,14 @@
+{
+  "id": "plant-snake",
+  "label": "Snake Plant",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Plants",
+  "tags": ["plant", "snake plant", "sansevieria", "upright"],
+  "product": {
+    "name": "Snake Plant",
+    "description": "Upright sword-shaped leaves in a pot. One height setting scales the whole plant."
+  }
+}

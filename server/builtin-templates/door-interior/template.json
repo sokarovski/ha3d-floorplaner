@@ -1,0 +1,8 @@
+{
+  "id": "door-interior",
+  "label": "Interior Door",
+  "kind": "door",
+  "contract": "Wallable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg"
+}

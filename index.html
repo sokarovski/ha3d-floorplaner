@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-ui-root="" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Homeplan</title>
+    <!-- The app's base URL; the server rewrites it per request (base path or Home Assistant ingress prefix). -->
+    <base href="%BASE_URL%" />
+    <link rel="help" type="text/markdown" href="agent.md" title="Homeplan AI agent instructions" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <script>
+      // Resolve the theme before first paint from the cached preference (spec: application preferences).
+      (function () {
+        var choice = "auto";
+        try {
+          var cached = JSON.parse(localStorage.getItem("homeplan:preferences") || "null");
+          if (cached && cached.appearance && cached.appearance.theme) choice = cached.appearance.theme;
+        } catch (e) {}
+        var dark =
+          choice === "dark" ||
+          (choice === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        var theme = dark ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", theme);
+        // The colour scheme's derived tokens, cached by the theme controller (Phase 5.5).
+        try {
+          var tokens = JSON.parse(localStorage.getItem("homeplan:theme-tokens") || "null");
+          var roles = tokens && tokens[theme];
+          if (roles)
+            for (var role in roles)
+              document.documentElement.style.setProperty("--ui-color-" + role, roles[role]);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

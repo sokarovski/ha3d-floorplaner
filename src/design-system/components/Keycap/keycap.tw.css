@@ -1,0 +1,5 @@
+@layer components {
+  [data-keycap] {
+    @apply inline-flex h-6 min-w-6 items-center justify-center rounded-md bg-surface px-1.5 font-sans text-xs font-medium text-muted shadow-[inset_0_0_0_1px_var(--ui-color-border),0_1px_0_var(--ui-color-border)];
+  }
+}

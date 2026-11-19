@@ -1,0 +1,13 @@
+{
+  "id": "table-dining",
+  "label": "Dining Table",
+  "kind": "table",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Tables",
+  "tags": ["table", "dining", "kitchen", "square", "rectangular", "four legs"],
+  "product": {
+    "description": "Dining table with a thin top, an apron under it, and four square legs set in from the corners."
+  }
+}

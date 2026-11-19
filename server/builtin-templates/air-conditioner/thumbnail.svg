@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Air Conditioner">
+<g stroke-width="0.6" stroke-linejoin="round">
+<polygon points="20.0,167.1 236.0,167.1 236.0,150.9" fill="rgb(205,205,205)" stroke="rgb(205,205,205)"/>
+<polygon points="20.0,167.1 236.0,150.9 20.0,150.9" fill="rgb(205,205,205)" stroke="rgb(205,205,205)"/>
+<polygon points="25.4,150.9 230.6,153.6 230.6,150.9" fill="rgb(198,198,198)" stroke="rgb(198,198,198)"/>
+<polygon points="25.4,150.9 25.4,153.6 230.6,153.6" fill="rgb(198,198,198)" stroke="rgb(198,198,198)"/>
+<polygon points="20.0,150.9 236.0,150.9 236.0,88.9" fill="rgb(205,205,205)" stroke="rgb(205,205,205)"/>
+<polygon points="20.0,150.9 236.0,88.9 20.0,88.9" fill="rgb(205,205,205)" stroke="rgb(205,205,205)"/>
+<polygon points="25.4,153.6 25.4,159.0 230.6,159.0" fill="rgb(181,181,181)" stroke="rgb(181,181,181)"/>
+<polygon points="195.5,134.7 217.1,134.7 217.1,129.3" fill="rgb(150,150,150)" stroke="rgb(150,150,150)"/>
+<polygon points="195.5,134.7 217.1,129.3 195.5,129.3" fill="rgb(150,150,150)" stroke="rgb(150,150,150)"/>
+<polygon points="25.4,153.6 230.6,159.0 230.6,153.6" fill="rgb(181,181,181)" stroke="rgb(181,181,181)"/>
+</g>
+</svg>

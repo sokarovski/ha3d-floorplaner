@@ -1,0 +1,14 @@
+{
+  "id": "plant-leafy",
+  "label": "Leafy Plant",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Plants",
+  "tags": ["plant", "leafy", "broad leaf", "houseplant"],
+  "product": {
+    "name": "Leafy Plant",
+    "description": "A bushy plant with broad leaves in a pot. One height setting scales the whole plant."
+  }
+}

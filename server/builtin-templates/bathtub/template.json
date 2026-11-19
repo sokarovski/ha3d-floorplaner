@@ -1,0 +1,13 @@
+{
+  "id": "bathtub",
+  "label": "Bathtub",
+  "kind": "bathtub",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Bathroom",
+  "tags": ["bath", "tub", "tiled", "apron", "wet room"],
+  "product": {
+    "description": "Free-standing-size white bathtub with a tile-clad apron on all four sides; the apron takes tiles of your choice."
+  }
+}

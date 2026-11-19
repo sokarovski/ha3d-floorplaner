@@ -1,0 +1,35 @@
+@layer components {
+  [data-tool-button] {
+    @apply relative inline-flex size-10 shrink-0 cursor-default items-center justify-center rounded-control text-foreground transition-[background-color,box-shadow] outline-none;
+  }
+
+  [data-tool-button][data-hovered]:not([data-disabled]) {
+    box-shadow: inset 0 0 0 999px var(--ui-color-hover);
+  }
+
+  [data-tool-button][data-pressed]:not([data-disabled]) {
+    box-shadow: inset 0 0 0 999px var(--ui-color-pressed);
+  }
+
+  /* The active tool is a filled tonal pill (Phase 5.6), no outline. */
+  [data-tool-button][data-tool-button-active] {
+    @apply bg-selection text-on-selection;
+  }
+
+  /* A state that holds only while a key is down: a dashed ring instead of the solid active ring. */
+  [data-tool-button][data-tool-button-temporary] {
+    @apply ring-0 outline-2 -outline-offset-2 outline-primary outline-dashed;
+  }
+
+  [data-tool-button-badge] {
+    @apply pointer-events-none absolute right-0.5 bottom-0.5 rounded-sm bg-primary px-0.5 text-[10px] leading-3 font-semibold text-on-primary;
+  }
+
+  [data-tool-button][data-focus-visible] {
+    @apply outline-2 outline-offset-1 outline-focus;
+  }
+
+  [data-tool-button][data-disabled] {
+    @apply text-disabled-foreground;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "bar-table",
+  "label": "Bar Table",
+  "kind": "table",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Tables",
+  "tags": ["bar table", "counter", "high table", "breakfast bar", "inverted L", "stand-up"],
+  "product": {
+    "description": "Tall narrow table: a top supported by one solid end panel on the right (inverted L); flip it to put the panel on the left."
+  }
+}

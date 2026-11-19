@@ -1,0 +1,15 @@
+{
+  "id": "split-air-conditioner",
+  "label": "Split Air Conditioner, Indoor Unit",
+  "kind": "airConditioner",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Heating and cooling",
+  "tags": ["air conditioner", "ac", "split", "indoor unit", "cooling", "heating", "charmo"],
+  "product": {
+    "manufacturer": "Charmo",
+    "name": "Arctic PRO II 18k",
+    "description": "Wall-mounted split air conditioner, 18,000 BTU/h class: indoor unit with a lower louver."
+  }
+}

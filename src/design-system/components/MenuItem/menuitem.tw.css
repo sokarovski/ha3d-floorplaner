@@ -1,0 +1,29 @@
+@layer components {
+  [data-menu-item] {
+    @apply flex h-9 cursor-default items-center gap-2 rounded-control px-3 text-sm text-foreground outline-none select-none;
+  }
+
+  [data-menu-item][data-focused] {
+    @apply bg-hover;
+  }
+
+  [data-menu-item][data-disabled] {
+    @apply text-disabled-foreground;
+  }
+
+  [data-menu-item][data-menu-item-danger] {
+    @apply text-danger;
+  }
+
+  [data-menu-item-icon-space] {
+    @apply inline-block size-4;
+  }
+
+  [data-menu-item-label] {
+    @apply flex-1 truncate;
+  }
+
+  [data-menu-item-shortcut] {
+    @apply font-sans text-xs text-muted;
+  }
+}

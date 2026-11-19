@@ -1,0 +1,13 @@
+{
+  "id": "office-chair-mesh",
+  "label": "Mesh Office Chair",
+  "kind": "chair",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Seating",
+  "tags": ["chair", "office", "desk", "swivel", "mesh", "armrests"],
+  "product": {
+    "description": "Office chair on a five-star castor base with a mesh back, lumbar pad, and padded armrests."
+  }
+}

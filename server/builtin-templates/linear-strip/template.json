@@ -1,0 +1,8 @@
+{
+  "id": "linear-strip",
+  "label": "Linear LED Strip",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg"
+}

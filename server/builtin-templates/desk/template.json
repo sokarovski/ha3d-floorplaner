@@ -1,0 +1,13 @@
+{
+  "id": "desk",
+  "label": "Desk",
+  "kind": "desk",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Tables",
+  "tags": ["desk", "table", "office", "study", "work", "keyboard", "computer"],
+  "product": {
+    "description": "Simple desk with a choice of solid end panels (inverted U) or slim uprights on T-shaped feet, and an optional back rail."
+  }
+}

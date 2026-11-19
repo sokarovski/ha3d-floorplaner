@@ -1,0 +1,13 @@
+{
+  "id": "fence-trellis",
+  "label": "Diamond Timber Trellis",
+  "kind": "fence",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["fence", "yard", "garden", "wood", "timber", "trellis", "lattice", "diamond"],
+  "product": {
+    "description": "Open diamond lattice in a substantial timber frame, with layered crossing battens and capped posts."
+  }
+}

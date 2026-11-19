@@ -1,0 +1,13 @@
+{
+  "domain": "homeplan",
+  "name": "Homeplan",
+  "codeowners": ["@sokarovski"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "panel_custom"],
+  "documentation": "https://github.com/sokarovski/ha3d-floorplaner#readme",
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/sokarovski/ha3d-floorplaner/issues",
+  "requirements": ["jcs==0.2.1", "jsonschema==4.25.1"],
+  "version": "0.1.0"
+}

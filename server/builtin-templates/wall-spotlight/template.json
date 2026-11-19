@@ -1,0 +1,14 @@
+{
+  "id": "wall-spotlight",
+  "label": "Wall Spotlight",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Lighting",
+  "tags": ["spotlight", "wall", "spot", "tube", "light"],
+  "product": {
+    "name": "Wall spotlight",
+    "description": "A short spot tube on a wooden back plate, aimed downwards."
+  }
+}

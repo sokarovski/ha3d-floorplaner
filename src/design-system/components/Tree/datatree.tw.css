@@ -1,0 +1,5 @@
+@layer components {
+  [data-tree] {
+    @apply flex flex-col gap-px py-1 text-sm outline-none;
+  }
+}

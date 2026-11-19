@@ -1,0 +1,11 @@
+{
+  "id": "air-purifier",
+  "label": "Air Purifier",
+  "kind": "airPurifier",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Appliances",
+  "tags": ["air purifier", "filter", "air quality", "tower", "appliance"],
+  "product": { "description": "Floor-standing tower air purifier with a top grille and a front indicator." }
+}

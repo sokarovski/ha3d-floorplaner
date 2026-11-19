@@ -1,0 +1,44 @@
+/* Viewport host and the /ds/viewport playground. The runtime's <canvas> carries data-viewport-canvas. */
+@layer components {
+  [data-viewport] {
+    @apply relative h-full min-h-0 w-full min-w-0 overflow-hidden bg-canvas;
+  }
+
+  [data-viewport-surface] {
+    @apply absolute inset-0;
+  }
+
+  [data-viewport-canvas] {
+    @apply block h-full w-full touch-none outline-none select-none;
+  }
+
+  [data-viewport-message] {
+    @apply absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted;
+  }
+
+  [data-viewport-playground] {
+    @apply grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 p-4;
+  }
+
+  [data-viewport-playground-toolbar] {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  [data-viewport-playground-stage] {
+    @apply min-h-0 overflow-hidden rounded-card bg-surface;
+  }
+
+  [data-viewport-playground-status] {
+    @apply flex flex-wrap gap-4 text-sm text-muted;
+  }
+}
+
+@layer components {
+  [data-template-preview-readout] {
+    @apply absolute right-3 bottom-3 left-3 flex items-center justify-between gap-3 rounded-card bg-surface/90 px-4 py-2.5 text-sm text-muted shadow-floating;
+  }
+
+  [data-template-playground] {
+    @apply grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "monitor-curved",
+  "label": "Curved Monitor",
+  "kind": "monitor",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Electronics",
+  "tags": ["monitor", "ultrawide", "curved", "computer", "screen", "desk"],
+  "product": {
+    "name": "Curved ultrawide monitor",
+    "description": "A curved ultrawide monitor on a stand. The width stretches the panel."
+  }
+}

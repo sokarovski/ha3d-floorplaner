@@ -1,0 +1,14 @@
+{
+  "id": "tree-deciduous",
+  "label": "Deciduous Tree",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["outdoor", "garden", "tree", "deciduous", "oak", "lime", "shade tree"],
+  "product": {
+    "name": "Deciduous Tree",
+    "description": "A broad round-crowned garden tree (oak, lime, maple). Height and canopy width are adjustable."
+  }
+}

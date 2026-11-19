@@ -1,0 +1,11 @@
+{
+  "id": "gate-picket",
+  "label": "Picket Gate",
+  "kind": "gate",
+  "contract": "Wallable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["gate", "fence", "yard", "garden"],
+  "product": { "description": "White wooden garden gate for a picket fence or a hedge." }
+}

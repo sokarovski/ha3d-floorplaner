@@ -1,0 +1,9 @@
+@layer components {
+  [data-menu-popover] {
+    @apply z-40 min-w-48 overflow-auto rounded-card bg-surface-raised p-1.5 text-foreground shadow-floating outline-none;
+  }
+
+  [data-menu] {
+    @apply flex flex-col outline-none;
+  }
+}

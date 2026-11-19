@@ -1,0 +1,15 @@
+{
+  "id": "stool-three-leg",
+  "label": "Three-Leg Stool",
+  "kind": "stool",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Seating",
+  "tags": ["stool", "plant stand", "side table", "plywood", "bent plywood", "KYRRE"],
+  "product": {
+    "name": "KYRRE-style stool",
+    "description": "Small stool with a rounded triangular seat and three bent plywood legs; also used as a plant stand.",
+    "notes": "Modelled after the look of the IKEA KYRRE stool; not an exact copy."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "balcony-door-double",
+  "label": "Two-Leaf Balcony Door",
+  "kind": "door",
+  "contract": "Wallable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Openings",
+  "tags": ["door", "balcony", "french door", "two leaf", "glazed", "blind", "venetian blind"],
+  "product": {
+    "description": "Glazed two-leaf balcony door: both leaves hinge on the outer posts and meet at a centre post; each has a handle and a venetian blind that swings with it.",
+    "notes": "Each leaf has its own open angle; flip inside/outside to swing the leaves out."
+  }
+}

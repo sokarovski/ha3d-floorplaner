@@ -1,0 +1,85 @@
+// Runs Home Assistant dashboard actions from the viewer (spec/home-assistant/viewer-mvp.md#bindings-and-edit-mode):
+// the same action objects HA's action editor produces (tap_action and friends). Implemented here because the
+// panel is not a Lovelace dashboard, whose hass-action handler is not available to it.
+import type { HaActionValue } from "@shared/domain/schemas/homeAssistant";
+import type { Hass } from "./hassStore";
+
+export type Gesture = "tap" | "hold" | "doubleTap";
+
+const text = (value: unknown): string | undefined =>
+  typeof value === "string" && value !== "" ? value : undefined;
+
+const record = (value: unknown): Readonly<Record<string, unknown>> | undefined => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+  return Object.fromEntries(Object.entries(value));
+};
+
+/** The action for a gesture when none is configured: like HA's tile/button cards. */
+export const defaultAction = (gesture: Gesture): HaActionValue =>
+  gesture === "tap"
+    ? { action: "toggle" }
+    : gesture === "hold"
+      ? { action: "more-info" }
+      : { action: "none" };
+
+/**
+ * An object's action for a gesture when none is configured (Phase 8.3, decided): an AC (template kind
+ * `airConditioner`) opens its entity's more-info on tap (expected a `climate` entity); every other gesture and
+ * every other object does nothing, so an object without actions lets the tap through to its room.
+ */
+export const defaultObjectAction = (templateKind: string | null, gesture: Gesture): HaActionValue =>
+  templateKind === "airConditioner" && gesture === "tap" ? { action: "more-info" } : { action: "none" };
+
+/** host: an element inside HA's DOM, so composed events (more-info) reach HA's dialog manager. */
+export const runAction = async (
+  host: HTMLElement,
+  hass: Hass,
+  action: HaActionValue,
+  entityId: string | null,
+): Promise<void> => {
+  const field = (name: string): unknown => Reflect.get(action, name);
+  const entity = text(field("entity")) ?? entityId;
+  switch (action.action) {
+    case "toggle": {
+      if (entity === null) return;
+      const domain = entity.split(".")[0] ?? "homeassistant";
+      await hass.callService(domain, "toggle", { entity_id: entity });
+      return;
+    }
+    case "more-info": {
+      if (entity === null) return;
+      host.dispatchEvent(
+        new CustomEvent("hass-more-info", { detail: { entityId: entity }, bubbles: true, composed: true }),
+      );
+      return;
+    }
+    case "perform-action":
+    case "call-service": {
+      const name = text(field("perform_action")) ?? text(field("service"));
+      const [domain, service] = name?.split(".", 2) ?? [];
+      if (domain === undefined || service === undefined) return;
+      const data = record(field("data")) ?? record(field("service_data")) ?? {};
+      const target = record(field("target"));
+      await hass.callService(domain, service, data, target);
+      return;
+    }
+    case "navigate": {
+      const path = text(field("navigation_path"));
+      if (path === undefined) return;
+      window.history.pushState(null, "", path);
+      window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
+      return;
+    }
+    case "url": {
+      const url = text(field("url_path"));
+      if (url === undefined) return;
+      // Only web links: http(s) and relative URLs (never javascript:, data: and similar schemes).
+      const protocol = new URL(url, window.location.href).protocol;
+      if (protocol === "http:" || protocol === "https:") window.open(url, "_blank", "noopener");
+      return;
+    }
+    default:
+      // "none", and "assist" (not supported in the viewer yet).
+      return;
+  }
+};

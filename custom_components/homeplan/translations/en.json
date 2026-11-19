@@ -1,0 +1,50 @@
+{
+  "title": "Homeplan",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Homeplan",
+        "description": "Add the Homeplan panel. If the Homeplan app runs on this Home Assistant, its address is filled in automatically (it can take a few minutes to be found). Otherwise open Homeplan, choose Setup your home, paste your Floor Builder URL and Connect. No YAML or running builder is needed to add this integration."
+      },
+      "hassio_confirm": {
+        "title": "Homeplan app found",
+        "description": "Set up Homeplan with the {app} app at {url}? The panel will use it as its Floor Builder. You can change the address later in House setup."
+      }
+    },
+    "abort": {
+      "already_configured": "Homeplan is already configured.",
+      "already_in_progress": "Homeplan setup is already in progress.",
+      "cannot_connect": "The discovered Homeplan app did not answer. Start the app and try again, or enter a Floor Builder URL manually.",
+      "incompatible_app": "The discovered Homeplan app is not compatible with this integration version. Update the app and the integration to the same version.",
+      "invalid_discovery": "The Homeplan app sent an invalid address.",
+      "not_loaded": "Homeplan is not loaded. Fix its error in Settings > Devices & services, then reload it; the app is offered again when it next announces itself.",
+      "discovered_applied": "Homeplan now uses the discovered Homeplan app.",
+      "manual_source_kept": "A Homeplan app was found, but Homeplan keeps the Floor Builder URL you entered. To switch, open Homeplan > Configure and choose Use the discovered app."
+    },
+    "flow_title": "{name}"
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Homeplan recovery",
+        "description": "These are the same URL and DEV MODE settings as House setup. Save, then reload the browser. Disable DEV MODE to use local copies. Restore packaged frontend recovers shipped UI code without deleting houses or bindings.\n\nCurrent Floor Builder URL: {origin}. Discovered Homeplan app: {discovered}.",
+        "data": {
+          "builder_url": "Floor Builder URL",
+          "dev_mode": "DEV MODE (remote panel and house)",
+          "restore_packaged": "Restore packaged frontend",
+          "use_discovered": "Use the discovered Homeplan app"
+        },
+        "data_description": {
+          "use_discovered": "Replaces the URL above with the discovered app's address and turns DEV MODE off (it is for a builder on your own computer). The selected house and bindings are kept."
+        }
+      }
+    },
+    "error": {
+      "invalid_connection": "Enter an HTTP(S) Floor Builder base URL without credentials or a house path. Set a URL before enabling DEV MODE. DEV MODE is for a Floor Builder running on your own computer, not the discovered Homeplan app.",
+      "stale_revision": "Settings changed elsewhere. Review this draft and Save again to reapply it, or Cancel to keep the current settings."
+    },
+    "abort": {
+      "not_loaded": "Homeplan is not loaded. Check the integration's error in Settings > Devices & services, fix it, and reload Homeplan before using recovery."
+    }
+  }
+}

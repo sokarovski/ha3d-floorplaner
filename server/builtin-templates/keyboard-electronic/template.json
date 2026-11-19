@@ -1,0 +1,14 @@
+{
+  "id": "keyboard-electronic",
+  "label": "Electronic Keyboard",
+  "kind": "instrument",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Electronics",
+  "tags": ["keyboard", "piano", "synth", "music", "instrument"],
+  "product": {
+    "name": "Electronic keyboard",
+    "description": "A keyboard instrument whose number of keys follows the width: 49 keys 935 mm, 61 keys 1130 mm, 76 keys 1355 mm, 88 keys 1580 mm."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "sideboard-cabinet",
+  "label": "Sideboard Cabinet",
+  "kind": "cabinet",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Storage",
+  "tags": ["sideboard", "cabinet", "pedestal", "bar", "feet"],
+  "product": {
+    "name": "Sideboard cabinet on feet",
+    "description": "A cabinet on black feet with an aluminium handle strip: a door with a top drawer (pedestal 70 × 60 × 85 cm), or a single door (bar cabinet 60 × 60 × 80 cm)."
+  }
+}

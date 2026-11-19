@@ -1,0 +1,11 @@
+{
+  "id": "ottoman",
+  "label": "Ottoman",
+  "kind": "ottoman",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Seating",
+  "tags": ["ottoman", "pouf", "footstool", "stool", "living room"],
+  "product": { "description": "Square upholstered ottoman on four small feet, one in each corner." }
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Floor Opening">
+<g stroke-width="0.6" stroke-linejoin="round">
+<polygon points="20.0,20.0 236.0,26.5 236.0,20.0" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="20.0,20.0 20.0,26.5 236.0,26.5" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="20.0,229.5 236.0,236.0 236.0,229.5" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="20.0,229.5 20.0,236.0 236.0,236.0" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="20.0,26.5 26.5,229.5 26.5,26.5" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="20.0,26.5 20.0,229.5 26.5,229.5" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="229.5,26.5 236.0,229.5 236.0,26.5" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+<polygon points="229.5,26.5 229.5,229.5 236.0,229.5" fill="rgb(168,168,168)" stroke="rgb(168,168,168)"/>
+</g>
+</svg>

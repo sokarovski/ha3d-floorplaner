@@ -1,0 +1,14 @@
+{
+  "id": "window-casement",
+  "label": "Casement Window",
+  "kind": "window",
+  "contract": "Wallable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Openings",
+  "tags": ["window", "casement", "tilt and turn", "sash", "blind", "venetian blind", "two wing"],
+  "product": {
+    "description": "Timber casement window with one or two side-hung wings. The main wing tilts in from the top or swings like a door; an optional venetian blind on each wing tilts its slats open or closed.",
+    "notes": "Flip left/right to move the hinge and handle; flip inside/outside to turn the window, the blind stays on the room side."
+  }
+}

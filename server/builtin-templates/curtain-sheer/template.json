@@ -1,0 +1,14 @@
+{
+  "id": "curtain-sheer",
+  "label": "Sheer Curtain",
+  "kind": "curtain",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Decor",
+  "tags": ["curtain", "sheer", "drape", "window"],
+  "product": {
+    "name": "Sheer curtain on a rail",
+    "description": "A gathered sheer curtain on a ceiling rail. Folds follow the width."
+  }
+}

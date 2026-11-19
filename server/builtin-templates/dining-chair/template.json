@@ -1,0 +1,11 @@
+{
+  "id": "dining-chair",
+  "label": "Dining Chair",
+  "kind": "chair",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Seating",
+  "tags": ["chair", "dining", "kitchen", "fabric", "wood"],
+  "product": { "description": "Four-legged dining chair with an upholstered seat and back and wooden legs." }
+}

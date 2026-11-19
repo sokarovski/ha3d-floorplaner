@@ -1,0 +1,14 @@
+{
+  "id": "wardrobe-drawer-legs",
+  "label": "Wardrobe with Drawer and Legs",
+  "kind": "wardrobe",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Storage",
+  "tags": ["wardrobe", "closet", "bedroom", "drawer"],
+  "product": {
+    "name": "Two-wing wardrobe with drawer and top cupboard",
+    "description": "A 60 cm wardrobe on 100 mm metal legs: a drawer, two tall wings, and two top cupboard doors with bar handles."
+  }
+}

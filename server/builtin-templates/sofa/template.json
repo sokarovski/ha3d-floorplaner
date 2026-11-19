@@ -1,0 +1,13 @@
+{
+  "id": "sofa",
+  "label": "Sofa",
+  "kind": "sofa",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Seating",
+  "tags": ["sofa", "couch", "armchair", "loveseat", "two-seat", "three-seat", "living room"],
+  "product": {
+    "description": "Fabric sofa with slim arms and back on short legs; one model from armchair to three-seater. The cushion count follows the width and a centre leg pair appears on wide sizes."
+  }
+}

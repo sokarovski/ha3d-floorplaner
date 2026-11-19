@@ -1,0 +1,7 @@
+{
+  "name": "Homeplan",
+  "homeassistant": "2025.7.0",
+  "zip_release": true,
+  "filename": "homeplan.zip",
+  "render_readme": true
+}

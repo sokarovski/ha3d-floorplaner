@@ -1,0 +1,14 @@
+{
+  "id": "ladder-decorative",
+  "label": "Decorative Ladder",
+  "kind": "decor",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Decor",
+  "tags": ["ladder", "bamboo", "leaning", "towels"],
+  "product": {
+    "name": "Leaning bamboo ladder",
+    "description": "A decorative ladder that leans on the wall; the rungs follow the height."
+  }
+}

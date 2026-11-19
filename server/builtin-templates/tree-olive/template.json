@@ -1,0 +1,14 @@
+{
+  "id": "tree-olive",
+  "label": "Olive Tree",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["outdoor", "garden", "tree", "olive", "mediterranean", "evergreen"],
+  "product": {
+    "name": "Olive Tree",
+    "description": "A Mediterranean olive tree: a gnarled twin trunk under a wide, flat silver-green crown."
+  }
+}

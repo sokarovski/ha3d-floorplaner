@@ -1,0 +1,11 @@
+{
+  "id": "fence-panel",
+  "label": "Metal Panel Fence",
+  "kind": "fence",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["fence", "metal", "panel", "steel", "yard", "garden"],
+  "product": { "description": "Black welded steel panels between posts; the panels repeat along the wall." }
+}

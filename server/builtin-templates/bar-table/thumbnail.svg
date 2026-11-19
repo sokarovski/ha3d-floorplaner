@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Bar Table">
+<g stroke-width="0.6" stroke-linejoin="round">
+<polygon points="20.0,77.3 236.0,77.3 236.0,72.0" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="20.0,77.3 236.0,72.0 20.0,72.0" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="230.7,184.0 236.0,184.0 236.0,77.3" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="230.7,184.0 236.0,77.3 230.7,77.3" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+</g>
+</svg>

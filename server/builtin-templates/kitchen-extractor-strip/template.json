@@ -1,0 +1,13 @@
+{
+  "id": "kitchen-extractor-strip",
+  "label": "Extractor Strip",
+  "kind": "kitchen",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Kitchen",
+  "tags": ["kitchen", "extractor", "hood", "cooker hood", "appliance"],
+  "product": {
+    "description": "Integrated cooker hood strip, 40 mm high; place it directly under an upper cabinet (1460 mm under a 1500 mm cabinet)."
+  }
+}

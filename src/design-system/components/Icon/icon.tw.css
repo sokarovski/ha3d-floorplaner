@@ -1,0 +1,13 @@
+@layer components {
+  [data-icon] {
+    @apply inline-block size-4 shrink-0;
+  }
+
+  [data-icon][data-icon-sm] {
+    @apply size-3.5;
+  }
+
+  [data-icon][data-icon-lg] {
+    @apply size-5;
+  }
+}

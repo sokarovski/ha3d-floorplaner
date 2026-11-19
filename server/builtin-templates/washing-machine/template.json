@@ -1,0 +1,13 @@
+{
+  "id": "washing-machine",
+  "label": "Washing Machine",
+  "kind": "washingMachine",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Appliances",
+  "tags": ["washing machine", "washer", "laundry", "front loader", "appliance"],
+  "product": {
+    "description": "Front-loading washing machine with a round door, a control strip, and a dial."
+  }
+}

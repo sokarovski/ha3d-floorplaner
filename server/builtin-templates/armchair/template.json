@@ -1,0 +1,8 @@
+{
+  "id": "armchair",
+  "label": "Armchair",
+  "kind": "armchair",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg"
+}

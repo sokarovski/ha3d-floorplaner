@@ -1,0 +1,13 @@
+{
+  "id": "fence-wire",
+  "label": "Wire Mesh Fence",
+  "kind": "fence",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["fence", "yard", "garden", "wire", "mesh", "green", "steel", "welded"],
+  "product": {
+    "description": "Green welded garden mesh with 100 × 150 mm openings, tension rails and slender square steel posts."
+  }
+}

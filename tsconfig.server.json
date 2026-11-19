@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": [
+    "server",
+    "shared",
+    "scripts/**/*.ts",
+    "vite.config.ts",
+    "vite.ha-viewer.config.ts",
+    "vite.website.config.ts"
+  ]
+}

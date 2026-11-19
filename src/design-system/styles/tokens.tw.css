@@ -1,0 +1,134 @@
+/* Semantic design tokens. Every role has a light and a dark value (spec/design-system/README.md §3).
+   These are the defaults of the built-in scheme; since Phase 5.5 every role is derived from five base colours
+   (src/design-system/tokens/colorScheme.ts), and a chosen scheme overrides these values at runtime.
+   The /ds colors page reads src/design-system/tokens/colorTokens.ts. */
+
+:root,
+[data-ui-root][data-theme="light"] {
+  color-scheme: light;
+  --ui-color-canvas: #f5f7fa;
+  --ui-color-surface: #ffffff;
+  --ui-color-surface-raised: #ffffff;
+  --ui-color-input: #ebeff5;
+  --ui-color-foreground: #232933;
+  --ui-color-muted: #4f5c6f;
+  --ui-color-disabled-foreground: #64748b;
+  --ui-color-border: #d5dde8;
+  --ui-color-border-strong: #99a6b8;
+  --ui-color-hover: rgb(35 41 51 / 6%);
+  --ui-color-pressed: rgb(35 41 51 / 10%);
+  --ui-color-primary: #1d4ed8;
+  --ui-color-primary-hover: #0d39c3;
+  --ui-color-on-primary: #ffffff;
+  --ui-color-selection: #e7effe;
+  --ui-color-on-selection: #234fc0;
+  --ui-color-focus: #1d4ed8;
+  --ui-color-danger: #be1e1f;
+  --ui-color-danger-hover: #aa1115;
+  --ui-color-on-danger: #ffffff;
+  --ui-color-danger-surface: #fef4f3;
+  --ui-color-success: #056e2e;
+  --ui-color-success-surface: #eefbef;
+  --ui-color-warning: #864908;
+  --ui-color-warning-surface: #fef5ee;
+  --ui-color-info: #234fc0;
+  --ui-color-info-surface: #f3f7ff;
+  --ui-color-overlay: rgb(35 41 51 / 35%);
+  --ui-color-grid: rgb(79 92 111 / 20%);
+  --ui-color-guide: #7c3aed;
+  --ui-color-axis-x: #dc2626;
+  --ui-color-axis-y: #16a34a;
+  --ui-color-axis-z: #2563eb;
+}
+
+[data-ui-root][data-theme="dark"] {
+  color-scheme: dark;
+  --ui-color-canvas: #0f0f10;
+  --ui-color-surface: #161719;
+  --ui-color-surface-raised: #272c32;
+  --ui-color-input: #202327;
+  --ui-color-foreground: #eaf3fe;
+  --ui-color-muted: #bac9de;
+  --ui-color-disabled-foreground: #616d7e;
+  --ui-color-border: #3a424c;
+  --ui-color-border-strong: #616d7e;
+  --ui-color-hover: rgb(234 243 254 / 8%);
+  --ui-color-pressed: rgb(234 243 254 / 14%);
+  --ui-color-primary: #8cb0fb;
+  --ui-color-primary-hover: #a9c4fc;
+  --ui-color-on-primary: #0f0f10;
+  --ui-color-selection: #192a4e;
+  --ui-color-on-selection: #ecf2fe;
+  --ui-color-focus: #a9c4fc;
+  --ui-color-danger: #fbb2a8;
+  --ui-color-danger-hover: #feeeeb;
+  --ui-color-on-danger: #150d0c;
+  --ui-color-danger-surface: #361916;
+  --ui-color-success: #7ee193;
+  --ui-color-success-surface: #152819;
+  --ui-color-warning: #fcb67f;
+  --ui-color-warning-surface: #2f1f11;
+  --ui-color-info: #aec7fc;
+  --ui-color-info-surface: #17223a;
+  --ui-color-overlay: rgb(0 0 0 / 60%);
+  --ui-color-grid: rgb(186 201 222 / 18%);
+  --ui-color-guide: #c4b5fd;
+  --ui-color-axis-x: #f87171;
+  --ui-color-axis-y: #4ade80;
+  --ui-color-axis-z: #60a5fa;
+}
+
+@theme inline {
+  --color-canvas: var(--ui-color-canvas);
+  --color-surface: var(--ui-color-surface);
+  --color-surface-raised: var(--ui-color-surface-raised);
+  --color-input: var(--ui-color-input);
+  --color-foreground: var(--ui-color-foreground);
+  --color-muted: var(--ui-color-muted);
+  --color-disabled-foreground: var(--ui-color-disabled-foreground);
+  --color-border: var(--ui-color-border);
+  --color-border-strong: var(--ui-color-border-strong);
+  --color-hover: var(--ui-color-hover);
+  --color-pressed: var(--ui-color-pressed);
+  --color-primary: var(--ui-color-primary);
+  --color-primary-hover: var(--ui-color-primary-hover);
+  --color-on-primary: var(--ui-color-on-primary);
+  --color-selection: var(--ui-color-selection);
+  --color-on-selection: var(--ui-color-on-selection);
+  --color-focus: var(--ui-color-focus);
+  --color-danger: var(--ui-color-danger);
+  --color-danger-hover: var(--ui-color-danger-hover);
+  --color-on-danger: var(--ui-color-on-danger);
+  --color-danger-surface: var(--ui-color-danger-surface);
+  --color-success: var(--ui-color-success);
+  --color-success-surface: var(--ui-color-success-surface);
+  --color-warning: var(--ui-color-warning);
+  --color-warning-surface: var(--ui-color-warning-surface);
+  --color-info: var(--ui-color-info);
+  --color-info-surface: var(--ui-color-info-surface);
+  --color-overlay: var(--ui-color-overlay);
+  --color-grid: var(--ui-color-grid);
+  --color-guide: var(--ui-color-guide);
+  --color-axis-x: var(--ui-color-axis-x);
+  --color-axis-y: var(--ui-color-axis-y);
+  --color-axis-z: var(--ui-color-axis-z);
+}
+
+/* Non-color tokens: typography, spacing, radii, control sizes, shadows, layers. Phase 5.6 visual rules:
+   regions are separated by surface tone and space (8/12/16/24/32 px), not lines; controls are 36 px; radii
+   are 8 px controls, 12 px cards, 16 px popups; only floating things cast a shadow. */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --spacing: 0.25rem;
+  --radius-control: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-popup: 1rem;
+  --size-control: 2.25rem;
+  --size-toolbox: 3.5rem;
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 6%), 0 8px 24px rgb(0 0 0 / 12%);
+  --shadow-floating: 0 1px 3px rgb(0 0 0 / 8%), 0 12px 32px rgb(0 0 0 / 14%);
+  --z-menu: 40;
+  --z-popup: 50;
+  --z-toast: 60;
+}

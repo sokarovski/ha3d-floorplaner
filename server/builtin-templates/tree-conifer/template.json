@@ -1,0 +1,14 @@
+{
+  "id": "tree-conifer",
+  "label": "Fir Tree",
+  "kind": "plant",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Garden",
+  "tags": ["outdoor", "garden", "tree", "conifer", "fir", "spruce", "pine", "evergreen", "christmas tree"],
+  "product": {
+    "name": "Fir Tree",
+    "description": "A slender evergreen conifer of tiered, jagged branches. Height and spread are adjustable."
+  }
+}

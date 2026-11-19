@@ -1,0 +1,13 @@
+{
+  "id": "kitchen-sink-base",
+  "label": "Sink Base Cabinet",
+  "kind": "kitchen",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Kitchen",
+  "tags": ["kitchen", "sink", "cabinet", "base unit", "tap", "round sink"],
+  "product": {
+    "description": "50 cm sink base unit with a round inset steel bowl, gooseneck tap, door, and false drawer front."
+  }
+}

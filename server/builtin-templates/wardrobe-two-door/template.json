@@ -1,0 +1,14 @@
+{
+  "id": "wardrobe-two-door",
+  "label": "Wardrobe with Two Doors and Top Cupboards",
+  "kind": "wardrobe",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Storage",
+  "tags": ["wardrobe", "closet", "tall"],
+  "product": {
+    "name": "Tall wardrobe with two doors and two top cupboards",
+    "description": "A 85 cm wardrobe: two tall doors and two upper cupboard doors with bar handles."
+  }
+}

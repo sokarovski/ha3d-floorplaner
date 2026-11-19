@@ -1,0 +1,14 @@
+{
+  "id": "wardrobe-three-section",
+  "label": "Three-Section Wardrobe",
+  "kind": "wardrobe",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Storage",
+  "tags": ["wardrobe", "divider", "tall", "closet"],
+  "product": {
+    "name": "Three-section room-divider wardrobe",
+    "description": "Three equal sections with tall doors below and upper cupboard doors above; also stands in a room."
+  }
+}

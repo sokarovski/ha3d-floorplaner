@@ -1,0 +1,10 @@
+{
+  "id": "skylight-flat",
+  "label": "Flat-roof skylight",
+  "kind": "roofWindow",
+  "contract": "Wallable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Windows",
+  "tags": ["skylight", "roof", "flat"]
+}

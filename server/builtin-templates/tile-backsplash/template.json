@@ -1,0 +1,13 @@
+{
+  "id": "tile-backsplash",
+  "label": "Tile Backsplash",
+  "kind": "kitchen",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Kitchen",
+  "tags": ["kitchen", "backsplash", "splashback", "tiles", "wall panel"],
+  "product": {
+    "description": "Tiled wall panel above the worktop, with grout lines and an optional decorative band."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "frame",
+  "label": "Frame",
+  "kind": "picture",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Decor",
+  "tags": ["picture", "mirror", "frame", "print", "wall"],
+  "product": {
+    "name": "Picture or mirror frame",
+    "description": "A flat frame with an optional mat around a picture or a mirror. Pictures take any uploaded image; mirrors shine."
+  }
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Extractor Strip">
+<g stroke-width="0.6" stroke-linejoin="round">
+<polygon points="34.5,135.2 221.5,135.2 221.5,134.5" fill="rgb(146,146,146)" stroke="rgb(146,146,146)"/>
+<polygon points="34.5,135.2 221.5,134.5 34.5,134.5" fill="rgb(146,146,146)" stroke="rgb(146,146,146)"/>
+<polygon points="23.2,134.5 232.8,134.5 232.8,121.5" fill="rgb(184,184,184)" stroke="rgb(184,184,184)"/>
+<polygon points="23.2,134.5 232.8,121.5 23.2,121.5" fill="rgb(184,184,184)" stroke="rgb(184,184,184)"/>
+<polygon points="20.0,132.3 236.0,132.3 236.0,120.8" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+<polygon points="20.0,132.3 236.0,120.8 20.0,120.8" fill="rgb(196,196,196)" stroke="rgb(196,196,196)"/>
+</g>
+</svg>

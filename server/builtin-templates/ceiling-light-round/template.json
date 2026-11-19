@@ -1,0 +1,14 @@
+{
+  "id": "ceiling-light-round",
+  "label": "Round Ceiling Light",
+  "kind": "light",
+  "contract": "Areable",
+  "versions": [1],
+  "thumbnail": "thumbnail.svg",
+  "category": "Lighting",
+  "tags": ["ceiling", "flush", "round", "light"],
+  "product": {
+    "name": "Flush round ceiling light",
+    "description": "An opal flush-mounted ceiling light. The diameter sets the fixture and its emitter."
+  }
+}
