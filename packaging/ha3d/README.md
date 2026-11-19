@@ -1,6 +1,8 @@
 # Homeplan for Home Assistant
 
-![Homeplan](custom_components/homeplan/brand/icon.png)
+<p align="center">
+  <img src="https://sokarovski.github.io/ha3d-floorplaner/screenshots/viewer-night-lights.gif" alt="The demo apartment in the Homeplan viewer at night, its lamps switching on and off and lighting their own rooms." width="720">
+</p>
 
 Homeplan shows your home as a 3D model in a Home Assistant sidebar panel, with live lights, devices and room cards. This repository holds only the **Homeplan integration** (domain `homeplan`). The floor builder app, the documentation and the source live in [ha3d-floorplaner](https://github.com/sokarovski/ha3d-floorplaner).
 
