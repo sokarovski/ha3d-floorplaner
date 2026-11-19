@@ -95,6 +95,7 @@ export const viewerGroups: readonly CapabilityGroup[] = [
     id: "viewer-openings",
     title: "Doors, windows and blinds",
     lead: "Moving parts of the model follow the sensors and covers you link them to.",
+    media: [{ name: "viewer-door-open", kind: "still" }],
     items: [
       {
         icon: "door",
@@ -203,7 +204,10 @@ export const viewerGroups: readonly CapabilityGroup[] = [
   {
     id: "viewer-cards",
     title: "Cards, bubbles and actions",
-    media: [{ name: "ha-widgets", kind: "still" }],
+    media: [
+      { name: "ha-widgets", kind: "still" },
+      { name: "ha-more-info", kind: "still" },
+    ],
     items: [
       {
         icon: "frame",
@@ -226,19 +230,14 @@ export const viewerGroups: readonly CapabilityGroup[] = [
         text: "Each gesture runs a Home Assistant action: toggle, more info, perform an action, navigate, open a URL or Assist. A light toggles on tap by default.",
       },
       {
+        icon: "frame",
+        title: "Home Assistant's own controls",
+        text: "Hold a light or device to open Home Assistant's native more-info dialog, with every option it has, such as an AC's target temperature, mode, fan and swing.",
+      },
+      {
         icon: "eye",
         title: "Shown when",
         text: "Show a light, object or bubble only when a condition holds, written like Home Assistant's card conditions.",
-      },
-      {
-        icon: "monitor",
-        title: "TV screens",
-        text: "A TV shows the running app's artwork, or the app, channel or input name, while it is on.",
-      },
-      {
-        icon: "wind",
-        title: "Ambient effects",
-        text: "Swirls over an AC or a water heater can run only while a condition holds, for example while it is cooling.",
       },
       {
         icon: "search",
@@ -249,6 +248,33 @@ export const viewerGroups: readonly CapabilityGroup[] = [
         icon: "edit",
         title: "One Settings place",
         text: "In Edit mode, one searchable tree holds the house, its floor, rooms and things; everything saves together.",
+      },
+    ],
+  },
+  {
+    id: "viewer-devices",
+    title: "Your devices at work",
+    lead: "Things in the model show what the real devices are doing.",
+    media: [
+      { name: "device-tv-on", kind: "still" },
+      { name: "device-air-purifier", kind: "still" },
+      { name: "device-ac-heating", kind: "still" },
+    ],
+    items: [
+      {
+        icon: "monitor",
+        title: "See your TV being on",
+        text: "A TV shows the running app's artwork, or the app, channel or input name, while it is on.",
+      },
+      {
+        icon: "wind",
+        title: "See your air purifier working",
+        text: "Swirls rise over an air purifier while it runs, and stop when it is off.",
+      },
+      {
+        icon: "wind",
+        title: "See your AC heating",
+        text: "Red swirls while an AC heats, blue while it cools, and nothing when it is idle. A radiator or water heater can do the same.",
       },
     ],
   },
@@ -457,7 +483,10 @@ export const builderGroups: readonly CapabilityGroup[] = [
   {
     id: "builder-outside",
     title: "Gardens and yards",
-    media: [{ name: "builder-garden", kind: "still" }],
+    media: [
+      { name: "builder-garden", kind: "still" },
+      { name: "viewer-yard", kind: "still" },
+    ],
     items: [
       {
         icon: "yard",

@@ -18,7 +18,14 @@ export type ScreenshotName =
   | "builder-gallery"
   | "builder-room-properties"
   | "builder-history"
-  | "builder-evening";
+  | "builder-evening"
+  | "device-tv-on"
+  | "device-air-purifier"
+  | "device-ac-heating"
+  | "ha-link-settings"
+  | "ha-more-info"
+  | "viewer-door-open"
+  | "viewer-yard";
 
 export type Screenshot = Readonly<{
   file: string;
@@ -82,8 +89,8 @@ export const screenshots: Readonly<Record<ScreenshotName, Screenshot>> = {
   "ha-light-toggle": {
     file: "ha-light-toggle.gif",
     poster: "ha-light-toggle-poster.webp",
-    width: 960,
-    height: 600,
+    width: 720,
+    height: 450,
     alt: "In the Homeplan panel, the demo apartment zooms into the living room; a Home Assistant light card switches the light on and the room lights up, then off again.",
     caption: "Open a room, switch a real light from its card, and see it in 3D.",
     available: true,
@@ -91,8 +98,8 @@ export const screenshots: Readonly<Record<ScreenshotName, Screenshot>> = {
   "ha-presence": {
     file: "ha-presence.gif",
     poster: "ha-presence-poster.webp",
-    width: 960,
-    height: 600,
+    width: 720,
+    height: 450,
     alt: "A presence sensor detects someone in the living room and the room sweeps red in the Homeplan panel.",
     caption: "Presence: a motion sensor in Home Assistant sweeps the living room.",
     available: true,
@@ -108,8 +115,8 @@ export const screenshots: Readonly<Record<ScreenshotName, Screenshot>> = {
   "viewer-night-lights": {
     file: "viewer-night-lights.gif",
     poster: "viewer-night-lights-poster.webp",
-    width: 880,
-    height: 528,
+    width: 720,
+    height: 432,
     alt: "The demo city apartment in the viewer at night; two groups of lamps switch on and off in turn, lighting and darkening their rooms.",
     caption: "At night, lamps switching on and off light their own rooms.",
     available: true,
@@ -168,6 +175,62 @@ export const screenshots: Readonly<Record<ScreenshotName, Screenshot>> = {
     height: 773,
     alt: "The demo family house in the builder at 21:00 in the evening sun, with the house's Sun settings: fixed or current time, date and time, sun azimuth and elevation.",
     caption: "Set the date and time and see where the sun stands over the house.",
+    available: true,
+  },
+  "device-tv-on": {
+    file: "device-tv-on.webp",
+    width: 269,
+    height: 237,
+    alt: "A wall-mounted TV in the 3D living room with its screen on, showing what is playing, between two plants on the TV ledge.",
+    caption: "See your TV being on.",
+    available: true,
+  },
+  "device-air-purifier": {
+    file: "device-air-purifier.webp",
+    width: 122,
+    height: 141,
+    alt: "An air purifier in the 3D room with blue swirls rising from it while it runs.",
+    caption: "See your air purifier working.",
+    available: true,
+  },
+  "device-ac-heating": {
+    file: "device-ac-heating.webp",
+    width: 277,
+    height: 194,
+    alt: "A wall air conditioner in the 3D room with warm red swirls in front of it while it heats.",
+    caption: "See your AC heating.",
+    available: true,
+  },
+  "ha-link-settings": {
+    file: "ha-link-settings.webp",
+    width: 1484,
+    height: 1088,
+    alt: "The Homeplan panel's Settings in Home Assistant: a tree of the house, floor, room, lights and objects on the left, and a pendant light's entity, suggested entities, tap and hold actions, light output and a Shown when condition on the right.",
+    caption: "Settings in Home Assistant: link a lamp to its entity, choose its actions, and tune its light.",
+    available: true,
+  },
+  "ha-more-info": {
+    file: "ha-more-info.webp",
+    width: 884,
+    height: 592,
+    alt: "Home Assistant's own more-info dialog for the living room AC, opened from the 3D view: the current temperature, a heat target of 21 °C, and mode, fan and swing controls.",
+    caption: "Hold a device to open Home Assistant's own controls for it.",
+    available: true,
+  },
+  "viewer-door-open": {
+    file: "viewer-door-open.webp",
+    width: 647,
+    height: 522,
+    alt: "A door standing open in the 3D living room at night, following its door contact in Home Assistant.",
+    caption: "A door opens in 3D when the real one does.",
+    available: true,
+  },
+  "viewer-yard": {
+    file: "viewer-yard.webp",
+    width: 1320,
+    height: 944,
+    alt: "A demo house with its walled garden in the Homeplan viewer at night: lawn, a paved path, potted palms and a covered terrace with a dining table and a sofa.",
+    caption: "You can even put your yard: the garden, terrace and path in Home Assistant at night.",
     available: true,
   },
 };

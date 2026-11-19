@@ -24,7 +24,8 @@ export const CapabilityGroupView = ({ group, children }: CapabilityGroupViewProp
       {media.length === 0 ? null : (
         <div
           data-site-group-media=""
-          data-site-group-media-pair={media.length > 1 ? "" : undefined}
+          data-site-group-media-pair={media.length === 2 ? "" : undefined}
+          data-site-group-media-row={media.length > 2 ? "" : undefined}
           data-site-group-media-narrow={narrow ? "" : undefined}
         >
           {media.map((entry) =>

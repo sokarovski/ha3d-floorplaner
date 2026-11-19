@@ -21,7 +21,9 @@ export const SiteHeader = ({ page = "home" }: SiteHeaderProps): ReactElement => 
           <span>Homeplan</span>
         </a>
         <nav aria-label="Main" data-site-nav="">
-          {page === "home" ? null : <a href={pages.home}>Overview</a>}
+          <a href={page === "home" ? "#top" : pages.home} aria-current={page === "home" ? "page" : undefined}>
+            Overview
+          </a>
           <a href={`${home}#features`}>Features</a>
           <a href={pages.possibilities} aria-current={page === "possibilities" ? "page" : undefined}>
             All possibilities

@@ -9,10 +9,13 @@ type AnimatedClipProps = Readonly<{
   name: ScreenshotName;
 }>;
 
-// A short looping clip that shows its still poster until the visitor asks it to play.
+// Visitors who ask for reduced motion start on the still poster.
+const prefersReducedMotion = (): boolean => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// A short looping clip that plays on its own, with a control to stop it (or start it, for reduced motion).
 export const AnimatedClip = ({ name }: AnimatedClipProps): ReactElement => {
   const shot = screenshots[name];
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(() => !prefersReducedMotion());
   const still = shot.poster ?? shot.file;
   return (
     <figure data-site-figure="">

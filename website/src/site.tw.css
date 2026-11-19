@@ -506,6 +506,19 @@
     @apply lg:max-w-none lg:grid-cols-2;
   }
 
+  /* Several small close-ups in one row, each at one height and its own width, so none is stretched far past its size. */
+  [data-site-group-media][data-site-group-media-row] {
+    @apply flex max-w-none flex-wrap items-start;
+  }
+
+  [data-site-group-media-row] [data-site-figure] {
+    @apply flex-none;
+  }
+
+  [data-site-group-media-row] [data-site-figure-image] {
+    @apply h-40 w-auto sm:h-48;
+  }
+
   [data-site-capabilities] {
     @apply grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3;
   }

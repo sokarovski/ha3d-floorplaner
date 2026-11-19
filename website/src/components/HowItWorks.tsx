@@ -34,11 +34,11 @@ export const HowItWorks = (): ReactElement => (
           <p>
             Save the house in the builder. In the Homeplan integration, select the house and press Upgrade:
             Home Assistant keeps its own verified copy, so the panel works even when the builder is not
-            running.
+            running. Its Settings then link each lamp and device to the entity it stands for.
           </p>
         </div>
         <div data-site-flow-media="">
-          <ScreenshotFigure name="ha-house" />
+          <ScreenshotFigure name="ha-link-settings" />
         </div>
       </li>
       <li data-site-flow-step="">
