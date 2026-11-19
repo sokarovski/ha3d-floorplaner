@@ -10,11 +10,14 @@ const initial = await hp.tools.get_state();
 if (!initial.ok) throw new Error(initial.error.message);
 let generation = initial.generation;
 const floorId = initial.data.activeFloorId;
+// crypto.randomUUID() is missing on plain-http pages, so build request IDs another way.
+let requestCount = 0;
+const newRequestId = () => `r-${Date.now().toString(36)}-${(requestCount += 1)}-${Math.random().toString(36).slice(2)}`;
 const change = async (name, input) => {
   const result = await hp.callTool(name, {
     ...input,
     expectedGeneration: generation,
-    requestId: crypto.randomUUID(),
+    requestId: newRequestId(),
   });
   if (!result.ok) throw new Error(`${result.error.code}: ${result.error.message}`);
   generation = result.generation;

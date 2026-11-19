@@ -33,9 +33,24 @@ export const fingerprintOf = (value: unknown): string => {
   return JSON.stringify(value);
 };
 
+// Four independently seeded 32-bit FNV-1a-style lanes (128 bits): used only where crypto.subtle is missing
+// (plain-http pages), to recognise an identical retry. It is not a security hash.
+const fallbackDigest = (bytes: Uint8Array): string => {
+  const lanes = [0x811c9dc5, 0x01000193, 0x9e3779b9, 0x85ebca6b];
+  for (const byte of bytes) {
+    for (let lane = 0; lane < lanes.length; lane += 1) {
+      lanes[lane] = Math.imul((lanes[lane] ?? 0) ^ byte ^ lane, 0x01000193 + lane * 2) >>> 0;
+    }
+  }
+  return `fnv-${lanes.map((lane) => lane.toString(16).padStart(8, "0")).join("")}-${bytes.length.toString(16)}`;
+};
+
 /** SHA-256 of the fingerprint, so a retry cache holds hashes rather than uploaded contents. */
 export const resourceFingerprint = async (value: unknown): Promise<string> => {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(fingerprintOf(value)));
+  const bytes = new TextEncoder().encode(fingerprintOf(value));
+  // crypto.subtle exists only in secure contexts (https or localhost); Home Assistant is often plain http.
+  if (typeof crypto.subtle === "undefined") return fallbackDigest(bytes);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 };
 

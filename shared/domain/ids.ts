@@ -40,4 +40,16 @@ export const createId = (prefix: IdPrefix): string => {
   return `${prefix}_${suffix}`;
 };
 
+// crypto.randomUUID exists only in secure contexts (https or localhost); Home Assistant is often served over plain
+// http. crypto.getRandomValues works in every context, so the fallback builds an RFC 4122 version 4 UUID from it.
+export const createUuid = (): string => {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x40;
+  bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80;
+  const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+};
+
 export const isId = (value: string): boolean => /^[a-z]+_[a-z0-9]{6,}$/.test(value);

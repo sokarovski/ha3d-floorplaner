@@ -1,5 +1,6 @@
 // The Houses-screen window.homeplan bridge (spec/architecture/browser-automation.md#houses-level-bridge).
 // It shares JSON checks, validation, fingerprints and the idempotent request ledger with the editor bridge.
+import { createUuid } from "@shared/domain/ids";
 import { compileValidator } from "@shared/domain/validation/ajv";
 import { AgentError } from "../../floor-builder/automation/automationTypes";
 import type { AgentErrorCode, AgentGuide } from "../../floor-builder/automation/automationTypes";
@@ -19,7 +20,7 @@ export type HousesResult =
 export type HousesFunction = (input?: unknown) => Promise<HousesResult>;
 
 export const createHousesAutomation = (context: HousesAutomationContext, guides: readonly AgentGuide[]) => {
-  const sessionId = crypto.randomUUID();
+  const sessionId = createUuid();
   let disposed = false;
   const ledger = createRequestLedger<HousesResult>();
   const registry = new Map(housesTools(context).map((tool) => [tool.metadata.name, tool]));

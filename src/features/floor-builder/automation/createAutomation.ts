@@ -1,6 +1,7 @@
 import Type from "typebox";
 import { defineCommand, runCommand } from "@shared/domain/commands/command";
 import type { Command } from "@shared/domain/commands/command";
+import { createUuid } from "@shared/domain/ids";
 import { compileValidator } from "@shared/domain/validation/ajv";
 import { isSchemaNode } from "@shared/domain/schemas/schemaWalk";
 import { AgentError } from "./automationTypes";
@@ -21,7 +22,7 @@ import {
 
 export const createAutomation = (context: AutomationContext, guides: readonly AgentGuide[]) => {
   const { session } = context;
-  const sessionId = crypto.randomUUID();
+  const sessionId = createUuid();
   let disposed = false;
   const ledger = createRequestLedger<AgentResult>();
   const base = [
