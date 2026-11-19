@@ -129,7 +129,7 @@
   /* Full-width hero on the home page: the night capture edge to edge, text on a dark shade (same in both themes,
      because the image itself is dark). */
   [data-site-hero] {
-    @apply relative isolate flex min-h-[34rem] items-center overflow-hidden bg-[#06080d] lg:min-h-[42rem];
+    @apply relative isolate flex min-h-136 items-center overflow-hidden bg-[#06080d] lg:min-h-168;
   }
 
   [data-site-hero-image] {
@@ -137,7 +137,7 @@
   }
 
   [data-site-hero-shade] {
-    @apply absolute inset-0 -z-10 bg-gradient-to-t from-[#06080d]/95 via-[#06080d]/70 to-[#06080d]/30 lg:bg-gradient-to-r lg:from-[#06080d]/90 lg:via-[#06080d]/55 lg:to-transparent;
+    @apply absolute inset-0 -z-10 bg-linear-to-t from-[#06080d]/95 via-[#06080d]/70 to-[#06080d]/30 lg:bg-linear-to-r lg:from-[#06080d]/90 lg:via-[#06080d]/55 lg:to-transparent;
   }
 
   [data-site-hero-inner] {
@@ -336,6 +336,47 @@
 
   [data-site-details] {
     @apply rounded-card bg-surface p-5;
+  }
+
+  /* AI agent tabs */
+  [data-site-tabs] {
+    @apply flex flex-col gap-6;
+  }
+
+  [data-site-tab-list] {
+    @apply flex w-fit max-w-full flex-wrap gap-1 rounded-card bg-surface p-1;
+  }
+
+  [data-site-tab] {
+    @apply cursor-pointer rounded-control px-4 py-2 text-sm font-semibold text-muted outline-none;
+  }
+
+  [data-site-tab][data-hovered] {
+    @apply text-foreground;
+  }
+
+  [data-site-tab][data-selected] {
+    @apply bg-selection text-on-selection;
+  }
+
+  [data-site-tab][data-focus-visible] {
+    @apply ring-2 ring-primary;
+  }
+
+  [data-site-tab-panel] {
+    @apply flex flex-col gap-6 rounded-card outline-none;
+  }
+
+  [data-site-tab-panel][data-focus-visible] {
+    @apply ring-2 ring-primary;
+  }
+
+  [data-site-tab-summary] {
+    @apply max-w-3xl text-muted;
+  }
+
+  [data-site-steps] [data-site-code] {
+    @apply mt-2 mb-0;
   }
 
   [data-site-details] summary {
