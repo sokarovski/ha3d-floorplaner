@@ -24,12 +24,16 @@ export const SiteHeader = ({ page = "home" }: SiteHeaderProps): ReactElement => 
           <a href={page === "home" ? "#top" : pages.home} aria-current={page === "home" ? "page" : undefined}>
             Overview
           </a>
-          <a href={`${home}#features`}>Features</a>
-          <a href={pages.possibilities} aria-current={page === "possibilities" ? "page" : undefined}>
-            All possibilities
-          </a>
           <a href={`${home}#how-it-works`}>How it works</a>
-          <a href={`${home}#install`}>Get started</a>
+          <a href={pages.possibilities} aria-current={page === "possibilities" ? "page" : undefined}>
+            Learn More
+          </a>
+          <a href={pages.install} aria-current={page === "install" ? "page" : undefined}>
+            Install
+          </a>
+          <a href={pages.developers} aria-current={page === "developers" ? "page" : undefined}>
+            Developers
+          </a>
           <a href={links.appRepository}>GitHub</a>
         </nav>
       </div>

@@ -6,7 +6,7 @@ export const SiteFooter = (): ReactElement => (
   <footer data-site-footer="">
     <div data-site-footer-inner="">
       <nav aria-label="Project" data-site-footer-links="">
-        <a href={pages.possibilities}>All possibilities</a>
+        <a href={pages.possibilities}>Learn More</a>
         <a href={links.appRepository}>Source and app (ha3d-floorplaner)</a>
         <a href={links.integrationRepository}>Home Assistant integration (ha3d)</a>
         <a href={links.readme}>Documentation</a>

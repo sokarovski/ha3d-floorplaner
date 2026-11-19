@@ -1,4 +1,4 @@
-// Step-by-step guides for building a home with an AI agent, one per kind of agent (the possibilities page tabs).
+// Step-by-step guides for building a home with an AI agent, one per kind of agent (the Learn More page tabs).
 export type AgentStep = Readonly<{
   title: string;
   text: string;

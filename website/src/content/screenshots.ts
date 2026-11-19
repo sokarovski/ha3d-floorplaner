@@ -11,6 +11,7 @@ export type ScreenshotName =
   | "ha-light-toggle"
   | "ha-presence"
   | "viewer-night"
+  | "viewer-day-night"
   | "viewer-night-lights"
   | "builder-garden"
   | "builder-whole-house"
@@ -102,6 +103,15 @@ export const screenshots: Readonly<Record<ScreenshotName, Screenshot>> = {
     height: 450,
     alt: "A presence sensor detects someone in the living room and the room sweeps red in the Homeplan panel.",
     caption: "Presence: a motion sensor in Home Assistant sweeps the living room.",
+    available: true,
+  },
+  "viewer-day-night": {
+    file: "viewer-day-night.webp",
+    poster: "viewer-day-night-poster.webp",
+    width: 720,
+    height: 490,
+    alt: "The demo city apartment in the viewer through one day: morning, noon, early and late afternoon sun move the light and shadows across the rooms, then night falls and the kitchen and living-room lamps come on.",
+    caption: "From 9 in the morning to night: the sun moves, then the lamps take over.",
     available: true,
   },
   "viewer-night": {

@@ -5,6 +5,8 @@ const base = import.meta.env.BASE_URL;
 export const pages = {
   home: base,
   possibilities: `${base}possibilities.html`,
+  install: `${base}install.html`,
+  developers: `${base}developers.html`,
 } as const;
 
 export type PageName = keyof typeof pages;

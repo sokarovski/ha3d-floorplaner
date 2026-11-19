@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { links } from "../content/links";
+import { pages } from "../content/pages";
 import { agentPrompt } from "../content/prompts";
 import { CopyPrompt } from "./CopyPrompt";
 import { Section } from "./Section";
@@ -24,30 +25,13 @@ export const AgentBuilding = (): ReactElement => (
           <strong>Give it the prompt.</strong> The agent finds the builder's AI agent instructions, reads the
           guides and builds the model step by step.
         </li>
-        <li>
-          <strong>Review the result.</strong> Check dimensions and details, refine by hand or with the agent,
-          and Save. A rough sketch is not a measurement, so verify the sizes that matter.
-        </li>
       </ol>
       <div data-site-stack="">
         <CopyPrompt prompt={agentPrompt} />
-        <details data-site-details="">
-          <summary>What the agent needs</summary>
-          <p>
-            Homeplan exposes structured browser tools on <code>window.homeplan</code> in the builder page:{" "}
-            <code>window.homeplan.describe()</code> lists every tool with its input and output schemas and
-            examples, and <code>window.homeplan.docs.read()</code> returns the guides. They are MCP-like, but
-            they are not an MCP server and do not register themselves with an AI product.
-          </p>
-          <p>
-            The agent must be able to look at images and to run JavaScript in the page it is browsing. A
-            text-only model, or a tool that cannot reach the page, cannot do this. The agent interprets your
-            images; Homeplan only runs its normal, validated editing commands.
-          </p>
-          <p>
-            <a href={links.agentGuide}>Read the AI agent instructions</a>
-          </p>
-        </details>
+        <p data-site-note="">
+          <a href={`${pages.possibilities}#builder-agents`}>Step-by-step guides for each agent</a> ·{" "}
+          <a href={links.agentGuide}>Read the AI agent instructions</a>
+        </p>
       </div>
     </div>
   </Section>

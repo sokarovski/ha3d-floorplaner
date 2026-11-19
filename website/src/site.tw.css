@@ -193,6 +193,115 @@
     @apply text-3xl sm:text-4xl;
   }
 
+  [data-site-section-centered] [data-site-section-header] {
+    @apply items-center text-center;
+  }
+
+  [data-site-section-large] [data-site-section-header] h2 {
+    @apply text-5xl font-extrabold sm:text-7xl;
+  }
+
+  /* "Still didn't decide?" flow chart. Narrow: top to bottom; wide: a chart laid out with grid areas. */
+  [data-site-fc] {
+    @apply mx-auto flex w-full max-w-md flex-col items-center gap-3 text-center;
+  }
+
+  [data-site-fc-question] {
+    @apply w-full rounded-card border-2 border-primary bg-surface px-5 py-4 font-semibold text-foreground;
+  }
+
+  [data-site-fc-question][data-site-fc-question-wild] {
+    @apply mt-8 border-dashed;
+  }
+
+  [data-site-fc-branch] {
+    @apply flex flex-wrap items-center justify-center gap-2;
+  }
+
+  [data-site-fc-arrow] {
+    @apply inline-flex items-center gap-1 text-sm font-semibold text-muted;
+  }
+
+  [data-site-fc-end] {
+    @apply inline-flex items-center justify-center rounded-full bg-selection px-4 py-2 font-medium text-on-selection;
+  }
+
+  a[data-site-fc-end] {
+    @apply underline decoration-1 underline-offset-2;
+  }
+
+  @media (width >= 64rem) {
+    [data-site-fc] {
+      @apply grid max-w-none items-center justify-items-center gap-x-4 gap-y-2;
+      grid-template-columns: minmax(0, 17rem) minmax(0, 18rem) minmax(0, 1fr) minmax(0, 15rem);
+      grid-template-areas:
+        "q1 b1 . q4"
+        "d1 . . d4"
+        "q2 b2 . e4"
+        "d2 . . ."
+        "q3 b3 . ."
+        "d3 . . ."
+        "e3 . . .";
+    }
+
+    [data-site-fc-branch] {
+      @apply w-full flex-nowrap justify-start gap-3;
+    }
+
+    [data-site-fc-arrow][data-site-fc-arrow-side] {
+      @apply border-b-2 border-border-strong px-2 pb-0.5;
+    }
+
+    [data-site-fc-question][data-site-fc-question-wild] {
+      @apply mt-0;
+    }
+
+    [data-site-fc-area="q1"] {
+      grid-area: q1;
+    }
+    [data-site-fc-area="b1"] {
+      grid-area: b1;
+    }
+    [data-site-fc-area="d1"] {
+      grid-area: d1;
+    }
+    [data-site-fc-area="q2"] {
+      grid-area: q2;
+    }
+    [data-site-fc-area="b2"] {
+      grid-area: b2;
+    }
+    [data-site-fc-area="d2"] {
+      grid-area: d2;
+    }
+    [data-site-fc-area="q3"] {
+      grid-area: q3;
+    }
+    [data-site-fc-area="b3"] {
+      grid-area: b3;
+    }
+    [data-site-fc-area="d3"] {
+      grid-area: d3;
+    }
+    [data-site-fc-area="e3"] {
+      grid-area: e3;
+    }
+    [data-site-fc-area="q4"] {
+      grid-area: q4;
+    }
+    [data-site-fc-area="d4"] {
+      grid-area: d4;
+    }
+    [data-site-fc-area="e4"] {
+      grid-area: e4;
+    }
+  }
+
+  /* The TLDR steps: one centred, rounded box. */
+  [data-site-tldr-box] {
+    @apply mx-auto w-full max-w-2xl rounded-card bg-surface p-6 sm:p-8;
+  }
+
   [data-site-grid] {
     @apply grid gap-4 sm:gap-6;
   }
@@ -277,12 +386,29 @@
     @apply block text-foreground;
   }
 
-  [data-site-requirement] {
-    @apply rounded-control bg-info-surface px-3 py-2 text-sm text-info;
+  /* A single readable column with generous spacing (install and developer guides). */
+  [data-site-roomy] {
+    @apply flex max-w-3xl flex-col gap-6;
   }
 
-  [data-site-install-summary] {
-    @apply text-foreground;
+  [data-site-roomy] h3 {
+    @apply mt-4 text-xl;
+  }
+
+  [data-site-roomy] > p:not([data-site-requirement], [data-site-note]) {
+    @apply text-muted;
+  }
+
+  [data-site-steps][data-site-roomy] {
+    @apply gap-6;
+  }
+
+  [data-site-roomy] [data-site-steps] {
+    @apply gap-6;
+  }
+
+  [data-site-requirement] {
+    @apply rounded-control bg-info-surface px-3 py-2 text-sm text-info;
   }
 
   [data-site-code] {
@@ -334,10 +460,6 @@
     @apply text-sm text-on-selection;
   }
 
-  [data-site-details] {
-    @apply rounded-card bg-surface p-5;
-  }
-
   /* AI agent tabs */
   [data-site-tabs] {
     @apply flex flex-col gap-6;
@@ -377,14 +499,6 @@
 
   [data-site-steps] [data-site-code] {
     @apply mt-2 mb-0;
-  }
-
-  [data-site-details] summary {
-    @apply cursor-pointer rounded-sm font-semibold text-foreground;
-  }
-
-  [data-site-details] p {
-    @apply mt-3 text-muted;
   }
 
   /* How it works */
@@ -449,7 +563,7 @@
     @apply absolute right-3 bottom-3;
   }
 
-  /* "See all possibilities" page */
+  /* "Learn More" page (possibilities.html) */
   [data-site-page-intro] {
     @apply mx-auto grid max-w-6xl items-start gap-10 px-4 pt-10 pb-12 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:pt-16;
   }
@@ -529,6 +643,19 @@
 
   [data-site-section-surface] [data-site-capability] {
     @apply bg-canvas;
+  }
+
+  /* A card that leads with its own close-up picture instead of an icon. */
+  [data-site-capability][data-site-capability-pictured] {
+    @apply flex-col gap-3 p-3;
+  }
+
+  [data-site-capability-image] {
+    @apply block h-44 w-full rounded-control object-cover;
+  }
+
+  [data-site-capability-pictured] [data-site-capability-text] {
+    @apply px-1 pb-1;
   }
 
   [data-site-capability-icon] {

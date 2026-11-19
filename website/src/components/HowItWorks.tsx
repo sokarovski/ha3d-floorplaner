@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { pages } from "../content/pages";
 import { ScreenshotFigure } from "./ScreenshotFigure";
 import { Section } from "./Section";
 
@@ -15,9 +16,16 @@ export const HowItWorks = (): ReactElement => (
           <span data-site-flow-number="" aria-hidden="true">
             1
           </span>
-          <h3>Draw and furnish in the builder</h3>
+          <h3>Build it in the builder, ideally with an AI agent</h3>
           <p>
-            Lay out floors and rooms, place doors, windows, furniture and lights, and pick materials. The
+            If your browser has an AI agent, such as Claude in Chrome, or you use Claude Code, let it do the
+            drawing: give it a sketch of your floor plan and photos of your rooms, and it lays out the floors,
+            walls, doors, windows, furniture and lights for you in minutes. You then check the sizes that
+            matter, fine-tune by hand and Save.{" "}
+            <a href={`${pages.possibilities}#builder-agents`}>Step-by-step guides for each agent</a>
+          </p>
+          <p>
+            No AI agent? Draw the rooms yourself from measurements, place everything and pick materials. The
             builder also works on its own, to model, save and export images of a home.
           </p>
         </div>

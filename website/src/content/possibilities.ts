@@ -1,13 +1,14 @@
-// Everything the "See all possibilities" page lists, grouped by product. Each entry is a shipped capability
+// Everything the "Learn More" page lists, grouped by product. Each entry is a shipped capability
 // described in plain language; nothing planned or experimental belongs here.
 import type { IconName } from "../../../src/design-system/components/Icon/icons";
 import type { ScreenshotName } from "./screenshots";
 
-export type Capability = Readonly<{
-  icon: IconName;
-  title: string;
-  text: string;
-}>;
+// A capability card leads with either a small icon or, for a few close-ups, its own picture (no caption).
+export type Capability = Readonly<
+  { title: string; text: string } & (
+    { icon: IconName; image?: never } | { image: ScreenshotName; icon?: never }
+  )
+>;
 
 export type CapabilityMedia = Readonly<{
   name: ScreenshotName;
@@ -67,7 +68,7 @@ export const viewerGroups: readonly CapabilityGroup[] = [
   {
     id: "viewer-sun",
     title: "Day, night and the sun",
-    media: [{ name: "viewer-night", kind: "still" }],
+    media: [{ name: "viewer-day-night", kind: "clip" }],
     items: [
       {
         icon: "sun",
@@ -88,6 +89,28 @@ export const viewerGroups: readonly CapabilityGroup[] = [
         icon: "eye",
         title: "Light and dark themes",
         text: "The backdrop follows Home Assistant's light or dark theme.",
+      },
+    ],
+  },
+  {
+    id: "viewer-devices",
+    title: "Your devices at work",
+    lead: "Things in the model show what the real devices are doing.",
+    items: [
+      {
+        image: "device-tv-on",
+        title: "See your TV being on",
+        text: "A TV shows the running app's artwork, or the app, channel or input name, while it is on.",
+      },
+      {
+        image: "device-air-purifier",
+        title: "See your air purifier working",
+        text: "Swirls rise over an air purifier while it runs, and stop when it is off.",
+      },
+      {
+        image: "device-ac-heating",
+        title: "See your AC heating",
+        text: "Red swirls while an AC heats, blue while it cools, and nothing when it is idle. A radiator or water heater can do the same.",
       },
     ],
   },
@@ -252,33 +275,6 @@ export const viewerGroups: readonly CapabilityGroup[] = [
     ],
   },
   {
-    id: "viewer-devices",
-    title: "Your devices at work",
-    lead: "Things in the model show what the real devices are doing.",
-    media: [
-      { name: "device-tv-on", kind: "still" },
-      { name: "device-air-purifier", kind: "still" },
-      { name: "device-ac-heating", kind: "still" },
-    ],
-    items: [
-      {
-        icon: "monitor",
-        title: "See your TV being on",
-        text: "A TV shows the running app's artwork, or the app, channel or input name, while it is on.",
-      },
-      {
-        icon: "wind",
-        title: "See your air purifier working",
-        text: "Swirls rise over an air purifier while it runs, and stop when it is off.",
-      },
-      {
-        icon: "wind",
-        title: "See your AC heating",
-        text: "Red swirls while an AC heats, blue while it cools, and nothing when it is idle. A radiator or water heater can do the same.",
-      },
-    ],
-  },
-  {
     id: "viewer-local",
     title: "Works on its own in Home Assistant",
     items: [
@@ -312,11 +308,6 @@ export const viewerGroups: readonly CapabilityGroup[] = [
         title: "Calm loading",
         text: "The house appears already framed; furniture and textures then load gradually under a thin progress bar.",
       },
-      {
-        icon: "code",
-        title: "DEV MODE for developers",
-        text: "Load the viewer code and the working house straight from a running builder, with a visible local fallback.",
-      },
     ],
   },
 ];
@@ -325,7 +316,7 @@ export const builderGroups: readonly CapabilityGroup[] = [
   {
     id: "builder-draw",
     title: "Draw and measure",
-    lead: "Measured rooms, drawn with SketchUp-like tools.",
+    lead: "Measured rooms, drawn with precise, easy tools.",
     media: [{ name: "builder-room-properties", kind: "still" }],
     items: [
       {

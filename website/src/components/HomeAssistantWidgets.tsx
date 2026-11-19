@@ -12,7 +12,7 @@ export const HomeAssistantWidgets = (): ReactElement => (
   >
     <div data-site-grid="" data-site-grid-2="">
       <ScreenshotFigure name="ha-widgets" />
-      <AnimatedClip name="ha-light-toggle" />
+      <AnimatedClip name="viewer-night-lights" />
     </div>
     <div data-site-grid="" data-site-grid-2="">
       <AnimatedClip name="ha-presence" />

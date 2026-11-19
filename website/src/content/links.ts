@@ -11,6 +11,8 @@ export const links = {
   issues: `${appRepository}/issues`,
   licence: `${appRepository}/blob/main/LICENSE`,
   agentGuide: `${appRepository}/blob/main/public/agent.md`,
+  agentsGuide: `${appRepository}/blob/main/AGENTS.md`,
+  specification: `${appRepository}/blob/main/spec/README.md`,
   integrationRepository,
   integrationReleases: `${integrationRepository}/releases`,
 } as const;
