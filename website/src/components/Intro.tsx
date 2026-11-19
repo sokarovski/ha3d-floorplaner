@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import logoUrl from "../../../brand/ha3d-logo.svg";
-import { links } from "../content/links";
+import { pages } from "../content/pages";
 import { screenshotUrl } from "../content/screenshots";
 import { LinkButton } from "./LinkButton";
 
@@ -27,11 +27,11 @@ export const Intro = (): ReactElement => (
           Assistant app, and your house data stays there.
         </p>
         <div data-site-actions="">
-          <LinkButton href="#install" icon="chevronDown">
-            Quick install
+          <LinkButton href={pages.liveDemo} icon="play">
+            Live demo
           </LinkButton>
-          <LinkButton href={links.appRepository} variant="secondary" icon="code">
-            View on GitHub
+          <LinkButton href="#install" variant="secondary" icon="chevronDown">
+            Quick install
           </LinkButton>
         </div>
       </div>

@@ -1,5 +1,6 @@
 // Where the viewer gets houses, assets, and its setup (spec/home-assistant/viewer-mvp.md#house-source).
-// Only this module knows URLs. The dev implementation talks to the builder's API through the Vite proxy.
+// Only this module knows URLs. The dev implementation talks to the builder's API through the Vite proxy; the demo
+// implementation reads the static files `npm run demo:data` writes for the website's live demo.
 import type { AssetReader } from "../src/renderer/assetTransport";
 import type { Static, TSchema } from "typebox";
 import { StoredHouseDocumentEnvelope } from "@shared/contracts/document";
@@ -24,6 +25,8 @@ export type ViewerSetup = Readonly<{ houseId: string | null; testEntityId: strin
 
 export type HouseSource = Readonly<{
   integration?: boolean;
+  /** The website's live demo: nothing can be saved, so Edit mode needs an HA admin like in the integration. */
+  readOnly?: boolean;
   dispose?: () => void;
   acceptConfigRevision?: (previous: number, next: number) => void;
   readAsset?: AssetReader;
@@ -131,5 +134,50 @@ export const createDevHouseSource = (apiBase: string): HouseSource => {
     readDashboard: async () => (await readPreferences()).preferences.homeAssistant.dashboard,
     saveDashboard: (dashboard) => patchHomeAssistant({ dashboard }),
     saveSettings: (patch) => patchHomeAssistant(patch),
+  };
+};
+
+/**
+ * The website's live demo (spec/product/showcase-website.md#live-demo): one house read from static files under
+ * `dataBase` (`preferences.json`, `houses/<id>/document.json`, `templates/<id>/v<version>.glb`,
+ * `images/<id>.png`), written by `npm run demo:data`. Read-only: there is no house list and nothing saves.
+ */
+export const createDemoHouseSource = (dataBase: string): HouseSource => {
+  const base = dataBase.replace(/\/$/, "");
+  const url = (...path: readonly string[]): string =>
+    `${base}/${path.map((segment) => encodeURIComponent(segment)).join("/")}`;
+  const read = async <S extends TSchema>(schema: S, what: string, address: string): Promise<Static<S>> => {
+    const response = await fetch(address);
+    if (!response.ok) throw new SourceError(`The demo ${what} could not be loaded.`, response.status);
+    const payload: unknown = await response.json();
+    return decode(schema, payload, what);
+  };
+  let preferences: Promise<Static<typeof PreferencesResponse>> | null = null;
+  const readPreferences = () => {
+    preferences ??= read(PreferencesResponse, "preferences", url("preferences.json"));
+    return preferences;
+  };
+  const readOnly = (): Promise<never> =>
+    Promise.reject(new SourceError("The live demo cannot save changes.", null));
+  return {
+    readOnly: true,
+    listHouses: readOnly,
+    loadHouse: async (houseId) =>
+      currentHouseEnvelope(
+        await read(StoredHouseDocumentEnvelope, "house", url("houses", houseId, "document.json")),
+      ),
+    templateUrl: (houseId, templateId, version) =>
+      templateId.startsWith("t_")
+        ? url("houses", houseId, "templates", templateId, `v${String(version)}.glb`)
+        : url("templates", templateId, `v${String(version)}.glb`),
+    imageUrl: (_houseId, imageId) => url("images", `${imageId}.png`),
+    readSetup: async () => (await readPreferences()).preferences.homeAssistant.viewer,
+    saveSetup: readOnly,
+    readBindings: async (houseId) =>
+      (await readPreferences()).preferences.homeAssistant.bindings[houseId] ?? emptyHouseBindings(),
+    saveBindings: readOnly,
+    readDashboard: async () => (await readPreferences()).preferences.homeAssistant.dashboard,
+    saveDashboard: readOnly,
+    saveSettings: readOnly,
   };
 };

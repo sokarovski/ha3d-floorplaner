@@ -42,6 +42,9 @@ export default tseslint.config(
       ".claude/**",
       "spec/**",
       "custom_components/homeplan/frontend/**",
+      ".cache/**",
+      // Compiled inside the home-assistant/frontend checkout with HA's toolchain and types (scripts/build-ha-cards.mjs).
+      "packaging/ha-cards/frontend/**",
     ],
   },
   {
@@ -86,7 +89,13 @@ export default tseslint.config(
     languageOptions: { ...tseslint.configs.disableTypeChecked.languageOptions, globals: globals.node },
   },
   {
-    files: ["eslint.config.js", "vite.config.ts", "vite.ha-viewer.config.ts", "vite.website.config.ts"],
+    files: [
+      "eslint.config.js",
+      "vite.config.ts",
+      "vite.ha-viewer.config.ts",
+      "vite.website.config.ts",
+      "vite.live-demo.config.ts",
+    ],
     rules: { "no-restricted-exports": "off" },
   },
   {

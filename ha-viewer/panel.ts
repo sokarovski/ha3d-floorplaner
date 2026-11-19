@@ -6,11 +6,11 @@ import Type from "typebox";
 import { compileValidator } from "@shared/domain/validation/ajv";
 import { createHassStore } from "./hassStore";
 import type { Hass } from "./hassStore";
-import { createDevHouseSource } from "./houseSource";
+import { createDemoHouseSource, createDevHouseSource } from "./houseSource";
 import type { HouseSource, ViewerSetup } from "./houseSource";
 import { tokens } from "./styles/tokens";
 
-const PanelConfig = Type.Object({
+const DevConfig = Type.Object({
   mode: Type.Literal("dev"),
   api_base: Type.String({ minLength: 1 }),
   /**
@@ -19,7 +19,12 @@ const PanelConfig = Type.Object({
    */
   house_id: Type.Optional(Type.String({ minLength: 1 })),
 });
-const validateConfig = compileValidator(PanelConfig);
+/** The website's live demo: the static demo data under `data_base` (houseSource.ts, createDemoHouseSource). */
+const DemoConfig = Type.Object({
+  mode: Type.Literal("demo"),
+  data_base: Type.String({ minLength: 1 }),
+});
+const validateConfig = compileValidator(Type.Union([DevConfig, DemoConfig]));
 
 type PanelInfo = Readonly<{ config?: unknown }>;
 
@@ -91,12 +96,14 @@ export class HomeplanPanel extends LitElement {
       this.requestUpdate();
       return;
     }
-    if (config.api_base === this.apiBase) return;
-    this.apiBase = config.api_base;
-    this.houseOverride = config.house_id ?? null;
-    // Only dev mode exists until production delivery is decided; it shows the render counters.
-    this.dev = true;
-    this.source = createDevHouseSource(config.api_base);
+    const base = config.mode === "dev" ? config.api_base : config.data_base;
+    if (base === this.apiBase) return;
+    this.apiBase = base;
+    this.houseOverride = config.mode === "dev" ? (config.house_id ?? null) : null;
+    // Dev mode shows the render counters; the website's live demo does not.
+    this.dev = config.mode === "dev";
+    this.source =
+      config.mode === "dev" ? createDevHouseSource(config.api_base) : createDemoHouseSource(config.data_base);
     void this.loadSetup();
   }
 

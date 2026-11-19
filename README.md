@@ -53,6 +53,9 @@ The Home Assistant viewer ships as the **Homeplan** custom integration in [`cust
 | `npm run version:check` | Check that the integration's version copies equal `package.json` `version` |
 | `npm run brand:build` | Render every brand image (integration, app, favicon, social preview) from `brand/ha3d-logo.svg` |
 | `npm run ha:check` | Run source and isolated HA checks; set `HOMEPLAN_HA_PYTHON` to the documented HA check environment |
+| `npm run demo:ha-cards` | Build the Home Assistant cards bundle of the website's live demo from home-assistant/frontend at a pinned commit (Node 24 + pnpm through `npx`; checkout in `.cache/ha-frontend/` or `HOMEPLAN_HA_FRONTEND_DIR`) into `dist/live-demo-public/ha-cards/`; kept when up to date |
+| `npm run demo:data` | Write the live demo's static data (the demo city apartment, its built-in templates and textures, the demo bindings) into `dist/live-demo-public/data/` (deterministic) |
+| `npm run site:build` / `npm run site:preview` | Build the showcase website and its live demo into `dist/website/` (runs `demo:ha-cards` and `demo:data` first), or serve it at http://localhost:4180/ha3d-floorplaner/ |
 | `npm run styles:sync` | Regenerate the stylesheet imports in `src/design-system/styles/app.tw.css` |
 
 `npm run build:ha-viewer` also makes the production frontend offer available on the builder; see [Integration](#integration) for the release packaging.

@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- The website's live demo (spec/product/showcase-website.md#live-demo): the Home Assistant panel on the demo
+     city apartment with simulated devices and real Home Assistant cards. Built by vite.live-demo.config.ts. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Homeplan live demo</title>
+    <meta
+      name="description"
+      content="Try the Homeplan Home Assistant panel on a demo apartment with simulated devices."
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: var(--primary-background-color, #fafafa);
+        font-family: var(--ha-font-family-body, Roboto, system-ui, sans-serif);
+      }
+      .demo-label {
+        position: fixed;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1;
+        text-align: center;
+        max-width: calc(100vw - 24px);
+        box-sizing: border-box;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.85);
+        color: #555;
+        font-size: 12px;
+        line-height: 18px;
+        pointer-events: none;
+      }
+      .demo-label a {
+        color: inherit;
+        pointer-events: auto;
+      }
+      #demo-error:empty {
+        display: none;
+      }
+    </style>
+    <script type="module" src="../../ha-viewer/liveDemo.ts"></script>
+  </head>
+  <body>
+    <homeplan-panel></homeplan-panel>
+    <div class="demo-label">
+      Demo with simulated devices · not affiliated with Home Assistant ·
+      <a href="../">Homeplan website</a>
+      <span id="demo-error" role="alert"></span>
+    </div>
+  </body>
+</html>

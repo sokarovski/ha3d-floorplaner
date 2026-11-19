@@ -10,6 +10,7 @@
     "scripts/**/*.ts",
     "vite.config.ts",
     "vite.ha-viewer.config.ts",
-    "vite.website.config.ts"
+    "vite.website.config.ts",
+    "vite.live-demo.config.ts"
   ]
 }

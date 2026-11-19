@@ -1,6 +1,7 @@
 node_modules
 dist
 .homeplan-data
+.cache
 package-lock.json
 spec
 *.md

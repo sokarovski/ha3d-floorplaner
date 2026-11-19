@@ -9,7 +9,6 @@ type SiteHeaderProps = Readonly<{
 }>;
 
 export const SiteHeader = ({ page = "home" }: SiteHeaderProps): ReactElement => {
-  const home = page === "home" ? "" : pages.home;
   return (
     <header data-site-header="">
       <a href="#main" data-site-skip-link="">
@@ -24,9 +23,11 @@ export const SiteHeader = ({ page = "home" }: SiteHeaderProps): ReactElement => 
           <a href={page === "home" ? "#top" : pages.home} aria-current={page === "home" ? "page" : undefined}>
             Overview
           </a>
-          <a href={`${home}#how-it-works`}>How it works</a>
           <a href={pages.possibilities} aria-current={page === "possibilities" ? "page" : undefined}>
             Learn More
+          </a>
+          <a href={pages.sideCards} aria-current={page === "sideCards" ? "page" : undefined}>
+            Side Cards
           </a>
           <a href={pages.install} aria-current={page === "install" ? "page" : undefined}>
             Install

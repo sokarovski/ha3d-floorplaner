@@ -514,6 +514,11 @@
     @apply flex flex-col gap-3;
   }
 
+  /* A step without a picture uses the full readable width. */
+  [data-site-flow-step][data-site-flow-step-wide] {
+    @apply max-w-3xl lg:grid-cols-1;
+  }
+
   [data-site-flow-number] {
     @apply inline-flex size-9 items-center justify-center rounded-full bg-primary font-semibold text-on-primary;
   }

@@ -26,7 +26,10 @@ export type ScreenshotName =
   | "ha-link-settings"
   | "ha-more-info"
   | "viewer-door-open"
-  | "viewer-yard";
+  | "viewer-yard"
+  | "side-cards-house"
+  | "side-cards-room"
+  | "side-cards-floor";
 
 export type Screenshot = Readonly<{
   file: string;
@@ -241,6 +244,30 @@ export const screenshots: Readonly<Record<ScreenshotName, Screenshot>> = {
     height: 944,
     alt: "A demo house with its walled garden in the Homeplan viewer at night: lawn, a paved path, potted palms and a covered terrace with a dining table and a sofa.",
     caption: "You can even put your yard: the garden, terrace and path in Home Assistant at night.",
+    available: true,
+  },
+  "side-cards-house": {
+    file: "side-cards-house.webp",
+    width: 1296,
+    height: 642,
+    alt: "Homeplan's Settings with House selected: under Room cards, the Dashboard field is set to Homeplan rooms.",
+    caption: "Settings → House → Room cards: choose the dashboard that holds the cards.",
+    available: true,
+  },
+  "side-cards-room": {
+    file: "side-cards-room.webp",
+    width: 1296,
+    height: 642,
+    alt: "Homeplan's Settings with the living room selected: its Tab is set to Living, kitchen and dining, with Columns and Show room title below.",
+    caption: "Each room: choose its Tab, how many Columns wide its cards are, and whether its title shows.",
+    available: true,
+  },
+  "side-cards-floor": {
+    file: "side-cards-floor.webp",
+    width: 1296,
+    height: 642,
+    alt: "Homeplan's Settings with the floor selected: under Floor widgets, Widget tab is Apartment, Position is Right of the house and Columns is 1 column.",
+    caption: "The floor: a Widget tab, its Position and Columns show cards for the whole floor.",
     available: true,
   },
 };

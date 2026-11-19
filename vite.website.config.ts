@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 import type { HtmlTagDescriptor, Plugin } from "vite";
 
-// The showcase website: four static pages (the overview, possibilities.html, install.html and developers.html) published to GitHub Pages as a project site, so every URL
+// The showcase website: five static pages (the overview, possibilities.html, side-cards.html, install.html and developers.html) published to GitHub Pages as a project site, so every URL
 // lives under the repository prefix. It does not start the builder's services, router, stores or renderer.
 const basePath = "/ha3d-floorplaner/";
 const siteUrl = `https://sokarovski.github.io${basePath}`;
@@ -79,6 +79,7 @@ export default defineConfig({
         possibilities: fileURLToPath(new URL("./website/possibilities.html", import.meta.url)),
         install: fileURLToPath(new URL("./website/install.html", import.meta.url)),
         developers: fileURLToPath(new URL("./website/developers.html", import.meta.url)),
+        sideCards: fileURLToPath(new URL("./website/side-cards.html", import.meta.url)),
       },
     },
   },

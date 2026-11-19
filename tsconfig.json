@@ -13,6 +13,7 @@
     "vite.config.ts",
     "vite.ha-viewer.config.ts",
     "website",
-    "vite.website.config.ts"
+    "vite.website.config.ts",
+    "vite.live-demo.config.ts"
   ]
 }

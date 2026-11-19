@@ -1,4 +1,4 @@
-# Builds the showcase website (website/) and deploys it to GitHub Pages.
+# Builds the showcase website (website/) and its live demo and deploys them to GitHub Pages.
 # Manual only: run it from the Actions tab once the site has been reviewed.
 name: Website
 
@@ -24,6 +24,12 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # The live demo's Home Assistant cards bundle (scripts/build-ha-cards.mjs) is kept when its inputs are unchanged.
+      - uses: actions/cache@v4
+        with:
+          path: dist/live-demo-public/ha-cards
+          key: ha-cards-${{ hashFiles('packaging/ha-cards/**', 'scripts/build-ha-cards.mjs') }}
+      # Builds the HA cards bundle and the live demo data, then the website and its live demo.
       - run: npm run site:build
       - uses: actions/upload-pages-artifact@v3
         with:

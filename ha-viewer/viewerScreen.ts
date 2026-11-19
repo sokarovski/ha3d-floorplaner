@@ -1610,17 +1610,22 @@ export class HomeplanViewerScreen extends LitElement {
    * Sweep corners; it swaps the room's cards for them) and close.
    */
   private renderRoomControls(): TemplateResult {
-    return html`<button
-        class="icon-button edit-button"
-        title="Room settings: position and sweep corners"
-        aria-pressed=${String(this.roomSettings)}
-        @click=${() => {
-          this.roomSettings = !this.roomSettings;
-          this.requestUpdate();
-        }}
-      >
-        ${icon(cogIcon)}
-      </button>
+    // The website's live demo saves nothing, so it has no room settings (position and sweep corners save at once).
+    return html`${
+        this.source?.readOnly === true
+          ? nothing
+          : html`<button
+              class="icon-button edit-button"
+              title="Room settings: position and sweep corners"
+              aria-pressed=${String(this.roomSettings)}
+              @click=${() => {
+                this.roomSettings = !this.roomSettings;
+                this.requestUpdate();
+              }}
+            >
+              ${icon(cogIcon)}
+            </button>`
+      }
       <button
         class="icon-button edit-button"
         title="Close the room"
@@ -1729,7 +1734,8 @@ export class HomeplanViewerScreen extends LitElement {
         ${
           this.openArea !== null
             ? this.renderRoomControls()
-            : this.source?.integration !== true || this.store?.current()?.user?.is_admin === true
+            : (this.source?.integration !== true && this.source?.readOnly !== true) ||
+                this.store?.current()?.user?.is_admin === true
               ? html` <button
                   class="icon-button edit-button"
                   title=${this.editing ? "Done editing" : "Edit Home Assistant bindings"}

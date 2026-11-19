@@ -48,7 +48,9 @@
     "brand:build": "tsx scripts/build-brand.ts",
     "app:check": "tsx scripts/check-app.ts",
     "site:dev": "vite --config vite.website.config.ts",
-    "site:build": "vite build --config vite.website.config.ts",
+    "demo:ha-cards": "node scripts/build-ha-cards.mjs",
+    "demo:data": "tsx scripts/build-live-demo-data.ts",
+    "site:build": "npm run demo:ha-cards && npm run demo:data && vite build --config vite.website.config.ts && vite build --config vite.live-demo.config.ts",
     "site:preview": "vite preview --config vite.website.config.ts"
   },
   "dependencies": {
