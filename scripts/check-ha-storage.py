@@ -272,6 +272,8 @@ async def pure_checks() -> None:
         ("minimumIntegrationVersion", "99.0.0", "integrationUpdateRequired"),
         ("loaderProtocol", 2, "invalidDocument"),
         ("formatVersion", 2, "invalidDocument"),
+        # A panel older than this integration's responses (MIN_VIEWER_VERSION) is never used.
+        ("version", "0.1.1", "incompatibleFrontend"),
     ):
         incompatible = {**frontend, field: value}
         incompatible["bundleId"] = identity(incompatible, "bundleId")

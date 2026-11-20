@@ -20,6 +20,7 @@ from .const import (
     MAX_FRONTEND_TOTAL,
     MAX_HOUSE_TOTAL,
     MAX_MANIFEST,
+    MIN_VIEWER_VERSION,
     VERSION,
 )
 from .errors import HomeplanError
@@ -45,6 +46,15 @@ def _supports_version(required: str) -> bool:
     if re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", required) is None:
         return False
     return tuple(map(int, VERSION.split("."))) >= tuple(map(int, required.split(".")))
+
+
+def _viewer_supported(version: str) -> bool:
+    """Whether a viewer of this version reads this integration's responses."""
+    if re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version) is None:
+        return False
+    return tuple(map(int, version.split("."))) >= tuple(
+        map(int, MIN_VIEWER_VERSION.split("."))
+    )
 
 
 def inventory(
@@ -89,6 +99,13 @@ def inventory(
                 422,
                 "integrationUpdateRequired",
                 "This frontend requires a different integration version; update the integration first.",
+            )
+        if not _viewer_supported(text(manifest["version"])):
+            raise HomeplanError(
+                422,
+                "incompatibleFrontend",
+                f"This panel ({text(manifest['version'])}) is older than this integration supports; "
+                f"use a panel of {MIN_VIEWER_VERSION} or later.",
             )
         # Production builds deliberately emit one complete ES module, avoiding mutable chunk graphs.
         if len(files) != 1 or not text(manifest["entry"]).endswith(".js"):

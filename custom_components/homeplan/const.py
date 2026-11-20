@@ -1,8 +1,11 @@
 """Homeplan protocol constants. No Homeplan user/account layer."""
 
 DOMAIN = "homeplan"
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 MIN_HA_VERSION = "2025.7.0"
+# The oldest viewer that reads this integration's responses (0.1.3 added the floor planners to the connection). An
+# older downloaded panel is never activated or kept active: it would reject every response as incompatible.
+MIN_VIEWER_VERSION = "0.1.3"
 LOADER_PROTOCOL = 1
 API_PROTOCOL = 1
 MAX_MANIFEST = 262144
