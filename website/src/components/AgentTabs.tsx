@@ -16,19 +16,15 @@ export const AgentTabs = (): ReactElement => (
     {agentGuides.map((guide) => (
       <TabPanel key={guide.id} id={guide.id} data-site-tab-panel="">
         <p data-site-tab-summary="">{guide.summary}</p>
-        <div data-site-split="">
-          <ol data-site-steps="">
-            {guide.steps.map((step) => (
-              <li key={step.title}>
-                <strong>{step.title}</strong> {step.text}
-                {step.code === undefined ? null : <pre data-site-code="">{step.code}</pre>}
-              </li>
-            ))}
-          </ol>
-          <div data-site-stack="">
-            <CopyPrompt prompt={guide.prompt} />
-          </div>
-        </div>
+        <CopyPrompt prompt={guide.prompt} />
+        <ol data-site-steps="" data-site-steps-grid="">
+          {guide.steps.map((step) => (
+            <li key={step.title}>
+              <strong>{step.title}</strong> {step.text}
+              {step.code === undefined ? null : <pre data-site-code="">{step.code}</pre>}
+            </li>
+          ))}
+        </ol>
       </TabPanel>
     ))}
   </Tabs>

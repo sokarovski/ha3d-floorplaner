@@ -8,7 +8,7 @@ export const HowItWorks = (): ReactElement => (
     id="how-it-works"
     title="How it works"
     tone="surface"
-    lead="You author the home once in the builder; Home Assistant turns it into a view of your home you can use every day."
+    lead="Create your home once in the App, import and connect it in Home Assistant, then use it there every day."
   >
     <ol data-site-flow="">
       <li data-site-flow-step="">
@@ -16,7 +16,7 @@ export const HowItWorks = (): ReactElement => (
           <span data-site-flow-number="" aria-hidden="true">
             1
           </span>
-          <h3>Build it in the builder, ideally with an AI agent</h3>
+          <h3>Create it in the App</h3>
           <p>
             If your browser has an AI agent, such as Claude in Chrome, or you use Claude Code, let it do the
             drawing: give it a sketch of your floor plan and photos of your rooms, and it lays out the floors,
@@ -26,7 +26,7 @@ export const HowItWorks = (): ReactElement => (
           </p>
           <p>
             No AI agent? Draw the rooms yourself from measurements, place everything and pick materials. The
-            builder also works on its own, to model, save and export images of a home.
+            App also works on its own, to model, save and export images of a home.
           </p>
         </div>
         <div data-site-flow-media="">
@@ -38,11 +38,14 @@ export const HowItWorks = (): ReactElement => (
           <span data-site-flow-number="" aria-hidden="true">
             2
           </span>
-          <h3>Save, then bring it into Home Assistant</h3>
+          <h3>Import and connect it in Home Assistant</h3>
           <p>
-            Save the house in the builder. In the Homeplan integration, select the house and press Upgrade:
-            Home Assistant keeps its own verified copy, so the panel works even when the builder is not
-            running. Its Settings then link each lamp and device to the entity it stands for.
+            In the Homeplan integration, select your saved house and press Upgrade. Home Assistant keeps its
+            own copy, so the panel works even when the App is not running.
+          </p>
+          <p>
+            Then, in the panel's Settings, link each lamp, sensor and device in the house to the Home
+            Assistant entity it stands for.
           </p>
         </div>
         <div data-site-flow-media="">
@@ -54,10 +57,11 @@ export const HowItWorks = (): ReactElement => (
           <span data-site-flow-number="" aria-hidden="true">
             3
           </span>
-          <h3>Connect devices and use your home</h3>
+          <h3>Use it in Home Assistant</h3>
           <p>
-            Link lights and other objects to your Home Assistant entities. Then zoom into a room to see its
-            state and control its devices, with the room's controls beside the 3D view.
+            Open the Homeplan panel and your home is there in 3D, live: lights, sun, doors and presence follow
+            what is really happening. Zoom into a room to see its state and control its devices, with the
+            room's cards beside the 3D view.
           </p>
         </div>
         <div data-site-flow-media="">

@@ -23,13 +23,15 @@ export type ScreenshotName =
   | "device-tv-on"
   | "device-air-purifier"
   | "device-ac-heating"
+  | "device-washer-door"
   | "ha-link-settings"
   | "ha-more-info"
   | "viewer-door-open"
   | "viewer-yard"
   | "side-cards-house"
   | "side-cards-room"
-  | "side-cards-floor";
+  | "side-cards-floor"
+  | "viewer-bubbles";
 
 export type Screenshot = Readonly<{
   file: string;
@@ -192,26 +194,34 @@ export const screenshots: Readonly<Record<ScreenshotName, Screenshot>> = {
   },
   "device-tv-on": {
     file: "device-tv-on.webp",
-    width: 269,
-    height: 237,
-    alt: "A wall-mounted TV in the 3D living room with its screen on, showing what is playing, between two plants on the TV ledge.",
+    width: 600,
+    height: 600,
+    alt: "A wall-mounted TV in the 3D living room with its screen on, showing the Netflix logo of the app that is running.",
     caption: "See your TV being on.",
     available: true,
   },
   "device-air-purifier": {
     file: "device-air-purifier.webp",
-    width: 122,
-    height: 141,
-    alt: "An air purifier in the 3D room with blue swirls rising from it while it runs.",
+    width: 600,
+    height: 600,
+    alt: "An air purifier in the 3D bedroom with blue swirls rising from it while it runs.",
     caption: "See your air purifier working.",
     available: true,
   },
   "device-ac-heating": {
     file: "device-ac-heating.webp",
-    width: 277,
-    height: 194,
+    width: 600,
+    height: 600,
     alt: "A wall air conditioner in the 3D room with warm red swirls in front of it while it heats.",
     caption: "See your AC heating.",
+    available: true,
+  },
+  "device-washer-door": {
+    file: "device-washer-door.webp",
+    width: 600,
+    height: 600,
+    alt: "A washing machine and a dryer side by side in the 3D bathroom, the dryer's round door swung open.",
+    caption: "See your washing machine door open.",
     available: true,
   },
   "ha-link-settings": {
@@ -228,6 +238,14 @@ export const screenshots: Readonly<Record<ScreenshotName, Screenshot>> = {
     height: 592,
     alt: "Home Assistant's own more-info dialog for the living room AC, opened from the 3D view: the current temperature, a heat target of 21 °C, and mode, fan and swing controls.",
     caption: "Hold a device to open Home Assistant's own controls for it.",
+    available: true,
+  },
+  "viewer-bubbles": {
+    file: "viewer-bubbles.webp",
+    width: 900,
+    height: 733,
+    alt: "A study in the 3D house with two bubbles floating above it: a temperature bubble reading 23.1 °C and a round presence bubble with a walking-person icon.",
+    caption: "Bubbles above a room show its temperature and that someone is there.",
     available: true,
   },
   "viewer-door-open": {

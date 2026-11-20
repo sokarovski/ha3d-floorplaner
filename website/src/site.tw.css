@@ -314,6 +314,10 @@
     @apply md:grid-cols-3;
   }
 
+  [data-site-grid][data-site-grid-4] {
+    @apply sm:grid-cols-2 lg:grid-cols-4;
+  }
+
   [data-site-split] {
     @apply grid gap-8 lg:grid-cols-2;
   }
@@ -340,6 +344,78 @@
   [data-site-prose] p,
   [data-site-flow-text] p {
     @apply text-muted;
+  }
+
+  /* "What do you need?" cards: a small screenshot on top, then a large centred title. */
+  [data-site-part-card] {
+    @apply gap-4;
+  }
+
+  [data-site-part-image] {
+    @apply mx-auto block h-auto w-full max-w-sm rounded-control shadow-(--shadow-floating);
+  }
+
+  /* The card's Learn More button, centred at the bottom so both cards line up. */
+  [data-site-part-action] {
+    @apply mt-auto flex justify-center pt-2;
+  }
+
+  [data-site-part-card] h3 {
+    @apply text-center text-2xl sm:text-3xl;
+  }
+
+  /* A short bullet list inside a card. */
+  [data-site-card-list] {
+    @apply flex list-disc flex-col gap-2 pl-5 text-muted marker:text-primary;
+  }
+
+  /* A chapter title above Learn More areas: it leads straight into the first area on the same background. */
+  [data-site-section][data-site-chapter] {
+    @apply pb-0 sm:pb-0;
+  }
+
+  /* A Learn More area: text 6/10 on the left, picture 4/10 on the right; stacked on narrow screens. */
+  [data-site-band] {
+    @apply grid items-center gap-8 lg:grid-cols-10 lg:gap-12;
+  }
+
+  [data-site-band-text] {
+    @apply flex flex-col gap-6 lg:col-span-6;
+  }
+
+  [data-site-band-text] h2,
+  [data-site-band-text] h3,
+  [data-site-band-tiles] h2 {
+    @apply text-3xl sm:text-4xl;
+  }
+
+  [data-site-band-list] {
+    @apply flex list-disc flex-col gap-3 pl-6 text-lg text-muted marker:text-primary sm:text-xl;
+  }
+
+  [data-site-band-media] {
+    @apply lg:col-span-4;
+  }
+
+  /* A "tiles" area: the title, then equal cards, each a square picture with a heading under it. */
+  [data-site-band-tiles] {
+    @apply flex flex-col gap-8;
+  }
+
+  [data-site-band-tile] {
+    @apply items-center gap-4 text-center;
+  }
+
+  [data-site-band-tile] [data-site-figure] {
+    @apply w-full;
+  }
+
+  [data-site-band-tile] [data-site-figure-image] {
+    @apply aspect-square object-cover;
+  }
+
+  [data-site-band-tile] h3 {
+    @apply text-xl;
   }
 
   [data-site-card-icon] {
@@ -380,6 +456,15 @@
   [data-site-steps] > li::before {
     @apply absolute top-0 left-0 inline-flex size-7 items-center justify-center rounded-full bg-selection text-sm font-semibold text-on-selection;
     content: counter(site-step);
+  }
+
+  /* Steps laid out across the page instead of one long column (the agent guides under the prompt). */
+  [data-site-steps][data-site-steps-grid] {
+    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  [data-site-steps-grid] > li {
+    @apply min-w-0;
   }
 
   [data-site-steps] strong {
@@ -605,16 +690,54 @@
     @apply flex flex-col gap-1;
   }
 
+  /* Same size as the Learn More band titles, so every area title on the page matches. */
   [data-site-group-header] h3 {
-    @apply text-2xl;
+    @apply text-3xl sm:text-4xl;
+  }
+
+  /* In the App (add-on) part of Learn More, every area title is centred. */
+  #builder [data-site-group-header] {
+    @apply items-center text-center;
+  }
+
+  #builder [data-site-band-text] h3 {
+    @apply text-center;
+  }
+
+  /* A band with its picture on the left instead (text stays first on narrow screens). */
+  [data-site-band-flip] [data-site-band-text] {
+    @apply lg:order-2;
+  }
+
+  [data-site-band-flip] [data-site-band-media] {
+    @apply lg:order-1;
+  }
+
+  /* Homepage Home Assistant section: bands under one section title, so their titles sit a step smaller. */
+  [data-site-home-bands] {
+    @apply flex flex-col gap-16 sm:gap-20;
+  }
+
+  [data-site-home-bands] [data-site-band-text] h3 {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  [data-site-home-bands-close] {
+    @apply mx-auto flex max-w-2xl flex-col items-center gap-4 text-center text-lg text-muted;
+  }
+
+  /* Breathing room between the agent steps and "What an agent can do". */
+  [data-site-agent-abilities] {
+    @apply mt-10 sm:mt-14;
   }
 
   [data-site-group-header] p {
     @apply max-w-3xl text-muted;
   }
 
+  /* A group's pictures sit centred in the page, captions centred under them. */
   [data-site-group-media] {
-    @apply grid gap-4 sm:gap-6 lg:max-w-3xl;
+    @apply mx-auto grid w-full gap-4 text-center sm:gap-6 lg:max-w-3xl;
   }
 
   [data-site-group-media][data-site-group-media-narrow] {
@@ -625,9 +748,14 @@
     @apply lg:max-w-none lg:grid-cols-2;
   }
 
+  /* Two pictures side by side share one frame and fill it, cropping edges, so their heights match. */
+  [data-site-group-media-pair] [data-site-figure-image] {
+    @apply aspect-[16/10] object-cover;
+  }
+
   /* Several small close-ups in one row, each at one height and its own width, so none is stretched far past its size. */
   [data-site-group-media][data-site-group-media-row] {
-    @apply flex max-w-none flex-wrap items-start;
+    @apply flex max-w-none flex-wrap items-start justify-center;
   }
 
   [data-site-group-media-row] [data-site-figure] {

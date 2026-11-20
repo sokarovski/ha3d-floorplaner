@@ -5,11 +5,16 @@ import type { ScreenshotName } from "../content/screenshots";
 
 type ScreenshotFigureProps = Readonly<{
   name: ScreenshotName;
+  caption?: boolean;
   priority?: boolean;
 }>;
 
 // A product capture with its caption, or a clearly marked placeholder while the capture is not available yet.
-export const ScreenshotFigure = ({ name, priority = false }: ScreenshotFigureProps): ReactElement => {
+export const ScreenshotFigure = ({
+  name,
+  priority = false,
+  caption = true,
+}: ScreenshotFigureProps): ReactElement => {
   const shot = screenshots[name];
   return (
     <figure data-site-figure="">
@@ -34,10 +39,12 @@ export const ScreenshotFigure = ({ name, priority = false }: ScreenshotFigurePro
           <span>Screenshot coming soon</span>
         </div>
       )}
-      <figcaption>
-        {shot.caption}
-        {shot.available ? null : <span data-site-figure-note=""> (screenshot coming soon)</span>}
-      </figcaption>
+      {caption ? (
+        <figcaption>
+          {shot.caption}
+          {shot.available ? null : <span data-site-figure-note=""> (screenshot coming soon)</span>}
+        </figcaption>
+      ) : null}
     </figure>
   );
 };

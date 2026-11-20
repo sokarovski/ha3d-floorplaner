@@ -26,9 +26,6 @@ export const SiteHeader = ({ page = "home" }: SiteHeaderProps): ReactElement => 
           <a href={pages.possibilities} aria-current={page === "possibilities" ? "page" : undefined}>
             Learn More
           </a>
-          <a href={pages.sideCards} aria-current={page === "sideCards" ? "page" : undefined}>
-            Side Cards
-          </a>
           <a href={pages.install} aria-current={page === "install" ? "page" : undefined}>
             Install
           </a>
