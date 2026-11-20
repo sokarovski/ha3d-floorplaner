@@ -13,6 +13,7 @@ export const TextPropEditor = ({
   mixed,
   disabled,
   describedBy,
+  onPreview,
   onCommit,
 }: PropertyEditorProps): ReactElement => {
   const field = useDraftField(
@@ -26,7 +27,11 @@ export const TextPropEditor = ({
       <Input
         id={id}
         value={field.text}
-        onChange={field.setText}
+        onChange={(text) => {
+          field.setText(text);
+          // The text as typed, for hosts that follow it before the commit (the material chooser's preset name).
+          onPreview?.(text);
+        }}
         onBlur={field.onBlur}
         onKeyDown={field.onKeyDown}
         placeholder={mixed ? "Mixed" : annotation.placeholder}

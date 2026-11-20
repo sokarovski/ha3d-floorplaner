@@ -325,6 +325,11 @@ export const MaterialPickerPopup = ({
                       registry={genericEditors}
                       projectUnit={projectUnit}
                       mode="live"
+                      onPreview={(path, next) => {
+                        // Every keystroke marks the name as changed, so Save is offered while typing (owner).
+                        if (path[0] === "name" && typeof next === "string")
+                          setDraftName(next.trim() === selected.name ? undefined : next.trim());
+                      }}
                       onCommit={(path, next) => {
                         if (path[0] !== "name" || typeof next !== "string" || next.trim() === "")
                           return false;
@@ -349,7 +354,7 @@ export const MaterialPickerPopup = ({
                   <div data-material-picker-actions="">
                     <Button
                       size="sm"
-                      disabled={!unsaved}
+                      disabled={!unsaved || draftName === ""}
                       onPress={() => {
                         if (selected.source === "used") {
                           if (draft !== undefined && data.replaceMaterial(selected.material, draft))
