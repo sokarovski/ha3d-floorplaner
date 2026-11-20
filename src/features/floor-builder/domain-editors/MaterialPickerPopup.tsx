@@ -60,7 +60,7 @@ const sourceLabel = (item: LibraryMaterial): string =>
  * selected material in an editor (the material form) on a working copy beside the original: Save writes the copy
  * back (a house preset, or every surface using a material of Used in this house), Revert returns to the original;
  * a built-in shows its values instead of a form (it can be applied, not changed). Apply (or a double click on a tile) copies the selected material, as edited, onto the
- * surface; house presets can be renamed or deleted here. The footer shows the selected element's own material with Save as
+ * surface; a house preset's name is a field above its form (saved with Save), and it can be deleted here. The footer shows the selected element's own material with Save as
  * preset (owner: "current" was unclear); Create material asks for a name and selects a new plain white house
  * preset to set up in the editor.
  */
@@ -77,10 +77,11 @@ export const MaterialPickerPopup = ({
   const [category, setCategory] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [saving, setSaving] = useState<SurfaceMaterialValue | undefined>(undefined);
-  const [renaming, setRenaming] = useState<LibraryMaterial | undefined>(undefined);
   const [creating, setCreating] = useState(false);
   /** The selected material as edited in the preview (undefined: unchanged). */
   const [draft, setDraft] = useState<SurfaceMaterialValue | undefined>(undefined);
+  /** A house preset's name as edited above its form (undefined: unchanged); saved with Save (owner). */
+  const [draftName, setDraftName] = useState<string | undefined>(undefined);
   const library = open ? data.materialLibrary() : [];
   const matching = searchLibrary(library, query, null);
   const filtered = searchLibrary(library, query, category);
@@ -99,7 +100,7 @@ export const MaterialPickerPopup = ({
   // working copy (`draft`) beside the original (`selected.material`): Save writes it back, Revert drops it.
   const readOnly = selected?.source === "builtin";
   // Unsaved changes block Apply (owner): save them or revert first.
-  const unsaved = draft !== undefined;
+  const unsaved = draft !== undefined || draftName !== undefined;
   const currentName =
     currentKey === undefined
       ? undefined
@@ -108,6 +109,7 @@ export const MaterialPickerPopup = ({
   const select = (key: string | null): void => {
     setSelectedKey(key);
     setDraft(undefined);
+    setDraftName(undefined);
   };
   const textureName = (material: SurfaceMaterialValue): string => {
     const imageId = material.pbrMetallicRoughness.baseColorTexture?.imageId;
@@ -142,6 +144,7 @@ export const MaterialPickerPopup = ({
     setCategory(null);
     setSelectedKey(null);
     setDraft(undefined);
+    setDraftName(undefined);
     onClose();
   };
   const apply = (material: SurfaceMaterialValue): void => {
@@ -151,7 +154,7 @@ export const MaterialPickerPopup = ({
   return (
     <>
       <Popup
-        open={open && saving === undefined && renaming === undefined && !creating}
+        open={open && saving === undefined && !creating}
         title={title}
         size="xl"
         onClose={close}
@@ -283,8 +286,8 @@ export const MaterialPickerPopup = ({
             <aside data-material-picker-preview="" aria-label="Selected material">
               <MaterialSwatch material={edited} spanMm={previewSpanMm} size="preview" />
               <h3 data-material-picker-preview-name="">
-                {selected.name}
-                {draft === undefined ? null : <span data-material-picker-edited=""> · edited</span>}
+                {draftName ?? selected.name}
+                {unsaved ? <span data-material-picker-edited=""> · edited</span> : null}
               </h3>
               <p data-material-picker-preview-meta="">
                 {selected.category} · {sourceLabel(selected)} · {textureName(edited)}
@@ -315,6 +318,21 @@ export const MaterialPickerPopup = ({
                 </dl>
               ) : (
                 <>
+                  {selected.source === "house" ? (
+                    <SchemaForm
+                      schema={savePresetForm}
+                      value={{ name: draftName ?? selected.name }}
+                      registry={genericEditors}
+                      projectUnit={projectUnit}
+                      mode="live"
+                      onCommit={(path, next) => {
+                        if (path[0] !== "name" || typeof next !== "string" || next.trim() === "")
+                          return false;
+                        setDraftName(next.trim() === selected.name ? undefined : next.trim());
+                        return true;
+                      }}
+                    />
+                  ) : null}
                   <SchemaForm
                     schema={MaterialView}
                     value={toMaterialView(edited)}
@@ -331,16 +349,18 @@ export const MaterialPickerPopup = ({
                   <div data-material-picker-actions="">
                     <Button
                       size="sm"
-                      disabled={draft === undefined}
+                      disabled={!unsaved}
                       onPress={() => {
-                        if (draft === undefined) return;
                         if (selected.source === "used") {
-                          if (data.replaceMaterial(selected.material, draft))
+                          if (draft !== undefined && data.replaceMaterial(selected.material, draft))
                             select(`used:${materialKey(draft)}`);
-                        } else if (
-                          selected.presetId !== undefined &&
-                          data.updatePreset(selected.presetId, draft)
-                        ) {
+                          return;
+                        }
+                        const presetId = selected.presetId;
+                        if (presetId === undefined) return;
+                        if (draftName !== undefined && !data.renamePreset(presetId, draftName)) return;
+                        setDraftName(undefined);
+                        if (draft !== undefined && data.updatePreset(presetId, draft)) {
                           proposeFromPreset(draft);
                           setDraft(undefined);
                         }
@@ -353,9 +373,10 @@ export const MaterialPickerPopup = ({
                     <Button
                       size="sm"
                       variant="secondary"
-                      disabled={draft === undefined}
+                      disabled={!unsaved}
                       onPress={() => {
                         setDraft(undefined);
+                        setDraftName(undefined);
                       }}
                     >
                       Revert
@@ -366,27 +387,16 @@ export const MaterialPickerPopup = ({
                       </p>
                     ) : null}
                     {selected.source === "house" && selected.presetId !== undefined ? (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onPress={() => {
-                            setRenaming(selected);
-                          }}
-                        >
-                          Rename
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onPress={() => {
-                            if (selected.presetId !== undefined) data.deletePreset(selected.presetId);
-                            select(null);
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onPress={() => {
+                          if (selected.presetId !== undefined) data.deletePreset(selected.presetId);
+                          select(null);
+                        }}
+                      >
+                        Delete
+                      </Button>
                     ) : null}
                   </div>
                 </>
@@ -421,25 +431,6 @@ export const MaterialPickerPopup = ({
           setSaving(undefined);
         }}
       />
-      {renaming === undefined ? null : (
-        <FormPopup
-          open
-          schema={{
-            ...savePresetForm,
-            "x-homeplan": { title: "Rename preset", submitLabel: "Rename", size: "sm" },
-          }}
-          values={{ name: renaming.name }}
-          onCancel={() => {
-            setRenaming(undefined);
-          }}
-          onSubmit={async (values) => {
-            await Promise.resolve();
-            if (renaming.presetId === undefined || !data.renamePreset(renaming.presetId, values.name))
-              throw new FormSubmitError("The preset could not be renamed.");
-            setRenaming(undefined);
-          }}
-        />
-      )}
     </>
   );
 };
