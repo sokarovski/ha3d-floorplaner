@@ -1,4 +1,4 @@
-// Save as preset (D19) and New material from image.
+// Save as preset (D19) and Create material.
 import Type from "typebox";
 import type { Static } from "typebox";
 import { hp } from "../annotations";
@@ -24,7 +24,7 @@ export const savePresetForm = Type.Object(
 export type SavePresetForm = Static<typeof savePresetForm>;
 
 /**
- * New material from image (owner, 2026-11-20; the material chooser): an uploaded image becomes a textured house
+ * Create material (owner, 2026-11-20; the material chooser): an uploaded image becomes a textured house
  * preset, with the image's proposed material values (the real width of one repeat, the height following the image's
  * proportions; Shininess; metallic) stored with the image, so choosing it again in any material proposes them.
  */
@@ -65,7 +65,7 @@ export const newMaterialFromImageForm = Type.Object(
     additionalProperties: false,
     required: ["file", "name", "repeatWidthMm", "roughness", "metallic"],
     ...hp({
-      title: "New material from image",
+      title: "Create material",
       submitLabel: "Create material",
       description:
         "JPEG, PNG, or WebP, up to 25 MB. The image repeats across the surface; it is saved as a house preset and applied.",

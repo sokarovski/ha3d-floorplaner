@@ -28,7 +28,7 @@ export const mvpFormFixtures = [
   { id: "save-preset", label: "Save as preset", schema: savePresetForm, values: {} },
   {
     id: "new-material-from-image",
-    label: "New material from image",
+    label: "Create material",
     schema: newMaterialFromImageForm,
     values: { repeatWidthMm: 1000, roughness: 0.7, metallic: 0 },
   },

@@ -51,7 +51,7 @@ const sourceLabel = (item: LibraryMaterial): string =>
  * selected material in an editor (the material form, on a copy). Apply (or a double click on a tile) copies it onto
  * the surface; an edited house preset can be saved back to the preset, any edited material saved as a new preset;
  * house presets can be renamed or deleted here. The footer shows the selected element's own material with Save as
- * preset (owner: "current" was unclear); New material
+ * preset (owner: "current" was unclear); Create material
  * from image uploads an image with its proposed values (repeat size, Shininess, metallic), saves it as a house
  * preset and applies it.
  */
@@ -124,32 +124,32 @@ export const MaterialPickerPopup = ({
         onClose={close}
         footer={
           <>
-            {current === undefined ? (
-              <span data-material-picker-surface="">This surface: mixed materials</span>
-            ) : (
+            <Button
+              variant="secondary"
+              disabled={current === undefined}
+              aria-label={
+                current === undefined
+                  ? "Save as preset (the selection has mixed materials)"
+                  : `Save as preset: this surface's material, ${currentName ?? "Custom"}`
+              }
+              onPress={() => {
+                setSaving(current);
+              }}
+            >
               <span data-material-picker-surface="">
-                <MaterialSwatch material={current} spanMm={tileSpanMm} size="tile" />
-                <span>
-                  This surface
-                  <strong>{currentName}</strong>
-                </span>
-                <Button
-                  variant="ghost"
-                  onPress={() => {
-                    setSaving(current);
-                  }}
-                >
-                  Save as preset…
-                </Button>
+                {current === undefined ? null : (
+                  <MaterialSwatch material={current} spanMm={tileSpanMm} size="tile" />
+                )}
+                Save as preset
               </span>
-            )}
+            </Button>
             <Button
               variant="ghost"
               onPress={() => {
                 setCreating(true);
               }}
             >
-              New material from image…
+              Create material
             </Button>
             <span data-material-picker-spacer="" />
             <Button variant="secondary" onPress={close}>

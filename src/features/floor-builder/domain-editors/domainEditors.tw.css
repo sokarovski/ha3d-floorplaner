@@ -185,33 +185,13 @@
     @apply text-sm font-normal text-muted;
   }
 
-  /* The selected element's own material, before Save as preset (owner: "current" was unclear). */
+  /* Save as preset with the selected element's own material as a small swatch in the same button (owner). */
   [data-material-picker-surface] {
-    @apply flex min-w-0 items-center gap-2 text-sm text-muted;
+    @apply inline-flex items-center gap-2;
   }
 
   [data-material-picker-surface] > [data-material-swatch] {
-    @apply size-9 shrink-0;
-  }
-
-  [data-material-picker-surface] strong {
-    @apply block font-medium text-foreground;
-  }
-
-  [data-material-picker-preview-name] {
-    @apply text-base font-semibold text-foreground;
-  }
-
-  [data-material-picker-details] {
-    @apply grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm;
-  }
-
-  [data-material-picker-details] dt {
-    @apply text-muted;
-  }
-
-  [data-material-picker-details] dd {
-    @apply min-w-0 truncate text-foreground tabular-nums;
+    @apply size-5 shrink-0;
   }
 
   [data-material-picker-actions] {
