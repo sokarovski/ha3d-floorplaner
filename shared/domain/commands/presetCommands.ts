@@ -30,6 +30,15 @@ export const renamePresetCommand = (presetId: string, name: string): Command =>
     return undefined;
   });
 
+/** Replaces a house preset's material (the material chooser's Save to preset); surfaces keep their copies. */
+export const updatePresetMaterialCommand = (presetId: string, material: SurfaceMaterialValue): Command =>
+  defineCommand("Update preset", undefined, (draft) => {
+    const preset = draft.materialPresets.find((candidate) => candidate.id === presetId);
+    if (preset === undefined) return "The preset no longer exists.";
+    preset.material = structuredClone(material);
+    return undefined;
+  });
+
 export const deletePresetCommand = (presetId: string): Command =>
   defineCommand("Delete preset", undefined, (draft) => {
     const index = draft.materialPresets.findIndex((candidate) => candidate.id === presetId);

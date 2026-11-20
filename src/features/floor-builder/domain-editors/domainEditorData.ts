@@ -28,6 +28,8 @@ export type DomainEditorData = Readonly<{
   savePreset: (name: string, material: SurfaceMaterialValue) => boolean;
   /** Renames a house preset (built-ins are read-only); false when rejected. */
   renamePreset: (presetId: string, name: string) => boolean;
+  /** Replaces a house preset's material (surfaces keep their copies); false when rejected. */
+  updatePreset: (presetId: string, material: SurfaceMaterialValue) => boolean;
   /** Deletes a house preset (surfaces keep their materials; Undo brings it back); false when rejected. */
   deletePreset: (presetId: string) => boolean;
   /** The material chooser's library, read from the house now: used materials, house presets, built-ins. */

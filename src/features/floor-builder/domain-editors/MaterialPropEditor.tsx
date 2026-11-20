@@ -1,8 +1,6 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { fromMaterialView, MaterialView, toMaterialView } from "@shared/domain/materials/materialView";
-import { textureHintsFor } from "@shared/domain/materials/textureHints";
-import { isSchemaNode, withValueAtPath } from "@shared/domain/schemas/schemaWalk";
+import { MaterialView, toMaterialView } from "@shared/domain/materials/materialView";
 import { SurfaceMaterialSchema } from "@shared/domain/schemas/values";
 import { compileValidator } from "@shared/domain/validation/ajv";
 import { Button } from "../../../design-system/components/Button/Button";
@@ -12,6 +10,7 @@ import { genericEditors } from "../../../design-system/property-editors/genericE
 import { ImagePropEditor } from "./ImagePropEditor";
 import { useDomainEditorData } from "./domainEditorData";
 import { MaterialPickerPopup } from "./MaterialPickerPopup";
+import { materialAfterCommit } from "./materialViewCommit";
 
 export const MaterialPropEditor = ({
   id,
@@ -71,27 +70,8 @@ export const MaterialPropEditor = ({
               : undefined
           }
           onCommit={(path, next) => {
-            const changed = withValueAtPath(view, path, next);
-            // A newly chosen texture brings its proposed tile size, Shininess and metallic (owner, 2026-11-20).
-            const hints =
-              path.length === 1 && path[0] === "image" && typeof next === "string" && next !== view.image
-                ? textureHintsFor(next, data.images)
-                : undefined;
-            const updated =
-              hints === undefined || !isSchemaNode(changed)
-                ? changed
-                : {
-                    ...changed,
-                    tileSizeMm: hints.tileSizeMm,
-                    roughness: hints.roughness,
-                    metallic: hints.metallic,
-                    // A flat colour would tint the new texture: it starts untinted.
-                    ...(view.image === undefined ? { tint: [255, 255, 255] } : {}),
-                  };
-            const isView = compileValidator(MaterialView);
-            return isSchemaNode(updated) && isView(updated)
-              ? onCommit(fromMaterialView(updated, material))
-              : false;
+            const updated = materialAfterCommit(material, path, next, data.images);
+            return updated === undefined ? false : onCommit(updated);
           }}
         />
       )}
@@ -99,6 +79,7 @@ export const MaterialPropEditor = ({
         open={choosing}
         title={`Choose a material · ${label}`}
         current={mixed ? undefined : material}
+        projectUnit={projectUnit}
         onApply={(next) => {
           onCommit(next);
         }}

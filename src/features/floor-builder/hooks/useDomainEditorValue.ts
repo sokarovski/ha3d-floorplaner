@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import {
   deletePresetCommand,
   renamePresetCommand,
+  updatePresetMaterialCommand,
   savePresetCommand,
 } from "@shared/domain/commands/presetCommands";
 import { materialLibrary } from "@shared/domain/materials/materialLibrary";
@@ -42,6 +43,8 @@ export const useDomainEditorValue = (libraries: HouseLibraries): DomainEditorDat
       presets: allPresets,
       savePreset: (name, material) => session.execute(savePresetCommand(name, material).command).ok,
       renamePreset: (presetId, name) => session.execute(renamePresetCommand(presetId, name)).ok,
+      updatePreset: (presetId, material) =>
+        session.execute(updatePresetMaterialCommand(presetId, material)).ok,
       deletePreset: (presetId) => session.execute(deletePresetCommand(presetId)).ok,
       materialLibrary: () => materialLibrary(session.documents.getState().document, allPresets),
       referenceOptions: (kind: string) => {

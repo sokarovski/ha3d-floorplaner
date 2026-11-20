@@ -2,15 +2,12 @@ import { useState } from "react";
 import type { ReactElement } from "react";
 import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { findBuiltInImage } from "@shared/domain/house/builtinMaterials";
-import {
-  libraryCategories,
-  materialHex,
-  materialKey,
-  searchLibrary,
-} from "@shared/domain/materials/materialLibrary";
+import { libraryCategories, materialKey, searchLibrary } from "@shared/domain/materials/materialLibrary";
 import type { LibraryMaterial } from "@shared/domain/materials/materialLibrary";
 import { proportionalTileSize } from "@shared/domain/materials/textureHints";
 import { newMaterialFromImageForm, savePresetForm } from "@shared/domain/schemas/forms/materialForms";
+import { MaterialView, toMaterialView } from "@shared/domain/materials/materialView";
+import type { LengthUnit } from "@shared/domain/schemas/house";
 import type { SurfaceMaterialValue } from "@shared/domain/schemas/values";
 import { Button } from "../../../design-system/components/Button/Button";
 import { Icon } from "../../../design-system/components/Icon/Icon";
@@ -18,16 +15,21 @@ import { Input } from "../../../design-system/components/Input/Input";
 import { Popup } from "../../../design-system/components/Popup/Popup";
 import { FormPopup } from "../../../design-system/forms/FormPopup/FormPopup";
 import { FormSubmitError } from "../../../design-system/forms/formErrors";
+import { SchemaForm } from "../../../design-system/forms/SchemaForm/SchemaForm";
+import { genericEditors } from "../../../design-system/property-editors/genericEditors";
 import { submitWithFormErrors } from "../../forms/toFormSubmitError";
 import { useDomainEditorData } from "./domainEditorData";
+import { ImagePropEditor } from "./ImagePropEditor";
+import { materialAfterCommit } from "./materialViewCommit";
 import { MaterialSwatch } from "./MaterialSwatch";
 import { SavePresetPopup } from "./SavePresetPopup";
 
 type MaterialPickerPopupProps = Readonly<{
   open: boolean;
   title: string;
-  /** The surface's material now, for Save current as preset (undefined: mixed or none). */
+  /** The selected element's material now (undefined: a mixed selection), shown in the footer with Save as preset. */
   current: SurfaceMaterialValue | undefined;
+  projectUnit: LengthUnit;
   onApply: (material: SurfaceMaterialValue) => void;
   onClose: () => void;
 }>;
@@ -46,8 +48,10 @@ const sourceLabel = (item: LibraryMaterial): string =>
 /**
  * The material chooser (owner, 2026-11-20; replaces the Presets menu): search, category chips (Used in this house,
  * House presets, then the built-in categories), a grid of swatches grouped by category, and a preview of the
- * selected material with its details. Apply (or a double click) copies it onto the surface; house presets can be
- * renamed or deleted here; Save current as preset stores the surface's material as a house preset; New material
+ * selected material in an editor (the material form, on a copy). Apply (or a double click on a tile) copies it onto
+ * the surface; an edited house preset can be saved back to the preset, any edited material saved as a new preset;
+ * house presets can be renamed or deleted here. The footer shows the selected element's own material with Save as
+ * preset (owner: "current" was unclear); New material
  * from image uploads an image with its proposed values (repeat size, Shininess, metallic), saves it as a house
  * preset and applies it.
  */
@@ -55,6 +59,7 @@ export const MaterialPickerPopup = ({
   open,
   title,
   current,
+  projectUnit,
   onApply,
   onClose,
 }: MaterialPickerPopupProps): ReactElement => {
@@ -65,6 +70,8 @@ export const MaterialPickerPopup = ({
   const [saving, setSaving] = useState<SurfaceMaterialValue | undefined>(undefined);
   const [renaming, setRenaming] = useState<LibraryMaterial | undefined>(undefined);
   const [creating, setCreating] = useState(false);
+  /** The selected material as edited in the preview (undefined: unchanged). */
+  const [draft, setDraft] = useState<SurfaceMaterialValue | undefined>(undefined);
   const library = open ? data.materialLibrary() : [];
   const matching = searchLibrary(library, query, null);
   const filtered = searchLibrary(library, query, category);
@@ -78,6 +85,16 @@ export const MaterialPickerPopup = ({
     filtered.find((item) => item.key === selectedKey) ??
     (selectedKey === null ? filtered.find((item) => materialKey(item.material) === currentKey) : undefined) ??
     filtered[0];
+  const edited = draft ?? selected?.material;
+  const currentName =
+    currentKey === undefined
+      ? undefined
+      : (library.find((item) => item.source === "used" && materialKey(item.material) === currentKey)?.name ??
+        "Custom");
+  const select = (key: string | null): void => {
+    setSelectedKey(key);
+    setDraft(undefined);
+  };
   const textureName = (material: SurfaceMaterialValue): string => {
     const imageId = material.pbrMetallicRoughness.baseColorTexture?.imageId;
     if (imageId === undefined) return "None (flat colour)";
@@ -91,10 +108,11 @@ export const MaterialPickerPopup = ({
     setQuery("");
     setCategory(null);
     setSelectedKey(null);
+    setDraft(undefined);
     onClose();
   };
-  const apply = (item: LibraryMaterial): void => {
-    onApply(structuredClone(item.material));
+  const apply = (material: SurfaceMaterialValue): void => {
+    onApply(structuredClone(material));
     close();
   };
   return (
@@ -106,15 +124,25 @@ export const MaterialPickerPopup = ({
         onClose={close}
         footer={
           <>
-            <Button
-              variant="ghost"
-              disabled={current === undefined}
-              onPress={() => {
-                setSaving(current);
-              }}
-            >
-              Save current as preset…
-            </Button>
+            {current === undefined ? (
+              <span data-material-picker-surface="">This surface: mixed materials</span>
+            ) : (
+              <span data-material-picker-surface="">
+                <MaterialSwatch material={current} spanMm={tileSpanMm} size="tile" />
+                <span>
+                  This surface
+                  <strong>{currentName}</strong>
+                </span>
+                <Button
+                  variant="ghost"
+                  onPress={() => {
+                    setSaving(current);
+                  }}
+                >
+                  Save as preset…
+                </Button>
+              </span>
+            )}
             <Button
               variant="ghost"
               onPress={() => {
@@ -128,9 +156,9 @@ export const MaterialPickerPopup = ({
               Cancel
             </Button>
             <Button
-              disabled={selected === undefined}
+              disabled={edited === undefined}
               onPress={() => {
-                if (selected !== undefined) apply(selected);
+                if (edited !== undefined) apply(edited);
               }}
             >
               Apply
@@ -148,9 +176,9 @@ export const MaterialPickerPopup = ({
             aria-label="Search materials"
             start={<Icon name="search" />}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && selected !== undefined) {
+              if (event.key === "Enter" && edited !== undefined) {
                 event.preventDefault();
-                apply(selected);
+                apply(edited);
               }
             }}
           />
@@ -200,10 +228,10 @@ export const MaterialPickerPopup = ({
                         aria-selected={item.key === selected?.key}
                         data-image-picker-item=""
                         onClick={() => {
-                          setSelectedKey(item.key);
+                          if (item.key !== selected?.key) select(item.key);
                         }}
                         onDoubleClick={() => {
-                          apply(item);
+                          apply(item.material);
                         }}
                       >
                         <MaterialSwatch material={item.material} spanMm={tileSpanMm} size="tile" />
@@ -216,64 +244,91 @@ export const MaterialPickerPopup = ({
               ))
             )}
           </div>
-          {selected === undefined ? null : (
+          {selected === undefined || edited === undefined ? null : (
             <aside data-material-picker-preview="" aria-label="Selected material">
-              <MaterialSwatch material={selected.material} spanMm={previewSpanMm} size="preview" />
-              <h3 data-material-picker-preview-name="">{selected.name}</h3>
-              <dl data-material-picker-details="">
-                <dt>Group</dt>
-                <dd>
-                  {selected.category} · {sourceLabel(selected)}
-                </dd>
-                <dt>Texture</dt>
-                <dd>{textureName(selected.material)}</dd>
-                <dt>Colour / tint</dt>
-                <dd>{materialHex(selected.material)}</dd>
-                {selected.material.extras === undefined ||
-                selected.material.pbrMetallicRoughness.baseColorTexture === undefined ? null : (
+              <MaterialSwatch material={edited} spanMm={previewSpanMm} size="preview" />
+              <h3 data-material-picker-preview-name="">
+                {selected.name}
+                {draft === undefined ? null : <span data-material-picker-edited=""> · edited</span>}
+              </h3>
+              <p data-material-picker-preview-meta="">
+                {selected.category} · {sourceLabel(selected)} · {textureName(edited)}
+              </p>
+              <SchemaForm
+                schema={MaterialView}
+                value={toMaterialView(edited)}
+                registry={{ ...genericEditors, image: ImagePropEditor }}
+                projectUnit={projectUnit}
+                mode="live"
+                onCommit={(path, next) => {
+                  const updated = materialAfterCommit(edited, path, next, data.images);
+                  if (updated === undefined) return false;
+                  setDraft(updated);
+                  return true;
+                }}
+              />
+              <div data-material-picker-actions="">
+                {draft === undefined ? null : (
                   <>
-                    <dt>Tile size</dt>
-                    <dd>
-                      {String(Math.round(selected.material.extras.homeplan.tileSizeMm.x))} ×{" "}
-                      {String(Math.round(selected.material.extras.homeplan.tileSizeMm.y))} mm
-                    </dd>
+                    {selected.source === "house" && selected.presetId !== undefined ? (
+                      <Button
+                        size="sm"
+                        onPress={() => {
+                          if (selected.presetId !== undefined && data.updatePreset(selected.presetId, draft))
+                            setDraft(undefined);
+                        }}
+                      >
+                        Save to preset
+                      </Button>
+                    ) : null}
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onPress={() => {
+                        setSaving(draft);
+                      }}
+                    >
+                      Save as new preset…
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onPress={() => {
+                        setDraft(undefined);
+                      }}
+                    >
+                      Reset
+                    </Button>
                   </>
                 )}
-                {selected.material.pbrMetallicRoughness.baseColorTexture === undefined ? null : (
+                {selected.source === "house" && selected.presetId !== undefined ? (
                   <>
-                    <dt>Rotation</dt>
-                    <dd>{String(Math.round(selected.material.extras?.homeplan.rotationDeg ?? 0))}°</dd>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onPress={() => {
+                        setRenaming(selected);
+                      }}
+                    >
+                      Rename
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onPress={() => {
+                        if (selected.presetId !== undefined) data.deletePreset(selected.presetId);
+                        select(null);
+                      }}
+                    >
+                      Delete
+                    </Button>
                   </>
-                )}
-                <dt>Shininess</dt>
-                <dd>
-                  {String(Math.round((1 - selected.material.pbrMetallicRoughness.roughnessFactor) * 100))} %
-                </dd>
-                <dt>Metallic</dt>
-                <dd>{String(Math.round(selected.material.pbrMetallicRoughness.metallicFactor * 100))} %</dd>
-              </dl>
-              {selected.source === "house" && selected.presetId !== undefined ? (
-                <div data-material-picker-actions="">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onPress={() => {
-                      setRenaming(selected);
-                    }}
-                  >
-                    Rename
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onPress={() => {
-                      if (selected.presetId !== undefined) data.deletePreset(selected.presetId);
-                      setSelectedKey(null);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
+                ) : null}
+              </div>
+              {selected.source === "builtin" && draft !== undefined ? (
+                <p data-material-picker-preview-meta="">
+                  Built-in presets stay as they are: apply your changes, or save them as a new preset.
+                </p>
               ) : null}
             </aside>
           )}

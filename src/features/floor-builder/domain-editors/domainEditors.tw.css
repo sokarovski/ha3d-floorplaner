@@ -161,15 +161,41 @@
 @layer components {
   /* The material chooser (owner, 2026-11-20): swatches in groups beside a preview of the selected material. */
   [data-material-picker-body] {
-    @apply grid grid-cols-[minmax(0,1fr)_16rem] items-start gap-5 max-md:grid-cols-1;
+    @apply grid grid-cols-[minmax(0,1fr)_22rem] items-start gap-5 max-md:grid-cols-1;
   }
 
   [data-material-picker-groups] {
     @apply min-w-0;
   }
 
+  /* The selected material, edited with the material form (owner, 2026-11-20): it scrolls by itself. */
   [data-material-picker-preview] {
-    @apply sticky top-16 flex flex-col gap-3 rounded-card bg-canvas p-3;
+    @apply sticky top-16 flex max-h-[min(70vh,44rem)] flex-col gap-3 overflow-y-auto rounded-card bg-canvas p-3;
+  }
+
+  [data-material-picker-preview] [data-material-swatch] {
+    @apply mx-auto max-w-56 shrink-0;
+  }
+
+  [data-material-picker-preview-meta] {
+    @apply text-xs text-muted;
+  }
+
+  [data-material-picker-edited] {
+    @apply text-sm font-normal text-muted;
+  }
+
+  /* The selected element's own material, before Save as preset (owner: "current" was unclear). */
+  [data-material-picker-surface] {
+    @apply flex min-w-0 items-center gap-2 text-sm text-muted;
+  }
+
+  [data-material-picker-surface] > [data-material-swatch] {
+    @apply size-9 shrink-0;
+  }
+
+  [data-material-picker-surface] strong {
+    @apply block font-medium text-foreground;
   }
 
   [data-material-picker-preview-name] {
@@ -189,7 +215,7 @@
   }
 
   [data-material-picker-actions] {
-    @apply flex gap-2;
+    @apply flex flex-wrap gap-2;
   }
 
   [data-material-picker-spacer] {
