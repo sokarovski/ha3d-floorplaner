@@ -777,7 +777,8 @@ export class HouseViewer {
       },
       invalidate,
     });
-    this.cutaway.setMode(this.rendering.roomFade());
+    const fade = this.rendering.roomFade();
+    this.cutaway.setMode(fade === "none" ? "off" : fade);
     this.cutaway.setDitherLevels(this.rendering.ditherLevels());
     this.sweeps = createIntrusionSweeps({
       planRoot: this.planRoot,

@@ -730,6 +730,19 @@ panel.hass=hass;panel.narrow=false;document.body.append(panel);""".replace(
                         not leftovers,
                         "house archive: refused uploads leave no staging folders",
                     )
+                    status, _ = await call("DELETE", f"/api/homeplan/houses/{house_id}")
+                    check(
+                        status == 409, "remove copy: the shown house cannot be removed"
+                    )
+                    status, _ = await call("DELETE", "/api/homeplan/houses/h_nothere1")
+                    check(
+                        status == 404,
+                        "remove copy: a house without a copy is not found",
+                    )
+                    check(
+                        house_id in record(app.configuration.snapshot()["houses"]),
+                        "remove copy: a refused removal keeps the copy",
+                    )
                     status, _ = await call(
                         "PATCH",
                         "/api/homeplan/config",

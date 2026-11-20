@@ -250,6 +250,10 @@ Phase 21.11 (owner design, 2026-11-20). A renderer takes the shown house and dra
 | **Dithered** (default) | dither | sharpness 2, the GPU's lamp-shadow budget, 512 px lamp shadows | **Other rooms visible** 3–50 % (default 10 %); the walls in front of the room keep 2.5× as much, at most 75 % |
 | **See-through** | transparent copies (the earlier look; each room open rebuilds walls and compiles) | as Dithered | none |
 | **Low power** | dither | sharpness 1.5, 4 lamp shadows at 256 px; the ride shows only the destination | as Dithered |
+| **Rooms always fully visible** | none: opening a room only frames it, everything stays solid | as Dithered | none |
+| **Only the open room** | dither at nothing kept: every other room, floor and object disappears while a room is open | as Dithered | **Walls in front visible** 0–50 % (default 0) |
+
+Each renderer carries a description, what it is **best for**, and its **trade-offs**; the picker shows all three.
 
 Every built-in renderer draws the glow backdrop and no reflection. **Writing a renderer** (a contribution): add a class to `ha-viewer/three/renderers.ts` that extends `ViewerRenderer` or a built-in renderer, give it an `id`, `label` and `description`, override the steps it changes (`draw` for the frame itself, `roomFade`, `ditherLevels`, `limits`, `reflection`, `backdrop`, `floorsBelowDuringRide`), declare its adjustable values in `settingsSchema` (sliders on Panels, read with `setting`), and add it to `rendererList`; run lint, typecheck and `npm run frames:check`, try it with the fake viewer's Renderer button, and open a pull request. The picker is on Settings → Panels, **This device** (admins, since Settings is for admins); the fake viewer has a button that cycles through them.
 

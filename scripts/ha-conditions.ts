@@ -10,7 +10,7 @@ import {
   presenceAllowed,
 } from "@shared/domain/homeAssistant/conditions";
 import type { ConditionEntity } from "@shared/domain/homeAssistant/conditions";
-import { haDefaultAction } from "../ha-viewer/haActions";
+import { haDefaultAction } from "@shared/domain/homeAssistant/defaultActions";
 import { mergeBindings, migrateStoredBindings } from "@shared/domain/homeAssistant/bindings";
 import {
   bubbleIcon,

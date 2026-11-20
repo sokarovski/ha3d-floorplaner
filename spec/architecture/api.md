@@ -238,6 +238,7 @@ These run on the **HA origin** through authenticated integration views. Every ho
 | `POST` | `/api/homeplan/frontend/restore-packaged` | Admin | `{ expectedRevision }`; clear downloaded-code preference, retain local houses/config/DEV MODE; return `{ revision, frontend, reloadRequired: true }` |
 | `POST` | `/api/homeplan/frontend/use-previous` | Admin | `{ expectedRevision }`; the previous downloaded panel again after it is verified; it swaps places with the current one (`404` without a previous one) |
 | `GET` | `/api/homeplan/houses/:houseId/archive` | Authenticated | The local copy as a house archive (`application/zip`: its `manifest.json` and files, Phase 21) |
+| `DELETE` | `/api/homeplan/houses/:houseId` | Admin | Removes Home Assistant's copy of a house (Phase 21); the shown house is `409 conflict`, a house without a copy `404`; its bindings stay |
 | `POST` | `/api/homeplan/houses/import[?replace=1]` | Admin | Raw `application/zip` body (≤ 1 GiB): a house archive becomes a local copy after every file is verified; an existing copy of the same house is `409 conflict` unless `replace=1` (its bindings kept); returns `{ houseId, outcome: imported \| upgraded \| unchanged, revision }` |
 | `GET` | `/api/homeplan/jobs` | Admin | Active and bounded recent job history |
 | `GET` | `/api/homeplan/jobs/:jobId` | Admin | `{ job }` |

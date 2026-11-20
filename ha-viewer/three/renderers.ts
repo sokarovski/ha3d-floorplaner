@@ -36,7 +36,8 @@ export type RendererSettings = Readonly<Record<string, number>>;
 /** One frame to draw: the WebGL renderer, the scene, and the camera already placed for this frame. */
 export type RenderFrame = Readonly<{ renderer: WebGLRenderer; scene: Scene; camera: Camera }>;
 
-export type RoomFade = "dither" | "fade";
+/** How an open room shows the rest: dithered, transparent copies, or not at all (every room stays solid). */
+export type RoomFade = "dither" | "fade" | "none";
 export type Backdrop = "orb" | "plain";
 
 const standardLimits: ViewerLimits = { pixelRatioCap: 2, floorShadowLamps: null, pointShadowSize: 512 };
@@ -49,7 +50,12 @@ const lowLimits: ViewerLimits = { pixelRatioCap: 1.5, floorShadowLamps: 4, point
 export abstract class ViewerRenderer {
   abstract readonly id: string;
   abstract readonly label: string;
+  /** What it does, in a sentence. */
   abstract readonly description: string;
+  /** Where it fits best (the picker shows it). */
+  abstract readonly bestFor: string;
+  /** What it costs or leaves out (the picker shows it). */
+  abstract readonly tradeOffs: string;
   protected readonly settings: RendererSettings;
 
   constructor(settings: RendererSettings = {}) {
@@ -118,7 +124,10 @@ export class DitheredRenderer extends ViewerRenderer {
   readonly id: string = "dithered";
   readonly label: string = "Dithered";
   readonly description: string =
-    "Fast. An open room fades the rest with a fine pixel pattern, without rebuilding anything.";
+    "An open room fades the rest with a fine pixel pattern, without rebuilding anything.";
+  readonly bestFor: string = "Most devices: phones, tablets and desktops. The default.";
+  readonly tradeOffs: string =
+    "Up close the faded rooms look like a fine dot pattern rather than smooth glass. Adjust how much stays visible below.";
 
   override settingsSchema(): readonly RendererSetting[] {
     return [
@@ -146,8 +155,10 @@ export class DitheredRenderer extends ViewerRenderer {
 export class SeeThroughRenderer extends DitheredRenderer {
   override readonly id: string = "seeThrough";
   override readonly label: string = "See-through";
-  override readonly description: string =
-    "Smooth transparency for the other rooms. Heavier: opening a room rebuilds walls and compiles shaders.";
+  override readonly description: string = "The other rooms turn smoothly transparent while a room is open.";
+  override readonly bestFor: string = "Desktops and fast tablets, when the smooth look matters most.";
+  override readonly tradeOffs: string =
+    "Heavier: opening a room rebuilds walls and compiles shaders, which can stutter or crash a phone.";
 
   override settingsSchema(): readonly RendererSetting[] {
     return [];
@@ -163,7 +174,10 @@ export class LowPowerRenderer extends DitheredRenderer {
   override readonly id: string = "lowPower";
   override readonly label: string = "Low power";
   override readonly description: string =
-    "Dithered, at 1.5× sharpness with 4 lamp shadows of lower resolution: less memory and battery.";
+    "Dithered, at 1.5× sharpness with 4 lamp shadows of lower resolution, and only the new floor during a floor switch.";
+  override readonly bestFor: string = "Older phones and wall tablets, or long-running screens on battery.";
+  override readonly tradeOffs: string =
+    "Slightly softer picture; at night only the 4 brightest lamps cast shadows, the others shine through walls.";
 
   override limits(): ViewerLimits {
     return lowLimits;
@@ -171,6 +185,60 @@ export class LowPowerRenderer extends DitheredRenderer {
 
   override floorsBelowDuringRide(): boolean {
     return false;
+  }
+}
+
+/** No fading at all (owner, 2026-11-20): an open room is framed, and every room stays solid and fully visible. */
+export class FullyVisibleRenderer extends DitheredRenderer {
+  override readonly id: string = "fullyVisible";
+  override readonly label: string = "Rooms always fully visible";
+  override readonly description: string =
+    "Opening a room only frames it: nothing fades, every wall, room and object stays solid.";
+  override readonly bestFor: string =
+    "Open-plan homes and top-down views, where walls rarely hide the room, and the lightest work for the device.";
+  override readonly tradeOffs: string =
+    "Walls between the camera and the open room stay in the way; turn the view or use Top view to see in.";
+
+  override settingsSchema(): readonly RendererSetting[] {
+    return [];
+  }
+
+  override roomFade(): RoomFade {
+    return "none";
+  }
+}
+
+/**
+ * Only the open room (owner, 2026-11-20): the dithered fade at nothing kept, so every other room, floor and object
+ * disappears while a room is open; the room's walls on the camera's side can keep a share (default none).
+ */
+export class RoomOnlyRenderer extends DitheredRenderer {
+  override readonly id: string = "roomOnly";
+  override readonly label: string = "Only the open room";
+  override readonly description: string =
+    "Opening a room hides everything else: the other rooms, their furniture and lights disappear until it closes.";
+  override readonly bestFor: string =
+    "Focusing on one room on small screens, and busy homes where neighbouring rooms distract.";
+  override readonly tradeOffs: string =
+    "You lose the context of the rest of the home while a room is open; hidden rooms still cast their shadows.";
+
+  override settingsSchema(): readonly RendererSetting[] {
+    return [
+      {
+        key: "nearWallsVisible",
+        label: "Walls in front visible",
+        hint: "How much of the open room's walls on your side stays drawn (none lets you see straight in).",
+        min: 0,
+        max: 0.5,
+        step: 0.01,
+        defaultValue: 0,
+        percent: true,
+      },
+    ];
+  }
+
+  override ditherLevels(): DitherLevels {
+    return { dimmed: 0, faded: this.setting("nearWallsVisible") };
   }
 }
 
@@ -182,6 +250,8 @@ export const rendererList: readonly Readonly<{
   { id: "dithered", create: (settings) => new DitheredRenderer(settings) },
   { id: "seeThrough", create: (settings) => new SeeThroughRenderer(settings) },
   { id: "lowPower", create: (settings) => new LowPowerRenderer(settings) },
+  { id: "fullyVisible", create: (settings) => new FullyVisibleRenderer(settings) },
+  { id: "roomOnly", create: (settings) => new RoomOnlyRenderer(settings) },
 ];
 
 const choiceKey = "homeplan.renderer";

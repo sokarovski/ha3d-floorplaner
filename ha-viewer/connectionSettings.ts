@@ -610,6 +610,13 @@ export class HomeplanConnectionSettings extends LitElement {
       }),
     );
   }
+  private async removeCopy(houseId: string): Promise<void> {
+    if (this.client === undefined || !(await this.allowed())) return;
+    await this.client.removeCopy(houseId);
+    this.message = "Copy removed.";
+    await this.refresh();
+    announce();
+  }
   /** Saves Home Assistant's copy of a house as a house archive (.zip) in the browser's downloads. */
   private async download(houseId: string, name: string): Promise<void> {
     if (this.client === undefined) return;
@@ -1091,16 +1098,51 @@ export class HomeplanConnectionSettings extends LitElement {
       }
       ${this.renderReload()}`;
   }
+  /** Where a copy came from, in words: an archive, the default or another floor planner, or one no longer listed. */
+  private sourceLabel(url: string): string {
+    if (url === "archive") return "an uploaded house archive";
+    if (url === this.connection.builderUrl) return `${plannerName(url)} (the default floor planner)`;
+    if (this.connection.servers.includes(url)) return plannerName(url);
+    return `${hostOf(url)}, a floor planner no longer listed`;
+  }
+  /** A copy Home Assistant holds: where it came from, its Save, and what can be done with it. */
   private renderHouse(house: HouseCardValue): TemplateResult {
     const copy = this.copies.get(house.id);
-    const source = this.sourceStatuses.get(house.id);
     const selected = this.selectedId === house.id;
+    const fromDefault = copy?.sourceUrl === this.connection.builderUrl;
+    const source = fromDefault ? this.sourceStatuses.get(house.id) : undefined;
+    const listedSource =
+      copy !== undefined && copy.sourceUrl !== "archive" && this.connection.servers.includes(copy.sourceUrl)
+        ? copy.sourceUrl
+        : null;
     return html`<div class="row" ?data-selected=${selected}>
       <span class="row-name"
         >${house.status === "ok" ? house.name : house.id}${selected ? " · Shown" : ""}</span
       >
-      ${copy === undefined ? html`<span class="hint">No copy in Home Assistant yet.</span>` : html`<span class="hint">Copy of the Save from ${new Date(copy.savedAt).toLocaleString()} · ${copy.sourceRevisionId.slice(0, 10)}</span>`}
-      ${source === undefined ? nothing : typeof source === "string" ? html`<span class="error">${source}</span>` : html`<span class="hint">${source.relation === "same" ? "Up to date with the floor planner" : source.relation === "newer" ? "A newer Save is available" : source.relation === "different" ? "A different Save is available" : "Saved house available"} · ${source.sourceRevisionId.slice(0, 10)}</span>`}
+      ${
+        copy === undefined
+          ? nothing
+          : html`<span class="hint">From ${this.sourceLabel(copy.sourceUrl)}</span>
+              <span class="hint"
+                >Save of ${new Date(copy.savedAt).toLocaleString()} · copied
+                ${new Date(copy.importedAt).toLocaleString()}</span
+              >`
+      }
+      ${
+        source === undefined
+          ? nothing
+          : typeof source === "string"
+            ? html`<span class="error">${source}</span>`
+            : html`<span class="hint"
+                >${
+                  source.relation === "same"
+                    ? "Up to date with the floor planner"
+                    : source.relation === "newer"
+                      ? "A newer Save is available: Upgrade"
+                      : "A different Save is on the floor planner"
+                }</span
+              >`
+      }
       ${house.status === "invalid" ? html`<span class="error">${house.problem.message}</span>` : nothing}
       <div class="actions">
         <button
@@ -1108,46 +1150,80 @@ export class HomeplanConnectionSettings extends LitElement {
           ?disabled=${this.busy || house.status !== "ok" || selected}
           @click=${() => void this.perform(() => this.use(house.id))}
         >
-          Use this house
+          ${selected ? "Shown" : "Show this house"}
+        </button>
+        ${
+          fromDefault
+            ? html`<button
+                class="text-button"
+                ?disabled=${this.busy}
+                @click=${() => void this.perform(() => this.upgrade(house.id))}
+              >
+                Upgrade
+              </button>`
+            : listedSource !== null
+              ? html`<button
+                  class="text-button"
+                  ?disabled=${this.busy}
+                  title="Upgrades come from where the copy came from"
+                  @click=${() => void this.perform(() => this.makeDefault(listedSource))}
+                >
+                  Make ${plannerName(listedSource)} the default to upgrade
+                </button>`
+              : nothing
+        }
+        <button
+          class="text-button"
+          ?disabled=${this.busy}
+          title="Download Home Assistant's copy as a house archive (.zip)"
+          @click=${() =>
+            void this.perform(() => this.download(house.id, house.status === "ok" ? house.name : house.id))}
+        >
+          Download
         </button>
         <button
           class="text-button"
-          ?disabled=${this.busy || this.connection.builderUrl === null}
-          @click=${() => void this.perform(() => this.upgrade(house.id))}
+          ?disabled=${this.busy || selected}
+          title=${selected ? "The shown house cannot be removed" : "Remove Home Assistant's copy"}
+          @click=${() => void this.perform(() => this.removeCopy(house.id))}
         >
-          Upgrade
+          Remove copy
         </button>
-        ${
-          copy === undefined
-            ? nothing
-            : html`<button
-                class="text-button"
-                ?disabled=${this.busy}
-                title="Download Home Assistant's copy as a house archive (.zip)"
-                @click=${() =>
-                  void this.perform(() =>
-                    this.download(house.id, house.status === "ok" ? house.name : house.id),
-                  )}
-              >
-                Download
-              </button>`
-        }
+      </div>
+    </div>`;
+  }
+  /** A house on a floor planner that Home Assistant has no copy of: Use copies it (another planner becomes default). */
+  private renderRemoteHouse(house: HouseCardValue, url: string): TemplateResult {
+    const isDefault = url === this.connection.builderUrl;
+    return html`<div class="row">
+      <span class="row-name">${house.status === "ok" ? house.name : house.id}</span>
+      ${isDefault ? nothing : html`<span class="hint">Using it makes ${plannerName(url)} the default floor planner.</span>`}
+      <div class="actions">
+        <button
+          class="text-button"
+          ?disabled=${this.busy || house.status !== "ok"}
+          @click=${() => void this.perform(() => (isDefault ? this.use(house.id) : this.useFrom(url, house.id)))}
+        >
+          Copy and show
+        </button>
       </div>
     </div>`;
   }
   private renderHouses(): TemplateResult {
     const builderUrl = this.connection.builderUrl;
-    const houses = new Map([...this.localHouses, ...this.remoteHouses].map((house) => [house.id, house]));
+    const copied = this.localHouses.filter((house) => this.copies.has(house.id));
+    const copiedIds = new Set(copied.map((house) => house.id));
+    const fresh = this.remoteHouses.filter((house) => !copiedIds.has(house.id));
     const transferring =
       this.job !== null && (this.job.status === "pending" || this.job.status === "running");
-    const app = builderUrl !== null && isAppPlanner(builderUrl);
     // Create your house: the Homeplan app on this Home Assistant, whether or not it is the default floor planner.
     const appPlanner = this.plannerUrls().find(isAppPlanner);
     return html`${this.renderFeedback()}
       <section>
+        <h3>Connected floor planner</h3>
         ${
           builderUrl === null
-            ? html`<span class="hint">Houses stored in Home Assistant. Add a floor planner to get more.</span>
+            ? html`<span class="hint">None: add a floor planner to get houses.</span>
                 <div class="actions">
                   <button
                     class="text-button"
@@ -1158,7 +1234,7 @@ export class HomeplanConnectionSettings extends LitElement {
                     Floor planners
                   </button>
                 </div>`
-            : html`<span class="hint">From ${plannerName(builderUrl)} and the copies in Home Assistant.</span>
+            : html`<span class="row-name">★ ${plannerName(builderUrl)} · ${hostOf(builderUrl)}</span>
                 ${this.renderMemory()}
                 <div class="actions">
                   <button
@@ -1168,7 +1244,15 @@ export class HomeplanConnectionSettings extends LitElement {
                   >
                     Check again
                   </button>
-                  ${this.renderOpen(builderUrl, app ? "Create or edit a house" : "Open floor planner")}
+                  ${this.renderOpen(builderUrl, isAppPlanner(builderUrl) ? "Create or edit a house" : "Open")}
+                  <button
+                    class="text-button"
+                    @click=${() => {
+                      this.openPage("floorPlanners");
+                    }}
+                  >
+                    Change
+                  </button>
                 </div>`
         }
         ${
@@ -1189,26 +1273,51 @@ export class HomeplanConnectionSettings extends LitElement {
               </div>`
             : nothing
         }
+      </section>
+      <section>
+        <h3>In Home Assistant</h3>
+        <span class="hint"
+          >The copies Home Assistant keeps. The viewer shows one of them, even without a floor planner.</span
+        >
         ${
-          houses.size > 0
-            ? html`<div class="list">${[...houses.values()].map((house) => this.renderHouse(house))}</div>`
-            : appPlanner !== undefined
-              ? html`<span class="hint">No houses yet.</span>
-                  <div class="actions">
-                    <a
-                      class="button"
-                      href=${plannerPage(appPlanner)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      >Create your house</a
-                    >
-                  </div>`
-              : html`<span class="hint">No houses yet.</span>`
+          copied.length === 0
+            ? html`<span class="hint">None yet.</span>`
+            : html`<div class="list">${copied.map((house) => this.renderHouse(house))}</div>`
         }
       </section>
-      ${this.renderUpload()} ${this.connection.servers.map((url) => this.renderOtherHouses(url))}`;
+      ${
+        builderUrl === null
+          ? nothing
+          : html`<section>
+              <h3>On ${plannerName(builderUrl)}, not copied yet</h3>
+              ${
+                fresh.length > 0
+                  ? html`<div class="list">
+                      ${fresh.map((house) => this.renderRemoteHouse(house, builderUrl))}
+                    </div>`
+                  : this.remoteHouses.length > 0
+                    ? html`<span class="hint">Every house on it is in Home Assistant.</span>`
+                    : html`<span class="hint"
+                        >${this.memoryState === null ? "Not connected." : "No houses."}</span
+                      >`
+              }
+            </section>`
+      }
+      ${this.connection.servers.map((url) => this.renderOtherHouses(url, copiedIds))}
+      ${
+        copied.length === 0 && this.remoteHouses.length === 0 && appPlanner !== undefined
+          ? html`<section>
+              <h3>Create your house</h3>
+              <div class="actions">
+                <a class="button" href=${plannerPage(appPlanner)} target="_blank" rel="noopener noreferrer"
+                  >Create your house</a
+                >
+              </div>
+            </section>`
+          : nothing
+      }
+      ${this.renderUpload()}`;
   }
-  /** Upload a house archive (.zip) as a local copy (21.10); a copy of the same house asks before it is replaced. */
   private renderUpload(): TemplateResult {
     return html`<section>
       <h3>Upload a house</h3>
@@ -1267,37 +1376,23 @@ export class HomeplanConnectionSettings extends LitElement {
       }
     </section>`;
   }
-  private renderOtherHouses(url: string): TemplateResult {
+  /** Another floor planner's houses that Home Assistant has no copy of. */
+  private renderOtherHouses(url: string, copiedIds: ReadonlySet<string>): TemplateResult {
     const houses = this.otherHouses.get(url);
+    const fresh =
+      typeof houses === "string" || houses === undefined
+        ? houses
+        : houses.filter((house) => !copiedIds.has(house.id));
     return html`<section>
-      <h3>On ${plannerName(url)}</h3>
+      <h3>On ${plannerName(url)} (${hostOf(url)}), not copied yet</h3>
       ${
-        houses === undefined
+        fresh === undefined
           ? nothing
-          : typeof houses === "string"
-            ? html`<span class="error">${houses}</span>`
-            : houses.length === 0
-              ? html`<span class="hint">No houses.</span>`
-              : html`<div class="list">
-                  ${houses.map(
-                    (house) =>
-                      html`<div class="row">
-                        <span class="row-name">${house.status === "ok" ? house.name : house.id}</span>
-                        <span class="hint"
-                          >Using it makes ${plannerName(url)} the default floor planner.</span
-                        >
-                        <div class="actions">
-                          <button
-                            class="text-button"
-                            ?disabled=${this.busy || house.status !== "ok"}
-                            @click=${() => void this.perform(() => this.useFrom(url, house.id))}
-                          >
-                            Use this house
-                          </button>
-                        </div>
-                      </div>`,
-                  )}
-                </div>`
+          : typeof fresh === "string"
+            ? html`<span class="error">${fresh}</span>`
+            : fresh.length === 0
+              ? html`<span class="hint">Nothing new.</span>`
+              : html`<div class="list">${fresh.map((house) => this.renderRemoteHouse(house, url))}</div>`
       }
     </section>`;
   }
@@ -1452,7 +1547,13 @@ export class HomeplanConnectionSettings extends LitElement {
           </select></label
         >`,
       )}
-      ${chosen === undefined ? nothing : html`<span class="hint">${chosen.description}</span>`}
+      ${
+        chosen === undefined
+          ? nothing
+          : html`<span class="hint">${chosen.description}</span>
+              <span class="hint"><strong>Best for:</strong> ${chosen.bestFor}</span>
+              <span class="hint"><strong>Trade-offs:</strong> ${chosen.tradeOffs}</span>`
+      }
       ${(chosen?.settingsSchema() ?? []).map((setting) => {
         const value = this.rendererSettings[setting.key] ?? setting.defaultValue;
         const scale = setting.percent ? 100 : 1;

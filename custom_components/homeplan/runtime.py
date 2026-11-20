@@ -516,6 +516,32 @@ class HomeplanRuntime:
             self._inventories[key] = cached
         return cached
 
+    async def remove_copy(self, house_id: str) -> dict[str, object]:
+        """Removes Home Assistant's copy of a house (Phase 21, Settings -> Houses -> Remove copy). The shown house
+        cannot be removed; its bindings stay, so a later copy of the same house finds them again."""
+
+        def change(value: dict[str, object]) -> None:
+            if record(value["viewer"]).get("houseId") == house_id:
+                raise HomeplanError(
+                    409, "conflict", "This house is shown; choose another house first."
+                )
+            houses = record(value["houses"])
+            if house_id not in houses:
+                raise HomeplanError(
+                    404, "notFound", "No local copy exists for this house."
+                )
+            del houses[house_id]
+            value["houses"] = houses
+            sources = record(value["houseSources"])
+            sources.pop(house_id, None)
+            value["houseSources"] = sources
+
+        result = await self.configuration.mutate(change)
+        await asyncio.to_thread(
+            shutil.rmtree, inside(self.root / "houses", checked_id(house_id)), True
+        )
+        return {"revision": result["revision"]}
+
     async def house_archive(self, house_id: str) -> bytes:
         """A local copy as a house archive (Phase 21, Settings → Houses → Download)."""
         copy_metadata = record(self.configuration.snapshot()["houses"]).get(house_id)

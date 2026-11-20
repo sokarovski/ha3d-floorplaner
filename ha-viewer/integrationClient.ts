@@ -84,6 +84,10 @@ export const createIntegrationClient = (currentHass: () => Hass | null) => {
       expectedRevision: number,
       patch: Readonly<{ builderUrl?: string | null; devMode?: boolean; servers?: string[] }>,
     ) => request(ConnectionResponse, ["connection"], { expectedRevision, patch }, "PATCH"),
+    /** Removes Home Assistant's copy of a house (not the shown one; Phase 21). */
+    removeCopy: async (houseId: string): Promise<void> => {
+      await fetchPrivate(integrationUrl("houses", houseId), { method: "DELETE" });
+    },
     /** A local copy as a house archive (.zip, Phase 21). */
     houseArchive: async (houseId: string): Promise<Blob> =>
       (await fetchPrivate(integrationUrl("houses", houseId, "archive"))).blob(),

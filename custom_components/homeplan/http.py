@@ -315,6 +315,8 @@ class HomeplanView(HomeAssistantView):
                 return response(
                     {"job": await app.start_job("houseUpgrade", house_id, payload)}, 202
                 )
+            if len(parts) == 2 and method == "DELETE":
+                return response(await app.remove_copy(house_id))
             if len(parts) == 2 and method == "GET":
                 local_metadata = record(config["houses"]).get(house_id)
                 if local_metadata is None:
