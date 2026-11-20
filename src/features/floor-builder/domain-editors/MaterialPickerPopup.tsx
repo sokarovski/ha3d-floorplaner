@@ -2,7 +2,12 @@ import { useState } from "react";
 import type { ReactElement } from "react";
 import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { findBuiltInImage } from "@shared/domain/house/builtinMaterials";
-import { libraryCategories, materialKey, searchLibrary } from "@shared/domain/materials/materialLibrary";
+import {
+  libraryCategories,
+  materialHex,
+  materialKey,
+  searchLibrary,
+} from "@shared/domain/materials/materialLibrary";
 import type { LibraryMaterial } from "@shared/domain/materials/materialLibrary";
 import { proportionalTileSize } from "@shared/domain/materials/textureHints";
 import { newMaterialFromImageForm, savePresetForm } from "@shared/domain/schemas/forms/materialForms";
@@ -50,7 +55,7 @@ const sourceLabel = (item: LibraryMaterial): string =>
  * House presets, then the built-in categories), a grid of swatches grouped by category, and a preview of the
  * selected material in an editor (the material form) on a working copy beside the original: Save writes the copy
  * back (a house preset, or every surface using a material of Used in this house), Revert returns to the original;
- * built-ins are read-only. Apply (or a double click on a tile) copies the selected material, as edited, onto the
+ * a built-in shows its values instead of a form (it can be applied, not changed). Apply (or a double click on a tile) copies the selected material, as edited, onto the
  * surface; house presets can be renamed or deleted here. The footer shows the selected element's own material with Save as
  * preset (owner: "current" was unclear); Create material
  * from image uploads an image with its proposed values (repeat size, Shininess, metallic), saves it as a house
@@ -90,6 +95,8 @@ export const MaterialPickerPopup = ({
   // Built-in materials are shown, not edited (owner, 2026-11-20); house presets and used materials are edited on a
   // working copy (`draft`) beside the original (`selected.material`): Save writes it back, Revert drops it.
   const readOnly = selected?.source === "builtin";
+  // Unsaved changes block Apply (owner): save them or revert first.
+  const unsaved = draft !== undefined;
   const currentName =
     currentKey === undefined
       ? undefined
@@ -160,9 +167,10 @@ export const MaterialPickerPopup = ({
               Cancel
             </Button>
             <Button
-              disabled={edited === undefined}
+              disabled={edited === undefined || unsaved}
+              aria-label={unsaved ? "Apply (save or revert your changes first)" : undefined}
               onPress={() => {
-                if (edited !== undefined) apply(edited);
+                if (edited !== undefined && !unsaved) apply(edited);
               }}
             >
               Apply
@@ -180,7 +188,7 @@ export const MaterialPickerPopup = ({
             aria-label="Search materials"
             start={<Icon name="search" />}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && edited !== undefined) {
+              if (event.key === "Enter" && edited !== undefined && !unsaved) {
                 event.preventDefault();
                 apply(edited);
               }
@@ -231,11 +239,12 @@ export const MaterialPickerPopup = ({
                         role="option"
                         aria-selected={item.key === selected?.key}
                         data-image-picker-item=""
+                        disabled={unsaved && item.key !== selected?.key}
                         onClick={() => {
                           if (item.key !== selected?.key) select(item.key);
                         }}
                         onDoubleClick={() => {
-                          apply(item.material);
+                          if (!unsaved) apply(item.material);
                         }}
                       >
                         <MaterialSwatch material={item.material} spanMm={tileSpanMm} size="tile" />
@@ -258,80 +267,105 @@ export const MaterialPickerPopup = ({
               <p data-material-picker-preview-meta="">
                 {selected.category} · {sourceLabel(selected)} · {textureName(edited)}
               </p>
-              <SchemaForm
-                schema={MaterialView}
-                value={toMaterialView(edited)}
-                registry={{ ...genericEditors, image: ImagePropEditor }}
-                projectUnit={projectUnit}
-                mode="live"
-                disabled={readOnly}
-                onCommit={(path, next) => {
-                  const updated = materialAfterCommit(edited, path, next, data.images);
-                  if (updated === undefined) return false;
-                  setDraft(updated);
-                  return true;
-                }}
-              />
               {readOnly ? (
-                <p data-material-picker-preview-meta="">
-                  A built-in material cannot be changed. Apply it, then adjust it on the surface (or save that
-                  as a preset).
-                </p>
-              ) : (
-                <div data-material-picker-actions="">
-                  <Button
-                    size="sm"
-                    disabled={draft === undefined}
-                    onPress={() => {
-                      if (draft === undefined) return;
-                      if (selected.source === "used") {
-                        if (data.replaceMaterial(selected.material, draft))
-                          select(`used:${materialKey(draft)}`);
-                      } else if (
-                        selected.presetId !== undefined &&
-                        data.updatePreset(selected.presetId, draft)
-                      )
-                        setDraft(undefined);
-                    }}
-                  >
-                    {selected.source === "used"
-                      ? `Save to ${String(selected.surfaces ?? 0)} surface${selected.surfaces === 1 ? "" : "s"}`
-                      : "Save preset"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={draft === undefined}
-                    onPress={() => {
-                      setDraft(undefined);
-                    }}
-                  >
-                    Revert
-                  </Button>
-                  {selected.source === "house" && selected.presetId !== undefined ? (
+                // A built-in material shows its values, not a form (owner): it can be applied, not changed.
+                <dl data-material-picker-details="">
+                  <dt>Texture</dt>
+                  <dd>{textureName(edited)}</dd>
+                  <dt>Colour / tint</dt>
+                  <dd>{materialHex(edited)}</dd>
+                  {edited.pbrMetallicRoughness.baseColorTexture === undefined ||
+                  edited.extras === undefined ? null : (
                     <>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onPress={() => {
-                          setRenaming(selected);
-                        }}
-                      >
-                        Rename
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onPress={() => {
-                          if (selected.presetId !== undefined) data.deletePreset(selected.presetId);
-                          select(null);
-                        }}
-                      >
-                        Delete
-                      </Button>
+                      <dt>Tile size</dt>
+                      <dd>
+                        {String(Math.round(edited.extras.homeplan.tileSizeMm.x))} ×{" "}
+                        {String(Math.round(edited.extras.homeplan.tileSizeMm.y))} mm
+                      </dd>
+                      <dt>Rotation</dt>
+                      <dd>{String(Math.round(edited.extras.homeplan.rotationDeg))}°</dd>
                     </>
-                  ) : null}
-                </div>
+                  )}
+                  <dt>Shininess</dt>
+                  <dd>{String(Math.round((1 - edited.pbrMetallicRoughness.roughnessFactor) * 100))} %</dd>
+                  <dt>Metallic</dt>
+                  <dd>{String(Math.round(edited.pbrMetallicRoughness.metallicFactor * 100))} %</dd>
+                </dl>
+              ) : (
+                <>
+                  <SchemaForm
+                    schema={MaterialView}
+                    value={toMaterialView(edited)}
+                    registry={{ ...genericEditors, image: ImagePropEditor }}
+                    projectUnit={projectUnit}
+                    mode="live"
+                    onCommit={(path, next) => {
+                      const updated = materialAfterCommit(edited, path, next, data.images);
+                      if (updated === undefined) return false;
+                      setDraft(updated);
+                      return true;
+                    }}
+                  />
+                  <div data-material-picker-actions="">
+                    <Button
+                      size="sm"
+                      disabled={draft === undefined}
+                      onPress={() => {
+                        if (draft === undefined) return;
+                        if (selected.source === "used") {
+                          if (data.replaceMaterial(selected.material, draft))
+                            select(`used:${materialKey(draft)}`);
+                        } else if (
+                          selected.presetId !== undefined &&
+                          data.updatePreset(selected.presetId, draft)
+                        )
+                          setDraft(undefined);
+                      }}
+                    >
+                      {selected.source === "used"
+                        ? `Save to ${String(selected.surfaces ?? 0)} surface${selected.surfaces === 1 ? "" : "s"}`
+                        : "Save preset"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={draft === undefined}
+                      onPress={() => {
+                        setDraft(undefined);
+                      }}
+                    >
+                      Revert
+                    </Button>
+                    {unsaved ? (
+                      <p data-material-picker-unsaved="">
+                        Save or revert your changes to apply a material or choose another.
+                      </p>
+                    ) : null}
+                    {selected.source === "house" && selected.presetId !== undefined ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onPress={() => {
+                            setRenaming(selected);
+                          }}
+                        >
+                          Rename
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onPress={() => {
+                            if (selected.presetId !== undefined) data.deletePreset(selected.presetId);
+                            select(null);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </>
+                    ) : null}
+                  </div>
+                </>
               )}
             </aside>
           )}
