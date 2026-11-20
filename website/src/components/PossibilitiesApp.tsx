@@ -3,7 +3,7 @@ import { useHashTarget } from "../hooks/useHashTarget";
 import { pages } from "../content/pages";
 import { builderExport, builderGroups, viewerGroups } from "../content/possibilities";
 import { AgentPossibilities } from "./AgentPossibilities";
-import { learnMoreAreas } from "../content/learnMore";
+import { builderAreas, learnMoreAreas } from "../content/learnMore";
 import { CapabilityGroupView } from "./CapabilityGroupView";
 import { LearnMoreBand } from "./LearnMoreBand";
 import { LearnMoreChapter } from "./LearnMoreChapter";
@@ -44,10 +44,15 @@ export const PossibilitiesApp = (): ReactElement => {
           {builderGroups.map((group) => (
             <CapabilityGroupView key={group.id} group={group} />
           ))}
+        </Section>
+        {builderAreas.map((area, index) => (
+          <LearnMoreBand key={area.id} area={area} tone={afterBands(2 + index)} />
+        ))}
+        <Section id="builder-more" tone={afterBands(2 + builderAreas.length)}>
           <AgentPossibilities />
           <CapabilityGroupView group={builderExport} />
         </Section>
-        <Section id="next" title="Try it on your own home" tone={afterBands(2)}>
+        <Section id="next" title="Try it on your own home" tone={afterBands(3 + builderAreas.length)}>
           <div data-site-actions="">
             <LinkButton href={pages.install} icon="chevronRight">
               Get started

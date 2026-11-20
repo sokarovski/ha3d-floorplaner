@@ -135,3 +135,32 @@ export const learnMoreAreas: readonly LearnMoreArea[] = [
     media: { name: "viewer-bubbles", kind: "still" },
   },
 ];
+
+export const builderAreas: readonly LearnMoreArea[] = [
+  {
+    id: "builder-view",
+    title: "Sun, view and navigation",
+    kind: "bullets",
+    bullets: [
+      "Set your house's location, north and time to see the sun and shadows",
+      "Preview daylight or night, or switch all lights off for a look",
+      "Orbit, pan and zoom with a trackpad or mouse; switch to Top view or Fit to screen",
+      "Double-click into a room to focus on it while the other rooms fade or hide",
+      "Choose light, dark or automatic appearance, with an optional ground grid",
+    ],
+    media: { name: "builder-evening", kind: "still" },
+  },
+  {
+    id: "builder-history",
+    title: "GIT is your History",
+    kind: "bullets",
+    bullets: [
+      "Each house has its own Git history; Save records a revision when something changed, with an optional note",
+      "Browse saved revisions, compare changes and restore an earlier design as a new revision",
+      "Undo and redo individual edits while you work",
+      "Create, rename, clone, trash and restore houses; start with one of three demo homes",
+      "Back up a house by copying its folder, including its images and Git history",
+    ],
+    media: { name: "builder-history", kind: "still" },
+  },
+];

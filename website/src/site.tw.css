@@ -696,11 +696,11 @@
   }
 
   /* In the App (add-on) part of Learn More, every area title is centred. */
-  #builder [data-site-group-header] {
+  :is(#builder, #builder-more) [data-site-group-header] {
     @apply items-center text-center;
   }
 
-  #builder [data-site-band-text] h3 {
+  :is(#builder, #builder-more) [data-site-band-text] h3 {
     @apply text-center;
   }
 
