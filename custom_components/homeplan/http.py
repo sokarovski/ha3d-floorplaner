@@ -11,7 +11,8 @@ from homeassistant.auth.models import User
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, MAX_ASSET, MAX_CONFIG
+from .artifacts import verify
+from .const import DOMAIN, MAX_ASSET, MAX_CONFIG, MAX_HOUSE_TOTAL
 from .errors import HomeplanError
 from .runtime import HomeplanRuntime, now
 from .validation import (
@@ -64,6 +65,18 @@ async def body(hass: HomeAssistant, request: web.Request) -> dict[str, object]:
     return record(await hass.async_add_executor_job(parse_json, bytes(chunks)))
 
 
+async def archive_body(request: web.Request) -> bytes:
+    """An uploaded house archive's bytes, bounded by the house size limit."""
+    chunks = bytearray()
+    async for chunk in request.content.iter_chunked(131072):
+        chunks.extend(chunk)
+        if len(chunks) > MAX_HOUSE_TOTAL:
+            raise HomeplanError(
+                413, "tooLarge", "The archive exceeds the house size limit."
+            )
+    return bytes(chunks)
+
+
 def _read_house(directory: Path) -> dict[str, object]:
     """Read and validate a copied house document (blocking; run it in an executor)."""
     return parse_validated("House", inside(directory, "house.json").read_bytes())
@@ -103,6 +116,12 @@ class HomeplanView(HomeAssistantView):
                     403,
                     "forbidden",
                     "An HA administrator is required to change Homeplan settings.",
+                )
+            # A house archive upload (Phase 21) is raw zip bytes, not JSON.
+            if parts == ["houses", "import"] and request.method == "POST":
+                data = await archive_body(request)
+                return response(
+                    await app.import_archive(data, request.query.get("replace") == "1")
                 )
             payload = (
                 await body(self.hass, request)
@@ -206,6 +225,37 @@ class HomeplanView(HomeAssistantView):
                     "reloadRequired": True,
                 }
             )
+        if parts == ["frontend", "use-previous"] and method == "POST":
+            # Phase 21 (Settings -> Panels): the previous panel again, verified first; the two swap places.
+            validate("RevisionRequest", payload)
+            previous = record(config["frontend"])["previous"]
+            if previous is None:
+                raise HomeplanError(404, "notFound", "There is no previous panel.")
+            await self.hass.async_add_executor_job(
+                verify,
+                app.root
+                / "frontend"
+                / checked_id(text(record(previous)["bundleId"]), True),
+                True,
+            )
+
+            def swap(value: dict[str, object]) -> None:
+                current = record(value["frontend"])
+                value["frontend"] = {
+                    "active": current["previous"],
+                    "previous": current["active"],
+                }
+
+            updated = await app.configuration.mutate(
+                swap, integer(payload["expectedRevision"])
+            )
+            return response(
+                {
+                    "revision": updated["revision"],
+                    "frontend": updated["frontend"],
+                    "reloadRequired": True,
+                }
+            )
         if parts == ["jobs"] and method == "GET":
             return response({"jobs": app.jobs})
         if len(parts) == 2 and parts[0] == "jobs":
@@ -251,6 +301,15 @@ class HomeplanView(HomeAssistantView):
             return response({"houses": houses})
         if parts[0] == "houses" and len(parts) >= 2:
             house_id = checked_id(parts[1])
+            if len(parts) == 3 and parts[2] == "archive" and method == "GET":
+                return web.Response(
+                    body=await app.house_archive(house_id),
+                    content_type="application/zip",
+                    headers={
+                        **_PRIVATE_HEADERS,
+                        "Content-Disposition": f'attachment; filename="{house_id}.zip"',
+                    },
+                )
             if len(parts) == 3 and parts[2] == "upgrade" and method == "POST":
                 validate("UpgradeRequest", payload)
                 return response(

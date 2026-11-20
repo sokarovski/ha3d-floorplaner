@@ -12,6 +12,7 @@ import { createConnectionMemory } from "./connectionMemory";
 import type { MemoryState } from "./connectionMemory";
 import { fieldStyles } from "./formHelpers";
 import type { IntegrationClient } from "./integrationClient";
+import { SourceError } from "./houseSource";
 import { tokens } from "./styles/tokens";
 import { availableRenderers, deviceRenderer, saveDeviceRenderer } from "./three/renderers";
 import type { ViewerRenderer } from "./three/renderers";
@@ -253,6 +254,8 @@ export class HomeplanConnectionSettings extends LitElement {
   declare houseAvailable: boolean;
   /** The Homeplan app's address while discovery announces it: that floor planner cannot be deleted. */
   private discoveredUrl: string | null = null;
+  /** An uploaded archive waiting for Replace (Home Assistant already has a copy of that house). */
+  private pendingArchive: Blob | null = null;
   /** The other floor planners' houses (read only), by URL; a string is the error. */
   private otherHouses = new Map<string, readonly HouseCardValue[] | string>();
   private connection: ConnectionValue = {
@@ -549,6 +552,40 @@ export class HomeplanConnectionSettings extends LitElement {
       }),
     );
   }
+  /** Saves Home Assistant's copy of a house as a house archive (.zip) in the browser's downloads. */
+  private async download(houseId: string, name: string): Promise<void> {
+    if (this.client === undefined) return;
+    const blob = await this.client.houseArchive(houseId);
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${name.replace(/[\\/:*?"<>|]+/g, "-").trim() || houseId}.zip`;
+    link.click();
+    window.setTimeout(() => {
+      URL.revokeObjectURL(link.href);
+    }, 60000);
+    this.message = "House archive downloaded.";
+  }
+  /** Uploads a house archive; a conflict with an existing copy waits for Replace. */
+  private async upload(archive: Blob, replace: boolean): Promise<void> {
+    if (this.client === undefined || !(await this.allowed())) return;
+    try {
+      const result = await this.client.importArchive(archive, replace);
+      this.pendingArchive = null;
+      this.message =
+        result.outcome === "unchanged"
+          ? "That copy is already in Home Assistant."
+          : result.outcome === "upgraded"
+            ? "The copy was replaced from the archive."
+            : "House added from the archive. Choose Use this house to show it.";
+      await this.changed(result.houseId);
+    } catch (error) {
+      if (error instanceof SourceError && error.status === 409) {
+        this.pendingArchive = archive;
+        return;
+      }
+      throw error;
+    }
+  }
   /** Uses a house from another floor planner: that floor planner becomes the default first. */
   private async useFrom(url: string, houseId: string): Promise<void> {
     if (!(await this.allowed())) return;
@@ -654,6 +691,14 @@ export class HomeplanConnectionSettings extends LitElement {
     await this.track((await this.client.upgradeFrontend(state.connection.generation)).job);
     this.reloadRequired = true;
     this.message = "Panel downloaded. Reload the page to use it.";
+    await this.refresh();
+  }
+  private async usePrevious(): Promise<void> {
+    if (this.client === undefined || !(await this.allowed())) return;
+    const state = await this.client.connection();
+    await this.client.usePreviousFrontend(state.revision);
+    this.reloadRequired = true;
+    this.message = "Back to the previous panel. Reload the page to use it.";
     await this.refresh();
   }
   private async useShipped(): Promise<void> {
@@ -974,6 +1019,21 @@ export class HomeplanConnectionSettings extends LitElement {
         >
           Upgrade
         </button>
+        ${
+          copy === undefined
+            ? nothing
+            : html`<button
+                class="text-button"
+                ?disabled=${this.busy}
+                title="Download Home Assistant's copy as a house archive (.zip)"
+                @click=${() =>
+                  void this.perform(() =>
+                    this.download(house.id, house.status === "ok" ? house.name : house.id),
+                  )}
+              >
+                Download
+              </button>`
+        }
       </div>
     </div>`;
   }
@@ -983,6 +1043,8 @@ export class HomeplanConnectionSettings extends LitElement {
     const transferring =
       this.job !== null && (this.job.status === "pending" || this.job.status === "running");
     const app = builderUrl !== null && isAppPlanner(builderUrl);
+    // Create your house: the Homeplan app on this Home Assistant, whether or not it is the default floor planner.
+    const appPlanner = this.plannerUrls().find(isAppPlanner);
     return html`${this.renderFeedback()}
       <section>
         ${
@@ -1032,12 +1094,12 @@ export class HomeplanConnectionSettings extends LitElement {
         ${
           houses.size > 0
             ? html`<div class="list">${[...houses.values()].map((house) => this.renderHouse(house))}</div>`
-            : builderUrl !== null && app
+            : appPlanner !== undefined
               ? html`<span class="hint">No houses yet.</span>
                   <div class="actions">
                     <a
                       class="button"
-                      href=${plannerPage(builderUrl)}
+                      href=${plannerPage(appPlanner)}
                       target="_blank"
                       rel="noopener noreferrer"
                       >Create your house</a
@@ -1046,7 +1108,55 @@ export class HomeplanConnectionSettings extends LitElement {
               : html`<span class="hint">No houses yet.</span>`
         }
       </section>
-      ${this.connection.servers.map((url) => this.renderOtherHouses(url))}`;
+      ${this.renderUpload()} ${this.connection.servers.map((url) => this.renderOtherHouses(url))}`;
+  }
+  /** Upload a house archive (.zip) as a local copy (21.10); a copy of the same house asks before it is replaced. */
+  private renderUpload(): TemplateResult {
+    return html`<section>
+      <h3>Upload a house</h3>
+      <span class="hint">
+        A house archive (.zip) downloaded here or from a Floor Builder becomes a copy in Home Assistant.
+      </span>
+      <label
+        >House archive<input
+          type="file"
+          accept=".zip,application/zip"
+          ?disabled=${this.busy}
+          @change=${(event: Event) => {
+            const input = event.target;
+            if (!(input instanceof HTMLInputElement)) return;
+            const file = input.files?.[0];
+            input.value = "";
+            if (file !== undefined) void this.perform(() => this.upload(file, false));
+          }}
+      /></label>
+      ${
+        this.pendingArchive === null
+          ? nothing
+          : html`<span class="hint">Home Assistant already has a copy of this house.</span>
+              <div class="actions">
+                <button
+                  class="button"
+                  ?disabled=${this.busy}
+                  @click=${() => {
+                    const archive = this.pendingArchive;
+                    if (archive !== null) void this.perform(() => this.upload(archive, true));
+                  }}
+                >
+                  Replace the copy
+                </button>
+                <button
+                  class="text-button"
+                  @click=${() => {
+                    this.pendingArchive = null;
+                    this.requestUpdate();
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>`
+      }
+    </section>`;
   }
   /** Another floor planner's houses: using one makes that floor planner the default first. */
   private renderOtherHouses(url: string): TemplateResult {
@@ -1118,6 +1228,23 @@ export class HomeplanConnectionSettings extends LitElement {
                   </button>
                 </div>`
             : nothing
+        }
+        ${
+          frontend?.previous == null
+            ? nothing
+            : html`<span class="hint"
+                  >Previous panel · ${frontend.previous.version} ·
+                  ${frontend.previous.bundleId.slice(0, 10)}</span
+                >
+                <div class="actions">
+                  <button
+                    class="text-button"
+                    ?disabled=${this.busy}
+                    @click=${() => void this.perform(() => this.usePrevious())}
+                  >
+                    Use the previous panel
+                  </button>
+                </div>`
         }
       </section>
       <section>

@@ -2,6 +2,7 @@
 
 import asyncio
 import hashlib
+import io
 import json
 import logging
 import os
@@ -9,6 +10,7 @@ import re
 import shutil
 import time
 import uuid
+import zipfile
 from collections.abc import Callable
 from pathlib import Path
 from urllib.parse import quote
@@ -328,3 +330,54 @@ def deactivate(root: Path, old_id: object) -> None:
         path = inside(root, checked_id(old_id, True))
         if path.is_dir():
             (path / ".deactivated").touch()
+
+
+def write_archive(directory: Path) -> bytes:
+    """A house archive (Phase 21, Settings → Houses → Download): the verified copy's manifest and files, zipped as
+    stored, so the same file uploads to Home Assistant or to a Floor Builder."""
+    manifest = verify(directory)
+    files = inventory(manifest)
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.write(inside(directory, "manifest.json"), "manifest.json")
+        for name in sorted(files):
+            archive.write(inside(directory, name), name)
+    return buffer.getvalue()
+
+
+def extract_archive(data: bytes, root: Path) -> tuple[Path, dict[str, object]]:
+    """Unpacks an uploaded house archive into a fresh staging folder under `root` and verifies every file against
+    its manifest (sizes and hashes); the caller moves or removes the folder. Unsafe or oversized archives are
+    refused before anything is trusted."""
+    staging = inside(root, ".import-" + uuid.uuid4().hex)
+    staging.mkdir(parents=True)
+    try:
+        try:
+            archive = zipfile.ZipFile(io.BytesIO(data))
+        except zipfile.BadZipFile:
+            raise HomeplanError(
+                422, "invalidDocument", "This is not a house archive (.zip)."
+            ) from None
+        with archive:
+            members = [member for member in archive.infolist() if not member.is_dir()]
+            if len(members) > 10001:
+                raise HomeplanError(413, "tooLarge", "The archive has too many files.")
+            total = 0
+            for member in members:
+                total += member.file_size
+                if total > MAX_HOUSE_TOTAL:
+                    raise HomeplanError(
+                        413, "tooLarge", "The archive exceeds the house size limit."
+                    )
+                target = inside(staging, safe_path(member.filename))
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with archive.open(member) as source, target.open("wb") as written:
+                    shutil.copyfileobj(source, written)
+        if not (staging / "manifest.json").is_file():
+            raise HomeplanError(
+                422, "invalidDocument", "The archive has no house manifest."
+            )
+        return staging, verify(staging)
+    except BaseException:
+        shutil.rmtree(staging, True)
+        raise

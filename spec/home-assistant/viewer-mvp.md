@@ -251,7 +251,7 @@ Phase 21.11 (owner design, 2026-11-20). A renderer takes the shown house and dra
 | **See-through** | transparent copies (the earlier look; each room open rebuilds walls and compiles) | as Dithered | none |
 | **Low power** | dither | sharpness 1.5, 4 lamp shadows at 256 px; the ride shows only the destination | as Dithered |
 
-Every built-in renderer draws the glow backdrop and no reflection. The picker is on Settings → Panels, **This device** (admins, since Settings is for admins); the fake viewer has a button that cycles through them.
+Every built-in renderer draws the glow backdrop and no reflection. **Writing a renderer** (a contribution): add a class to `ha-viewer/three/renderers.ts` that extends `ViewerRenderer` or a built-in renderer, give it an `id`, `label` and `description`, override the steps it changes (`draw` for the frame itself, `roomFade`, `ditherLevels`, `limits`, `reflection`, `backdrop`, `floorsBelowDuringRide`), declare its adjustable values in `settingsSchema` (sliders on Panels, read with `setting`), and add it to `rendererList`; run lint, typecheck and `npm run frames:check`, try it with the fake viewer's Renderer button, and open a pull request. The picker is on Settings → Panels, **This device** (admins, since Settings is for admins); the fake viewer has a button that cycles through them.
 
 ### Complete floors in the whole house
 

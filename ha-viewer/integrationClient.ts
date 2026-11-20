@@ -10,6 +10,7 @@ import {
   SourceStatus,
   IntegrationConfigResponse,
   IntegrationJobResponse,
+  ArchiveImportResponse,
   IntegrationJobsResponse,
   PeekResponse,
   UseHouseResponse,
@@ -83,6 +84,27 @@ export const createIntegrationClient = (currentHass: () => Hass | null) => {
       expectedRevision: number,
       patch: Readonly<{ builderUrl?: string | null; devMode?: boolean; servers?: string[] }>,
     ) => request(ConnectionResponse, ["connection"], { expectedRevision, patch }, "PATCH"),
+    /** A local copy as a house archive (.zip, Phase 21). */
+    houseArchive: async (houseId: string): Promise<Blob> =>
+      (await fetchPrivate(integrationUrl("houses", houseId, "archive"))).blob(),
+    /** Uploads a house archive as a local copy; `replace` replaces an existing copy of the same house. */
+    importArchive: async (archive: Blob, replace: boolean): Promise<Static<typeof ArchiveImportResponse>> => {
+      const response = await fetchPrivate(
+        `${integrationUrl("houses", "import")}${replace ? "?replace=1" : ""}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/zip" },
+          body: archive,
+        },
+      );
+      const payload: unknown = await response.json();
+      if (!compileValidator(ArchiveImportResponse)(payload))
+        throw new SourceError(
+          "Homeplan returned an incompatible response; update the integration or reload.",
+          null,
+        );
+      return payload;
+    },
     /** Another floor planner's houses, read only (Phase 21). */
     peek: (url: string) => request(PeekResponse, ["source", "peek"], { url }),
     connect: (expectedRevision: number) =>
@@ -99,6 +121,14 @@ export const createIntegrationClient = (currentHass: () => Hass | null) => {
     frontend: () => request(FrontendStatus, ["frontend"]),
     upgradeFrontend: (generation: number) =>
       request(IntegrationJobResponse, ["frontend", "upgrade"], { generation }),
+    /** The previous panel again (Phase 21, Settings → Panels); it swaps places with the current one. */
+    usePreviousFrontend: async (expectedRevision: number): Promise<void> => {
+      await fetchPrivate(integrationUrl("frontend", "use-previous"), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ expectedRevision }),
+      });
+    },
     restoreFrontend: async (expectedRevision: number): Promise<void> => {
       await fetchPrivate(integrationUrl("frontend", "restore-packaged"), {
         method: "POST",

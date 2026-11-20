@@ -16,7 +16,10 @@ import {
   TrashListResponse,
   ValidHouseCard,
 } from "../../shared/contracts/houses";
+import { readMultipart } from "../http/multipart";
+import { validationError } from "../http/errors";
 import type { ServiceContext } from "../services/context";
+import { importHouseArchive } from "../services/houseArchiveService";
 import { getDocument, putDocument } from "../services/documentService";
 import {
   cloneHouse,
@@ -45,6 +48,19 @@ export const houseRoutes: FastifyPluginAsyncTypebox<{ context: ServiceContext }>
     { schema: { body: CreateHouseBody, response: { 201: ValidHouseCard } } },
     async (request, reply) => reply.code(201).send(await createHouse(context, request.body.name)),
   );
+
+  // A house archive (Phase 21, houseArchiveService.ts): multipart `file` (.zip) and an optional `name`.
+  app.post("/houses/import", { schema: { response: { 201: ValidHouseCard } } }, async (request, reply) => {
+    const content = await readMultipart(request, {
+      fileFields: ["file"],
+      textFields: ["name"],
+      maxFileBytes: 1073741824,
+      maxFieldBytes: 4096,
+    });
+    const file = content.files.get("file");
+    if (file === undefined) throw validationError([{ pointer: "/body/file", message: "is required" }]);
+    return reply.code(201).send(await importHouseArchive(context, file.bytes, content.fields.get("name")));
+  });
 
   app.post(
     "/houses/:houseId/clone",

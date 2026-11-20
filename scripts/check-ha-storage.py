@@ -5,10 +5,12 @@ Run with the documented temporary HA Python environment; never points at an owne
 import asyncio
 import copy
 import hashlib
+import io
 import json
 import os
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -659,6 +661,75 @@ panel.hass=hass;panel.narrow=false;document.body.append(panel);""".replace(
                         == record(inventory(manifest)[text(image["path"])])["sha256"],
                         "private image bytes load authenticated and match checksums",
                     )
+                    # House archives (Phase 21, Settings -> Houses): download, upload, replace, refusals.
+                    status, archive_bytes = await call(
+                        "GET", f"/api/homeplan/houses/{house_id}/archive"
+                    )
+                    with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive_zip:
+                        archive_names = set(archive_zip.namelist())
+                    check(
+                        status == 200
+                        and isinstance(archive_bytes, bytes)
+                        and "manifest.json" in archive_names
+                        and set(inventory(manifest)) <= archive_names,
+                        "house archive: a local copy downloads as its manifest and files",
+                    )
+                    try:
+                        await app.import_archive(archive_bytes, False)
+                        refused = False
+                    except HomeplanError as err:
+                        refused = err.status == 409
+                    check(
+                        refused,
+                        "house archive: an existing copy is not replaced unasked",
+                    )
+                    replaced = await app.import_archive(archive_bytes, True)
+                    check(
+                        replaced["houseId"] == house_id
+                        and replaced["outcome"] == "unchanged",
+                        "house archive: re-uploading the same copy changes nothing",
+                    )
+
+                    def rewritten(change: object) -> bytes:
+                        buffer = io.BytesIO()
+                        with (
+                            zipfile.ZipFile(io.BytesIO(archive_bytes)) as source_zip,
+                            zipfile.ZipFile(buffer, "w") as target_zip,
+                        ):
+                            for name in source_zip.namelist():
+                                content = source_zip.read(name)
+                                if change == "tamper" and name == text(image["path"]):
+                                    content = content + b"x"
+                                target_zip.writestr(name, content)
+                            if change == "escape":
+                                target_zip.writestr("../escape.txt", b"no")
+                        return buffer.getvalue()
+
+                    for change, label in (
+                        ("tamper", "a changed file fails its checksum"),
+                        ("escape", "a path leaving the archive is refused"),
+                    ):
+                        try:
+                            await app.import_archive(rewritten(change), True)
+                            refused = False
+                        except HomeplanError as err:
+                            refused = err.status in (400, 413, 422)
+                        check(refused, f"house archive: {label}")
+                    try:
+                        await app.import_archive(b"not a zip", True)
+                        refused = False
+                    except HomeplanError as err:
+                        refused = err.status == 422
+                    check(refused, "house archive: a file that is not a zip is refused")
+                    leftovers = [
+                        path.name
+                        for path in (app.root / "houses").iterdir()
+                        if path.name.startswith(".import-")
+                    ]
+                    check(
+                        not leftovers,
+                        "house archive: refused uploads leave no staging folders",
+                    )
                     status, _ = await call(
                         "PATCH",
                         "/api/homeplan/config",
@@ -741,6 +812,36 @@ panel.hass=hass;panel.narrow=false;document.body.append(panel);""".replace(
                         user_token=None,
                     )
                     check(status == 404, "code route cannot expose house files")
+                    # Panels (Phase 21): back to the shipped panel, then the previous (downloaded) one again.
+                    config = app.configuration.snapshot()
+                    status, _ = await call(
+                        "POST",
+                        "/api/homeplan/frontend/use-previous",
+                        {"expectedRevision": config["revision"]},
+                    )
+                    check(
+                        status == 404,
+                        "use previous: refused while there is no previous panel",
+                    )
+                    status, _ = await call(
+                        "POST",
+                        "/api/homeplan/frontend/restore-packaged",
+                        {"expectedRevision": config["revision"]},
+                    )
+                    config = app.configuration.snapshot()
+                    status, _ = await call(
+                        "POST",
+                        "/api/homeplan/frontend/use-previous",
+                        {"expectedRevision": config["revision"]},
+                    )
+                    swapped = record(app.configuration.snapshot()["frontend"])
+                    check(
+                        status == 200
+                        and record(swapped["active"])["bundleId"] == active["bundleId"]
+                        and swapped["previous"] is None,
+                        "use previous: the downloaded panel is active again after the shipped one",
+                    )
+                    config = app.configuration.snapshot()
                     generation = record(config["connection"])["generation"]
                     status, _ = await call(
                         "PATCH",

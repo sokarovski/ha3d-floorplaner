@@ -13,6 +13,7 @@ import { ConfirmPopup } from "../components/ConfirmPopup";
 import { HouseCard } from "../components/HouseCard";
 import { NewHousePopup } from "../components/NewHousePopup";
 import { RenameHousePopup } from "../components/RenameHousePopup";
+import { UploadHousePopup } from "../components/UploadHousePopup";
 import { TrashList } from "../components/TrashList";
 import { useHousesAutomation } from "../hooks/useHousesAutomation";
 import { useResource } from "../hooks/useResource";
@@ -22,6 +23,7 @@ export const HousesPage = (): ReactElement => {
   const navigate = useNavigate();
   const [view, setView] = useState<"houses" | "trash">("houses");
   const [creating, setCreating] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [renaming, setRenaming] = useState<ValidHouseCardValue | undefined>(undefined);
   const [deleting, setDeleting] = useState<HouseCardValue | undefined>(undefined);
@@ -69,6 +71,14 @@ export const HousesPage = (): ReactElement => {
               setSettingsOpen(true);
             }}
           />
+          <Button
+            variant="secondary"
+            onPress={() => {
+              setUploading(true);
+            }}
+          >
+            Upload house
+          </Button>
           <Button
             onPress={() => {
               setCreating(true);
@@ -184,6 +194,16 @@ export const HousesPage = (): ReactElement => {
         }}
         onCreated={(houseId) => {
           setCreating(false);
+          void navigate(paths.house(houseId));
+        }}
+      />
+      <UploadHousePopup
+        open={uploading}
+        onClose={() => {
+          setUploading(false);
+        }}
+        onUploaded={(houseId) => {
+          setUploading(false);
           void navigate(paths.house(houseId));
         }}
       />

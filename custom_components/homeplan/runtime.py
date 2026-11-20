@@ -3,6 +3,8 @@
 import asyncio
 import copy
 import logging
+import os
+import shutil
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -17,10 +19,12 @@ from .artifacts import (
     cleanup_unconfigured,
     deactivate,
     download_artifact,
+    extract_archive,
     inventory,
     read_inventory,
     read_manifest,
     verify,
+    write_archive,
 )
 from .const import MAX_FLOOR_PLANNERS, MAX_MANIFEST
 from .errors import HomeplanError
@@ -490,6 +494,97 @@ class HomeplanRuntime:
                 self._inventories.pop(next(iter(self._inventories)))
             self._inventories[key] = cached
         return cached
+
+    async def house_archive(self, house_id: str) -> bytes:
+        """A local copy as a house archive (Phase 21, Settings → Houses → Download)."""
+        copy_metadata = record(self.configuration.snapshot()["houses"]).get(house_id)
+        if copy_metadata is None:
+            raise HomeplanError(404, "notFound", "No local copy exists for this house.")
+        directory = self.house_path(house_id, text(record(copy_metadata)["snapshotId"]))
+        return await asyncio.to_thread(write_archive, directory)
+
+    async def import_archive(self, data: bytes, replace: bool) -> dict[str, object]:
+        """A house archive uploaded in Settings → Houses (Phase 21) becomes a local copy, verified like a download.
+        An existing copy of the same house is only replaced when asked (`replace`); its bindings are kept."""
+        houses_root = self.root / "houses"
+        await asyncio.to_thread(houses_root.mkdir, parents=True, exist_ok=True)
+        staging, manifest = await asyncio.to_thread(extract_archive, data, houses_root)
+        try:
+            house_id = checked_id(text(manifest["houseId"]))
+            snapshot_id = checked_id(text(manifest["snapshotId"]), True)
+            existing = record(self.configuration.snapshot()["houses"]).get(house_id)
+            if existing is not None and not replace:
+                raise HomeplanError(
+                    409,
+                    "conflict",
+                    "Home Assistant already has a copy of this house; replace it to use the archive.",
+                )
+            directory = houses_root / house_id
+            await asyncio.to_thread(directory.mkdir, exist_ok=True)
+            target = inside(directory, snapshot_id)
+            if await asyncio.to_thread(target.exists):
+                await asyncio.to_thread(verify, target)
+            else:
+                await asyncio.to_thread(os.replace, staging, target)
+            seed = await asyncio.to_thread(
+                lambda: validate(
+                    "BindingSeed", parse_json((target / "bindings.json").read_bytes())
+                )
+            )
+            files = inventory(manifest)
+            outcome = "imported"
+
+            def activate(value: dict[str, object]) -> None:
+                nonlocal outcome
+                houses = record(value["houses"])
+                previous = houses.get(house_id)
+                previous_id = (
+                    record(previous)["snapshotId"] if previous is not None else None
+                )
+                if previous_id == snapshot_id:
+                    outcome = "unchanged"
+                    return
+                houses[house_id] = {
+                    "houseId": house_id,
+                    "snapshotId": snapshot_id,
+                    "sourceRevisionId": manifest["sourceRevisionId"],
+                    "documentRevision": manifest["documentRevision"],
+                    "savedAt": manifest["savedAt"],
+                    "importedAt": now(),
+                    "producerVersion": manifest["producerVersion"],
+                    "fileCount": len(files),
+                    "byteSize": sum(
+                        integer(entry["byteSize"]) for entry in files.values()
+                    ),
+                    "sourceUrl": "archive",
+                    "previousSnapshotId": previous_id,
+                }
+                value["houses"] = houses
+                outcome = "imported" if previous is None else "upgraded"
+                migrate_seed(value, house_id, record(manifest["migration"]), seed)
+                associations = record(value["houseSources"])
+                associations[house_id] = "archive"
+                value["houseSources"] = associations
+
+            before = self.configuration.snapshot()
+            result = await self.configuration.mutate(activate)
+            old = record(before["houses"]).get(house_id)
+            if outcome != "unchanged" and old is not None:
+                try:
+                    await asyncio.to_thread(
+                        deactivate, directory, record(old)["snapshotId"]
+                    )
+                except OSError:
+                    _LOGGER.warning(
+                        "Homeplan imported a house but could not mark the old copy"
+                    )
+            return {
+                "houseId": house_id,
+                "outcome": outcome,
+                "revision": result["revision"],
+            }
+        finally:
+            await asyncio.to_thread(shutil.rmtree, staging, True)
 
     def house_path(self, house_id: str, snapshot_id: str) -> Path:
         return inside(

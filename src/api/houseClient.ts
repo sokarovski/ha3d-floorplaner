@@ -41,6 +41,13 @@ export const createHouseClient = (http: HttpClient) => ({
       { method: "POST", path: ["houses", houseId, "clone"], body: name === undefined ? {} : { name } },
       ValidHouseCard,
     ),
+  /** Upload house (Phase 21): a house archive (.zip) as a new house, under `name` when given. */
+  importArchive: async (file: File, name?: string): Promise<ValidHouseCardValue> => {
+    const form = new FormData();
+    form.append("file", file);
+    if (name !== undefined) form.append("name", name);
+    return http.request({ method: "POST", path: ["houses", "import"], form }, ValidHouseCard);
+  },
   rename: async (
     houseId: string,
     name: string,

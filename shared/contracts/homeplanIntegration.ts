@@ -192,6 +192,15 @@ export const ConnectionResponse = Type.Object(
   },
   strict,
 );
+/** A house archive uploaded in Settings → Houses (Phase 21) and what became of it. */
+export const ArchiveImportResponse = Type.Object(
+  {
+    houseId: IdString,
+    outcome: Type.Union([Type.Literal("imported"), Type.Literal("upgraded"), Type.Literal("unchanged")]),
+    revision: RevisionNumber,
+  },
+  strict,
+);
 /** Another floor planner's houses, read only (Phase 21, Settings → Houses). */
 export const PeekRequest = Type.Object({ url: Type.String({ maxLength: 2048 }) }, strict);
 export const PeekResponse = Type.Object(

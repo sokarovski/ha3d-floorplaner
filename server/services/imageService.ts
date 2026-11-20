@@ -48,14 +48,14 @@ const defaultName = (filename: string): string => {
   return (base === "" ? "Image" : base).slice(0, 120);
 };
 
-export const uploadImage = async (
-  context: ServiceContext,
-  houseId: string,
-  upload: Readonly<{ bytes: Buffer; filename: string; name: string | undefined }>,
-): Promise<ImageEntryValue> => {
-  await requireHouse(context, houseId);
-  const name =
-    upload.name === undefined ? defaultName(upload.filename) : checkedName(upload.name, "/body/name");
+/** An image re-encoded for storage (no metadata) with its thumbnail and index entry; nothing is written. */
+type PreparedImage = Readonly<{ entry: ImageEntryValue; original: Buffer; thumbnail: Buffer }>;
+
+const prepareImage = async (
+  id: string,
+  upload: Readonly<{ bytes: Buffer; filename: string; name: string }>,
+): Promise<PreparedImage> => {
+  const name = upload.name;
   let metadata: Metadata;
   try {
     metadata = await sharp(upload.bytes).metadata();
@@ -81,7 +81,6 @@ export const uploadImage = async (
     .resize(thumbnailSizePx, thumbnailSizePx, { fit: "inside", withoutEnlargement: true })
     .webp({ quality: 80 })
     .toBuffer();
-  const id = createId("img");
   const entry: ImageEntryValue = {
     id,
     name,
@@ -94,16 +93,54 @@ export const uploadImage = async (
     thumbnail: `textures/${id}.thumb.webp`,
     createdAt: new Date().toISOString(),
   };
+  return { entry, original: original.data, thumbnail };
+};
+
+/** Files first, index entry last: a crash leaves only an orphan file, removed on startup. */
+const storeImage = async (
+  context: ServiceContext,
+  houseId: string,
+  prepared: PreparedImage,
+): Promise<void> => {
+  const index = await context.images.readIndex(houseId);
+  await context.images.writeAsset(houseId, prepared.entry.file, prepared.original);
+  await context.images.writeAsset(houseId, prepared.entry.thumbnail, prepared.thumbnail);
+  await context.images.writeIndex(houseId, { schemaVersion: 1, images: [...index.images, prepared.entry] });
+};
+
+export const uploadImage = async (
+  context: ServiceContext,
+  houseId: string,
+  upload: Readonly<{ bytes: Buffer; filename: string; name: string | undefined }>,
+): Promise<ImageEntryValue> => {
+  await requireHouse(context, houseId);
+  const name =
+    upload.name === undefined ? defaultName(upload.filename) : checkedName(upload.name, "/body/name");
+  const prepared = await prepareImage(createId("img"), { ...upload, name });
   return context.queue.run(houseLock(houseId), async () => {
     // Checked again under the lock: the house may have been trashed while the image was processed.
     await requireHouse(context, houseId);
-    const index = await context.images.readIndex(houseId);
-    // Files first, index entry last: a crash leaves only an orphan file, removed on startup.
-    await context.images.writeAsset(houseId, entry.file, original.data);
-    await context.images.writeAsset(houseId, entry.thumbnail, thumbnail);
-    await context.images.writeIndex(houseId, { schemaVersion: 1, images: [...index.images, entry] });
-    return entry;
+    await storeImage(context, houseId, prepared);
+    return prepared.entry;
   });
+};
+
+/**
+ * An image from a house archive (Phase 21), keeping its ID (the house document refers to it), into a house being
+ * created: the caller holds that house's lock, so this takes none.
+ */
+export const importArchiveImage = async (
+  context: ServiceContext,
+  houseId: string,
+  id: string,
+  bytes: Buffer,
+  filename: string,
+): Promise<void> => {
+  await storeImage(
+    context,
+    houseId,
+    await prepareImage(id, { bytes, filename, name: defaultName(filename) }),
+  );
 };
 
 /** Rename and delete refuse built-in textures: they ship with the app and belong to no house. */

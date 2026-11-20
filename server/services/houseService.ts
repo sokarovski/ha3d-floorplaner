@@ -106,6 +106,8 @@ const writeNewHouse = async (
   houseId: string,
   document: HouseDocument,
   subject: string,
+  /** More files for the new house (a house archive's images and templates), before the first commit. */
+  extra?: (houseId: string) => Promise<void>,
 ): Promise<ValidHouseCardValue> =>
   context.queue.run(houseLock(houseId), async () => {
     const directory = await context.houses.createFolder(houseId);
@@ -113,6 +115,7 @@ const writeNewHouse = async (
       await writeFile(context.paths.inside(directory, ".gitignore"), gitignoreText);
       await context.images.writeIndex(houseId, { schemaVersion: 1, images: [] });
       await context.houses.write(houseId, document);
+      if (extra !== undefined) await extra(houseId);
       await initRepository(directory);
       await commitAll(directory, subject);
       const { modifiedAt } = await loadDocument(context, houseId);
@@ -140,6 +143,21 @@ export const createHouseFromDocument = async (
 ): Promise<ValidHouseCardValue> => {
   const houseId = createId("h");
   return writeNewHouse(context, houseId, { ...source, id: houseId, revision: 0 }, subject);
+};
+
+/**
+ * A new house from a house archive (Phase 21): its document under a new ID and the given name, revision 0, and
+ * `extra` writing the archive's images and templates; one commit, `subject`.
+ */
+export const createHouseFromArchive = async (
+  context: ServiceContext,
+  source: HouseDocument,
+  name: string,
+  subject: string,
+  extra: (houseId: string) => Promise<void>,
+): Promise<ValidHouseCardValue> => {
+  const houseId = createId("h");
+  return writeNewHouse(context, houseId, { ...source, id: houseId, name, revision: 0 }, subject, extra);
 };
 
 /**
