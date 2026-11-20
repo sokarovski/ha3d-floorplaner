@@ -25,6 +25,7 @@ import { HomeplanBubbleOverlay } from "./bubbleOverlay";
 import type { BubbleGestureDetail, BubbleItem, BubbleMoveDetail } from "./bubbleOverlay";
 import type { GestureTarget } from "./gestures";
 import type { EditorTarget, SettingsSaved } from "./bindingEditor";
+import type { SettingsTab } from "./connectionSettings";
 import { createBindingEvaluator, intrusionRooms } from "./bindingEvaluator";
 import type { BindingEvaluator } from "./bindingEvaluator";
 import { bindingTargets } from "./bindingTargets";
@@ -622,6 +623,8 @@ export class HomeplanViewerScreen extends LitElement {
   private editing = false;
   /** The binding editor: closed (undefined), the list (null), or one thing. */
   private editorTarget: EditorTarget | undefined = undefined;
+  /** The tab Settings opens on (undefined: House). */
+  private editorTab: SettingsTab | undefined = undefined;
   private bindings: HaHouseBindingsValue = emptyHouseBindings();
   private lightStates = new Map<string, LightState>();
   /** Live state-parameter values by object or opening ID (9.7), with their text for change checks. */
@@ -1365,8 +1368,12 @@ export class HomeplanViewerScreen extends LitElement {
     this.requestUpdate();
   }
 
-  /** Opens Settings on the House node (the integration reopens it after Use this house reloads the scene). */
-  openSettings(): void {
+  /**
+   * Opens Settings on the House node (the integration reopens it after Use this house reloads the scene), or on
+   * another tab (the startup note's Open settings opens Panels).
+   */
+  openSettings(tab?: SettingsTab): void {
+    this.editorTab = tab;
     this.openEditor(null);
   }
 
@@ -1869,8 +1876,10 @@ export class HomeplanViewerScreen extends LitElement {
               .integrationClient=${this.integrationClient}
               .floor=${this.shownFloor}
               .floors=${this.settingsFloors()}
+              .initialTab=${this.editorTab}
               @close=${() => {
                 this.editorTarget = undefined;
+                this.editorTab = undefined;
                 this.requestUpdate();
               }}
               @settings-saved=${(event: CustomEvent<SettingsSaved>) => {

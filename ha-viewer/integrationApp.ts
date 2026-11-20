@@ -41,10 +41,11 @@ export class HomeplanIntegrationApp extends LitElement {
         gap: 16px;
         padding: 24px;
       }
+      /* Top left (owner): the top right holds the viewer's own buttons (Settings, Edit). */
       .bar {
         position: absolute;
         z-index: 5;
-        inset: 12px 12px auto auto;
+        inset: 12px auto auto 12px;
         display: flex;
         gap: 8px;
         align-items: center;
@@ -54,6 +55,11 @@ export class HomeplanIntegrationApp extends LitElement {
         background: var(--hp-surface);
         box-shadow: var(--hp-shadow);
         max-width: calc(100% - 24px);
+      }
+      /* On a phone the viewer's top bar starts with Home Assistant's menu button: the note starts after it. */
+      .bar[data-narrow] {
+        inset: 12px auto auto 60px;
+        max-width: calc(100% - 72px);
       }
       .menu {
         position: absolute;
@@ -88,6 +94,10 @@ export class HomeplanIntegrationApp extends LitElement {
   private narrow = false;
   /** A running DEV MODE session lost an asset/data request: the scene stays, marked stale (production-integration.md). */
   private stale = false;
+  /** The startup note was closed (until the next page load). */
+  private messageClosed = false;
+  /** The setup dialog (no house yet) opens on this tab (the startup note's Open settings: Panels). */
+  private setupTab: "panels" | undefined = undefined;
 
   constructor() {
     super();
@@ -197,6 +207,18 @@ export class HomeplanIntegrationApp extends LitElement {
     if (selected !== this.setup.houseId || selection || (houseId === selected && !this.context.remote))
       await this.loadSelection(selected, true);
   }
+  /** Opens Settings on Panels (the startup note): in the viewer when a house is shown, else the setup dialog. */
+  private openPanels(): void {
+    this.messageClosed = true;
+    const screen = this.renderRoot.querySelector("homeplan-viewer-screen");
+    if (screen instanceof HomeplanViewerScreen) screen.openSettings("panels");
+    else {
+      this.setupTab = "panels";
+      this.setupOpen = true;
+    }
+    this.requestUpdate();
+  }
+
   protected override render(): TemplateResult {
     const context = this.context;
     const admin = this.store.current()?.user?.is_admin === true;
@@ -276,11 +298,33 @@ export class HomeplanIntegrationApp extends LitElement {
                 Reload using local copy
               </button>
             </div>`
-          : message === null
+          : message === null || this.messageClosed
             ? nothing
-            : html`<div class="bar">
+            : html`<div class="bar" role="status" ?data-narrow=${this.narrow}>
                 <span class="message">${message}</span>
-                ${context?.message === null ? nothing : html`<button @click=${() => location.reload()}>${context?.remote ? "Retry remote" : "Reload"}</button>`}
+                ${
+                  context?.remote === true
+                    ? html`<button @click=${() => location.reload()}>Retry remote</button>`
+                    : admin
+                      ? html`<button
+                          @click=${() => {
+                            this.openPanels();
+                          }}
+                        >
+                          Open settings
+                        </button>`
+                      : nothing
+                }
+                <button
+                  aria-label="Close"
+                  title="Close"
+                  @click=${() => {
+                    this.messageClosed = true;
+                    this.requestUpdate();
+                  }}
+                >
+                  ✕
+                </button>
               </div>`
       }
       ${
@@ -289,8 +333,10 @@ export class HomeplanIntegrationApp extends LitElement {
               .store=${this.store}
               .houseId=${null}
               .integrationClient=${context.client}
+              .initialTab=${this.setupTab}
               @close=${() => {
                 this.setupOpen = false;
+                this.setupTab = undefined;
                 this.requestUpdate();
               }}
             ></homeplan-binding-editor>`

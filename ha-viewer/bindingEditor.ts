@@ -181,6 +181,7 @@ export class HomeplanBindingEditor extends LitElement {
     integrationClient: { attribute: false },
     floor: { attribute: false },
     floors: { attribute: false },
+    initialTab: { attribute: false },
   };
 
   static override styles = [
@@ -591,6 +592,8 @@ export class HomeplanBindingEditor extends LitElement {
   declare floor: SettingsFloor | null;
   /** Every floor of the house, lowest first: House → Main view (16.1) lists them when there are several. */
   declare floors: readonly SettingsFloor[];
+  /** The tab Settings opens on (the startup note's Open settings opens Panels); House when unset. */
+  declare initialTab: SettingsTab | undefined;
   /** The bindings as loaded (what Save compares the draft with) and as edited. */
   private saved: HaHouseBindingsValue | null = null;
   private draft: HaHouseBindingsValue | null = null;
@@ -718,6 +721,7 @@ export class HomeplanBindingEditor extends LitElement {
 
   protected override willUpdate(changed: PropertyValues<this>): void {
     if (changed.has("target")) this.select(this.target, true);
+    if (changed.has("initialTab") && this.initialTab !== undefined) this.openTab(this.initialTab);
   }
 
   private async load(): Promise<void> {
