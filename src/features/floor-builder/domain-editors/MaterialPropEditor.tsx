@@ -3,15 +3,13 @@ import type { ReactElement } from "react";
 import { fromMaterialView, MaterialView, toMaterialView } from "@shared/domain/materials/materialView";
 import { isSchemaNode, withValueAtPath } from "@shared/domain/schemas/schemaWalk";
 import { SurfaceMaterialSchema } from "@shared/domain/schemas/values";
-import type { SurfaceMaterialValue } from "@shared/domain/schemas/values";
 import { compileValidator } from "@shared/domain/validation/ajv";
-import { MenuButton } from "../../../design-system/components/MenuButton/MenuButton";
+import { Button } from "../../../design-system/components/Button/Button";
 import { SchemaForm } from "../../../design-system/forms/SchemaForm/SchemaForm";
 import type { PropertyEditorProps } from "../../../design-system/property-editors/editorContract";
 import { genericEditors } from "../../../design-system/property-editors/genericEditors";
-import { useDomainEditorData } from "./domainEditorData";
 import { ImagePropEditor } from "./ImagePropEditor";
-import { SavePresetPopup } from "./SavePresetPopup";
+import { MaterialPickerPopup } from "./MaterialPickerPopup";
 
 export const MaterialPropEditor = ({
   id,
@@ -22,8 +20,7 @@ export const MaterialPropEditor = ({
   disabled,
   onCommit,
 }: PropertyEditorProps): ReactElement => {
-  const data = useDomainEditorData();
-  const [savingPreset, setSavingPreset] = useState<SurfaceMaterialValue | undefined>(undefined);
+  const [choosing, setChoosing] = useState(false);
   const isMaterial = compileValidator(SurfaceMaterialSchema);
   const material = isMaterial(value) ? value : undefined;
   const view = material === undefined ? undefined : toMaterialView(material);
@@ -37,26 +34,17 @@ export const MaterialPropEditor = ({
               ? "Flat color"
               : "Textured"}
         </span>
-        <MenuButton
-          label={`${label} presets`}
-          text="Presets"
+        <Button
           size="sm"
           variant="secondary"
           disabled={disabled}
-          placement="bottom end"
-          items={[
-            ...data.presets.map((preset) => ({
-              id: `apply:${preset.id}`,
-              label: preset.builtIn ? `${preset.name} (built-in)` : preset.name,
-            })),
-            { id: "save", label: "Save as preset…", icon: "save", disabled: material === undefined || mixed },
-          ]}
-          onAction={(action) => {
-            if (action === "save") setSavingPreset(material);
-            const preset = data.presets.find((candidate) => `apply:${candidate.id}` === action);
-            if (preset !== undefined) onCommit(structuredClone(preset.material));
+          aria-label={`${label}: more materials`}
+          onPress={() => {
+            setChoosing(true);
           }}
-        />
+        >
+          More…
+        </Button>
       </div>
       {view === undefined || material === undefined ? null : (
         <SchemaForm
@@ -88,10 +76,15 @@ export const MaterialPropEditor = ({
           }}
         />
       )}
-      <SavePresetPopup
-        material={savingPreset}
+      <MaterialPickerPopup
+        open={choosing}
+        title={`Choose a material · ${label}`}
+        current={mixed ? undefined : material}
+        onApply={(next) => {
+          onCommit(next);
+        }}
         onClose={() => {
-          setSavingPreset(undefined);
+          setChoosing(false);
         }}
       />
     </div>

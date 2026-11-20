@@ -112,7 +112,7 @@ export const HouseLibrariesSection = (): ReactElement => {
       </PropertyGroup>
       <PropertyGroup title={`Material presets (${String(house.materialPresets.length)})`}>
         {house.materialPresets.length === 0 ? (
-          <p data-library-empty="">Use “Save as preset” in a material to add one.</p>
+          <p data-library-empty="">Use More… → Save current as preset in a material to add one.</p>
         ) : null}
         <ul data-library-list="">
           {house.materialPresets.map((preset) => (

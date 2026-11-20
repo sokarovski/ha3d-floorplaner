@@ -17,9 +17,9 @@ Confirmed capabilities:
 - Upload JPEG, PNG, and WebP images into the house folder and reuse them from a house-wide image library for any rendered surface with a suitable material slot. See [house image uploads](house-images.md) for asset storage, selection, and mapping.
 - Material assignments persist with the model and appear in previews and rendered image exports.
 
-Each surface carries its own material in the open **glTF 2.0 material** format ([D19](../../decisions.md#d19-materials)): a base color image from the house images, a color/tint, Shininess (stored as glTF roughness), metallic, and its physical tile size, rotation, and offset, which render as the standard `KHR_texture_transform`. There is no separate material editor: you edit the surface, then **Save as preset** to reuse those values on other surfaces, where applying the preset copies them. Parquet therefore tiles at a consistent physical size instead of stretching once over each room. Normal maps and other texture maps are post-MVP.
+Each surface carries its own material in the open **glTF 2.0 material** format ([D19](../../decisions.md#d19-materials)): a base color image from the house images, a color/tint, Shininess (stored as glTF roughness), metallic, and its physical tile size, rotation, and offset, which render as the standard `KHR_texture_transform`. There is no separate material editor: you edit the surface, then save it as a preset (in the [material chooser](#material-chooser)) to reuse those values on other surfaces, where applying the preset copies them. Parquet therefore tiles at a consistent physical size instead of stretching once over each room. Normal maps and other texture maps are post-MVP.
 
-**Built-in textured materials (Phase 17.1, owner decision 2026-11-18).** Every house's material **Presets** menu lists, after the plain built-ins (Plain white (cap), Default flooring, Default wall paint, Concrete, Dark wood), the read-only textured presets that ship with the app:
+**Built-in textured materials (Phase 17.1, owner decision 2026-11-18).** The [material chooser](#material-chooser) lists, after the plain built-ins (Plain white (cap), Default flooring, Default wall paint, Concrete, Dark wood), the read-only textured presets that ship with the app:
 
 | Preset | Built-in image | Tile size | Roughness |
 | --- | --- | --- | --- |
@@ -39,6 +39,18 @@ Each surface carries its own material in the open **glTF 2.0 material** format (
 Aluminium roofing (Phase 19.1, owner 2026-11-18) is the plain light-metal roof covering; with Terracotta tiles and Slate tiles it is one of the v1 roof tops ([roofs](roofs.md#designs)). Its preset carries a metallic factor (every other built-in is 0). Choosing one copies it onto the surface like any preset (untinted, rotation and offset 0), and the copy can be adjusted. The images are procedural 512 × 512 PNGs generated deterministically by `npm run materials:build` (`scripts/materials/textures.ts`) into `server/builtin-materials/`; the catalog (IDs, names, tile sizes, roughness) is `shared/domain/house/builtinMaterials.ts`. The texture picker (Change… on a material's image) shows the house's images and, below them, the **Built-in textures**. Built-in textures are not house uploads: they are not listed, renamed or deleted in the house's image library, and a house never stores a copy; exports and HA snapshots freeze the ones a house uses ([API](../../architecture/api.md#images), [production integration](../../home-assistant/production-integration.md)). A user-defined installation-wide material library is still deferred ([D19](../../decisions.md#d19-materials)).
 
 “Interior” and “exterior” refer to the sides facing into and away from the owning area, independent of the direction in which the boundary was drawn. They do not necessarily mean inside/outside the entire building. Wall tops, exposed ends, and opening reveals use the house cap material ([D05](../../decisions.md#d05-walls-between-adjacent-areas)).
+
+### Material chooser
+
+Owner request (2026-11-20; the first step of the texture and preset editor). The material editor's header has one button, **More…**, in place of the earlier Presets menu; it opens the **material chooser**, built like the object chooser (`MaterialPickerPopup.tsx`, `shared/domain/materials/materialLibrary.ts`):
+
+- **Search** over names, groups and "textured"/"plain", and **category chips** with counts: All, **Used in this house**, **House presets**, then the built-in categories, a fixed list (owner): Paint and plain (Plain white (cap), Default wall paint, Default flooring, Concrete), Wood (Dark wood, Oak parquet, Walnut, Ash), Tiles and stone (Grey tiles, White tiles, Terracotta tiles, Slate tiles, Granite), Outdoor (Decking, Lawn, Paving), Roofing (Aluminium roofing). Every saved preset is in House presets; presets carry no category of their own (no schema change).
+- **Used in this house:** the distinct materials the house's surfaces carry now (walls, rooms, carpets, slabs, roofs, objects' own colours; the presets list itself not), most used first, each with its surface count, named after the preset it equals, else Custom, Custom 2, ….
+- **Swatches:** the texture repeated at its real tile size over 1.5 m of surface and tinted by the colour, or the flat colour, with a sheen for shiny materials.
+- **Preview** of the selected tile (the first one before a choice): a larger swatch (3 m of surface), its group, texture, colour, tile size, Shininess and Metallic; a house preset there has **Rename** and **Delete** (surfaces keep their materials; Undo brings it back). Built-ins are read-only.
+- **Apply** (or a double click, or Enter on the search) copies the material onto the surface, as choosing a preset did. **Save current as preset…** in the footer saves the surface's material as a house preset (disabled for a mixed selection).
+
+The rest of the texture and preset editor (a library view, editing presets themselves, rotation in the swatches) is still open.
 
 ## 2. Wall thickness, alignment, and flooring support
 

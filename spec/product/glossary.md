@@ -28,7 +28,7 @@ Status: terminology consolidated from the feature specifications and the built a
 | Template / object template | A reusable glTF 2.0 object asset in the house's template library (or built in), plus Homeplan metadata: contract, direction, resize modes, part rules, attachment, opening, and material slots ([D17](../decisions.md#d17-object-asset-format-and-template-metadata)). |
 | Instance | One placed object with its own stable ID, template/version reference, parameters, and placement. |
 | Surface material | The appearance stored on one surface in glTF material format: image texture, tint, shininess, metallic, and its tile size, rotation, and offset. |
-| Material preset | A named copy of a surface material saved with Save as preset; applying it copies the values to another surface. |
+| Material preset | A named copy of a surface material saved with Save current as preset in the material chooser; applying it copies the values to another surface. |
 | Property schema | The JSON Schema for one object type: its properties, types, limits, and `x-homeplan` editor annotations. Drives the property panel and validation. |
 | Property group | A collapsible section of the property panel (General, Placement, Size, Appearance, …), named by ID from one shared catalog so the same group reads the same on every type ([property system](../builder/property-system.md#property-groups)). |
 | Mixed | What a field shows when the selected objects hold different values for it. A commit sets all of them as one undo step. |

@@ -1,9 +1,27 @@
 // Fixture domain-editor data for /ds pages (no real house, no API calls).
-import { builtInPresets, defaultWallPaint } from "@shared/domain/house/defaults";
+import {
+  builtInPresets,
+  createArea,
+  createHouseDocument,
+  defaultWallPaint,
+} from "@shared/domain/house/defaults";
+import { materialLibrary } from "@shared/domain/materials/materialLibrary";
 import type { DomainEditorData } from "../../floor-builder/domain-editors/domainEditorData";
 
 const swatch = (color: string): string =>
   `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="${color}"/><path d="M0 32h64M32 0v64" stroke="#0003"/></svg>`)}`;
+
+const fixturePresets = [
+  ...builtInPresets.map((preset) => ({ ...preset, builtIn: true })),
+  { id: "mp_fixture01", name: "Kitchen tiles", material: defaultWallPaint(), builtIn: false },
+];
+
+/** A fixture house with one room, so the chooser's Used in this house group has entries. */
+const fixtureLibraryHouse = (() => {
+  const house = createHouseDocument("h_fixture000", "Fixture house");
+  house.floors[0]?.areas.push(createArea("Living", { x: 0, y: 0 }));
+  return house;
+})();
 
 export const fixtureDomainData: DomainEditorData = {
   houseId: "h_fixture000",
@@ -37,11 +55,11 @@ export const fixtureDomainData: DomainEditorData = {
   thumbnailUrl: (imageId) => swatch(imageId === "img_fixture01" ? "#b08550" : "#5a6470"),
   uploadImage: () => Promise.reject(new Error("Uploads are disabled in the design-system fixtures.")),
   reloadImages: () => undefined,
-  presets: [
-    ...builtInPresets.map((preset) => ({ ...preset, builtIn: true })),
-    { id: "mp_fixture01", name: "Kitchen tiles", material: defaultWallPaint(), builtIn: false },
-  ],
+  presets: fixturePresets,
   savePreset: () => true,
+  renamePreset: () => true,
+  deletePreset: () => true,
+  materialLibrary: () => materialLibrary(fixtureLibraryHouse, fixturePresets),
   referenceOptions: (kind) =>
     kind === "light"
       ? [

@@ -3,6 +3,7 @@
 import { createContext, useContext } from "react";
 import type { ImageEntryValue } from "@shared/contracts/images";
 import type { TemplateListItemValue } from "@shared/contracts/templates";
+import type { LibraryMaterial } from "@shared/domain/materials/materialLibrary";
 import type { SurfaceMaterialValue } from "@shared/domain/schemas/values";
 
 export type PresetOption = Readonly<{
@@ -23,6 +24,12 @@ export type DomainEditorData = Readonly<{
   reloadImages: () => void;
   presets: readonly PresetOption[];
   savePreset: (name: string, material: SurfaceMaterialValue) => boolean;
+  /** Renames a house preset (built-ins are read-only); false when rejected. */
+  renamePreset: (presetId: string, name: string) => boolean;
+  /** Deletes a house preset (surfaces keep their materials; Undo brings it back); false when rejected. */
+  deletePreset: (presetId: string) => boolean;
+  /** The material chooser's library, read from the house now: used materials, house presets, built-ins. */
+  materialLibrary: () => readonly LibraryMaterial[];
   referenceOptions: (kind: string, owner: unknown) => readonly ReferenceOption[];
   templates: readonly TemplateListItemValue[];
   /** Updates instances to a newer template version (D07); returns false when rejected. */

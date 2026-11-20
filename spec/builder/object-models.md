@@ -71,7 +71,7 @@ Resolved by [D19](../decisions.md#d19-materials). Stored inline on every materia
 | `extras.homeplan.tileSizeMm` | `Vector2Length` | physical size of one image repeat | 1000 × 1000 | panel | `vector2Length` |
 | `extras.homeplan.rotationDeg` | `Angle` | texture rotation on the surface | 0 | panel | `angle` |
 | `extras.homeplan.offsetMm` | `Vector2Length` | texture shift on the surface | 0, 0 | panel | `vector2Length` |
-| Preset | choose a preset (copies its values) or **Save as preset** | — | — | panel | `material` (preset menu) |
+| Preset | **More…** opens the material chooser: apply a preset or a material used in the house (copies its values), or **Save current as preset** | — | — | panel | `material` (chooser) |
 
 ### Material preset (house list)
 
@@ -373,7 +373,7 @@ Derived from the tables above:
 | `file` | upload and import popups | generic |
 | `readOnly` | derived values and warnings | generic |
 | `reference` | attachment wall, light-group and object-group members | domain (pick from the tree or viewport) |
-| `material` | every `SurfaceMaterial`: the fields above as one group, a preset menu (apply or Save as preset) | domain |
+| `material` | every `SurfaceMaterial`: the fields above as one group, the **More…** material chooser (apply, Save current as preset, rename or delete house presets) | domain |
 | `image` | a surface's texture: pick from the house image library or upload | domain |
 | `templateVersion` | every `TemplateRef` | domain |
 | `location` | house location (latitude/longitude, with time zone) | domain |

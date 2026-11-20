@@ -157,3 +157,64 @@
     @apply min-w-0 flex-1 truncate text-sm;
   }
 }
+
+@layer components {
+  /* The material chooser (owner, 2026-11-20): swatches in groups beside a preview of the selected material. */
+  [data-material-picker-body] {
+    @apply grid grid-cols-[minmax(0,1fr)_16rem] items-start gap-5 max-md:grid-cols-1;
+  }
+
+  [data-material-picker-groups] {
+    @apply min-w-0;
+  }
+
+  [data-material-picker-preview] {
+    @apply sticky top-16 flex flex-col gap-3 rounded-card bg-canvas p-3;
+  }
+
+  [data-material-picker-preview-name] {
+    @apply text-base font-semibold text-foreground;
+  }
+
+  [data-material-picker-details] {
+    @apply grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm;
+  }
+
+  [data-material-picker-details] dt {
+    @apply text-muted;
+  }
+
+  [data-material-picker-details] dd {
+    @apply min-w-0 truncate text-foreground tabular-nums;
+  }
+
+  [data-material-picker-actions] {
+    @apply flex gap-2;
+  }
+
+  [data-material-picker-spacer] {
+    @apply flex-1;
+  }
+
+  /* A swatch: the texture repeated at its real tile size and tinted, or the flat colour, with a soft sheen. */
+  [data-material-swatch] {
+    @apply block aspect-square w-full rounded-control shadow-[inset_0_0_0_1px_rgb(0_0_0/8%)];
+    background-color: var(--swatch-color, #ccc);
+    background-image: linear-gradient(135deg, rgb(255 255 255 / var(--swatch-shine, 0)) 0%, transparent 55%);
+  }
+
+  [data-material-swatch][data-material-swatch-textured] {
+    background-image:
+      linear-gradient(135deg, rgb(255 255 255 / var(--swatch-shine, 0)) 0%, transparent 55%),
+      var(--swatch-image);
+    background-size:
+      100% 100%,
+      var(--swatch-repeat, 100% 100%);
+    background-repeat: no-repeat, repeat;
+    background-blend-mode: normal, multiply;
+  }
+
+  [data-material-swatch][data-material-swatch-preview] {
+    @apply rounded-card;
+  }
+}

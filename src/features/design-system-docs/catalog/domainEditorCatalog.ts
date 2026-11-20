@@ -28,11 +28,11 @@ export const domainEditorDocs: readonly PropertyEditorDoc[] = [
     name: "MaterialPropEditor",
     category: "Property editors",
     purpose:
-      "A surface material (D19): texture, tint, Shininess, metallic, and placement as one nested schema form, with a preset menu (apply copies values; Save as preset).",
+      "A surface material (D19): texture, tint, Shininess, metallic, and placement as one nested schema form, with More…, the material chooser (search, categories, Used in this house, preview; Apply copies values; Save current as preset, rename or delete house presets).",
     importPath: "src/features/floor-builder/domain-editors/MaterialPropEditor",
     whenToUse: "Domain editor: lives in feature code and reads house data through DomainEditorDataContext.",
     commitBehavior:
-      "Each nested field commits the whole material as one command; choosing a preset copies its values.",
+      "Each nested field commits the whole material as one command; applying a material from the chooser copies its values.",
     schemaSnippet: JSON.stringify(domainEditorFixtures.material, null, 2),
     props: [
       {
