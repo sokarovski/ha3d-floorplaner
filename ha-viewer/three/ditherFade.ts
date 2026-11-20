@@ -10,7 +10,8 @@
 //   level when the nearest outline edge is on the camera's side (±70°, as the fade variant's near walls). A wall
 //   fragment on the outline itself counts as the wall, so a near wall's inner face fades too;
 // - anything else: the other rooms at the "dimmed" level.
-// Levels are the fraction of pixels kept (Bayer 4×4 ordered dither, stable while the camera rests).
+// Levels are the fraction of pixels kept (Bayer 4×4 ordered dither, stable while the camera rests); they are
+// uniforms, so a renderer's fade-strength setting changes them without a recompile.
 //
 // Pure: no three.js objects besides the uniform values, so `ditherLevel` (the same test on the CPU, for picking)
 // can be checked from a script.
@@ -18,8 +19,11 @@
 /** The most outline edges the shader takes; a room with more falls back to the fade variant. */
 export const maxDitherEdges = 48;
 
-/** Fraction of pixels kept for the other rooms and for the room's near walls (implementation conventions). */
-export const ditherLevels = { dimmed: 0.1, faded: 0.25 } as const;
+/** Fraction of pixels kept for the other rooms (`dimmed`) and for the room's near walls (`faded`). */
+export type DitherLevels = Readonly<{ dimmed: number; faded: number }>;
+
+/** The default levels (implementation conventions, as the transparent fade's opacities); a renderer may change them. */
+export const defaultDitherLevels: DitherLevels = { dimmed: 0.1, faded: 0.25 };
 
 export type GroundPoint = Readonly<{ x: number; z: number }>;
 
@@ -41,6 +45,7 @@ export const ditherLevel = (
   edges: readonly DitherEdge[],
   margin: number,
   wall: boolean,
+  levels: DitherLevels = defaultDitherLevels,
 ): number => {
   let inside = false;
   let best = Number.POSITIVE_INFINITY;
@@ -55,9 +60,9 @@ export const ditherLevel = (
     }
   }
   const inBand = best <= margin;
-  if (inBand && bestNear && (wall || !inside)) return ditherLevels.faded;
+  if (inBand && bestNear && (wall || !inside)) return levels.faded;
   if (inside || inBand) return 1;
-  return ditherLevels.dimmed;
+  return levels.dimmed;
 };
 
 /** Which edges face the camera: the edge's midpoint direction from the room centre within ±70° of the eye's. */
@@ -87,6 +92,7 @@ export const ditherGlsl = `
 uniform float hpDitherOn;
 uniform int hpDitherCount;
 uniform float hpDitherMargin;
+uniform vec2 hpDitherLevels;
 uniform vec4 hpDitherEdges[${String(maxDitherEdges)}];
 uniform vec4 hpDitherNear[${String(maxDitherEdges / 4)}];
 varying vec3 hpDitherWorld;
@@ -111,9 +117,9 @@ float hpDitherLevel(bool wall) {
     }
   }
   bool inBand = best <= hpDitherMargin;
-  if (inBand && bestNear > 0.5 && (wall || !inside)) return ${ditherLevels.faded.toFixed(3)};
+  if (inBand && bestNear > 0.5 && (wall || !inside)) return hpDitherLevels.y;
   if (inside || inBand) return 1.0;
-  return ${ditherLevels.dimmed.toFixed(3)};
+  return hpDitherLevels.x;
 }
 bool hpDitherAway(bool wall) {
   if (hpDitherOn < 0.5) return false;

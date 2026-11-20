@@ -122,6 +122,8 @@ export const FrontendManifest = Type.Object(
   strict,
 );
 export type FrontendManifestValue = Static<typeof FrontendManifest>;
+/** The most floor planners kept besides the default (implementation convention). */
+export const maxFloorPlanners = 16;
 export const Connection = Type.Object(
   {
     builderUrl: Type.Union([Type.String({ maxLength: 2048 }), Type.Null()]),
@@ -129,6 +131,11 @@ export const Connection = Type.Object(
     generation: RevisionNumber,
     /** How `builderUrl` was set: typed in House setup/recovery, or adopted from a Homeplan app's Supervisor discovery. Null while no URL is saved. */
     origin: Type.Union([Type.Literal("manual"), Type.Literal("discovered"), Type.Null()]),
+    /**
+     * Other floor planners (builders) besides the default `builderUrl`, normalised, never the default itself (Phase 21,
+     * Settings → Floor planners). Making one the default moves the previous default into this list.
+     */
+    servers: Type.Array(Type.String({ maxLength: 2048 }), { maxItems: maxFloorPlanners }),
   },
   strict,
 );
@@ -250,6 +257,7 @@ export const ConnectionPatch = Type.Object(
       {
         builderUrl: Type.Optional(Type.Union([Type.String({ maxLength: 2048 }), Type.Null()])),
         devMode: Type.Optional(Type.Boolean()),
+        servers: Type.Optional(Type.Array(Type.String({ maxLength: 2048 }), { maxItems: maxFloorPlanners })),
       },
       strict,
     ),

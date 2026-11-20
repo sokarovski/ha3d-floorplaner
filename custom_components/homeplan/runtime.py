@@ -22,7 +22,7 @@ from .artifacts import (
     read_manifest,
     verify,
 )
-from .const import MAX_MANIFEST
+from .const import MAX_FLOOR_PLANNERS, MAX_MANIFEST
 from .errors import HomeplanError
 from .source_client import SourceClient
 from .storage import EMPTY_BINDINGS, ConfigurationStore, migrate_seed
@@ -165,14 +165,29 @@ class HomeplanRuntime:
 
         def change(value: dict[str, object]) -> None:
             connection = record(value["connection"])
+            servers = [str(url) for url in list(connection.get("servers", []))]
+            if "servers" in patch:
+                servers = []
+                for raw in list(patch["servers"]):
+                    url = normalize_url(raw)
+                    if url is not None and url not in servers:
+                        servers.append(url)
             if "builderUrl" in patch:
                 url = normalize_url(patch["builderUrl"])
-                if url != connection["builderUrl"]:
+                previous = connection["builderUrl"]
+                if url != previous:
                     connection["builderUrl"] = url
                     connection["generation"] = integer(connection["generation"]) + 1
                     connection["origin"] = None if url is None else origin
+                    # Floor planners (Phase 21): the previous default stays in the list.
+                    if isinstance(previous, str) and previous not in servers:
+                        servers.insert(0, previous)
                 elif url is not None and origin == "discovered":
                     connection["origin"] = origin
+            # The default is never also listed; the list stays bounded.
+            connection["servers"] = [
+                url for url in servers if url != connection["builderUrl"]
+            ][:MAX_FLOOR_PLANNERS]
             if "devMode" in patch:
                 connection["devMode"] = patch["devMode"]
             if connection["devMode"] and connection["builderUrl"] is None:
@@ -224,6 +239,10 @@ class HomeplanRuntime:
                 outcome = "applied"
             else:
                 outcome = "manualKept"
+                # Floor planners (Phase 21): the found app is listed, so it can be made the default.
+                servers = [str(url) for url in list(connection.get("servers", []))]
+                if normalized not in servers:
+                    connection["servers"] = [normalized, *servers][:MAX_FLOOR_PLANNERS]
             value["connection"] = connection
 
         await self.configuration.mutate(change)

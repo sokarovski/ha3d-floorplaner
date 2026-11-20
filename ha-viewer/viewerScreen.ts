@@ -270,6 +270,8 @@ export class HomeplanViewerScreen extends LitElement {
         display: block;
         height: 100%;
         overflow: hidden;
+        /* The backdrop's glow and floor are sized in this box's units (cqw, cqh), so they keep their shape. */
+        container-type: size;
         --hp-stage-sky: #ffffff;
         --hp-stage-horizon: #dcdee2;
         --hp-stage-floor: #f4f5f7;
@@ -284,6 +286,10 @@ export class HomeplanViewerScreen extends LitElement {
        * half-ellipse floor rising from the bottom edge, lighter where the house stands. It is oversized so
        * the tilt parallax (--hp-backdrop-shift, set by the viewer) never shows its edges. The glow and the
        * floor follow the free area the house is framed in part of the way (--hp-orb-dx, --hp-orb-dy, 14.5).
+       * Sizes (Phase 21, owner: on a tall screen the glow looked like an egg): the backdrop is 116 % of the viewer, so
+       * the old 33 % × 19 % glow is 38.3cqw × 22cqh and the 67 % × 55 % floor 77.7cqw × 63.8cqh; their heights are capped
+       * at a share of their widths (11.5cqw, 47cqw), which only binds on screens taller than wide. A wide screen looks
+       * as before.
        */
       .backdrop {
         position: absolute;
@@ -291,12 +297,14 @@ export class HomeplanViewerScreen extends LitElement {
         transform: translateY(var(--hp-backdrop-shift, 0%));
         background:
           radial-gradient(
-            ellipse 33% 19% at calc(50% + var(--hp-orb-dx, 0px)) calc(64% + var(--hp-orb-dy, 0px)),
+            ellipse 38.3cqw min(22cqh, 11.5cqw) at calc(50% + var(--hp-orb-dx, 0px))
+              calc(64% + var(--hp-orb-dy, 0px)),
             var(--hp-stage-floor) 0%,
             transparent 100%
           ),
           radial-gradient(
-            ellipse 67% 55% at calc(50% + var(--hp-orb-dx, 0px)) calc(93% + var(--hp-orb-dy, 0px)),
+            ellipse 77.7cqw min(63.8cqh, 47cqw) at calc(50% + var(--hp-orb-dx, 0px))
+              calc(93% + var(--hp-orb-dy, 0px)),
             var(--hp-stage-floor) 0%,
             var(--hp-stage-horizon) 97%,
             transparent 100%
@@ -325,12 +333,14 @@ export class HomeplanViewerScreen extends LitElement {
         transform: translateY(var(--hp-backdrop-shift, 0%));
         background:
           radial-gradient(
-            ellipse 33% 19% at calc(50% + var(--hp-orb-dx, 0px)) calc(64% + var(--hp-orb-dy, 0px)),
+            ellipse 38.3cqw min(22cqh, 11.5cqw) at calc(50% + var(--hp-orb-dx, 0px))
+              calc(64% + var(--hp-orb-dy, 0px)),
             rgba(140, 152, 182, 0.22) 0%,
             transparent 100%
           ),
           radial-gradient(
-            ellipse 67% 55% at calc(50% + var(--hp-orb-dx, 0px)) calc(93% + var(--hp-orb-dy, 0px)),
+            ellipse 77.7cqw min(63.8cqh, 47cqw) at calc(50% + var(--hp-orb-dx, 0px))
+              calc(93% + var(--hp-orb-dy, 0px)),
             #3f4555 0%,
             #232835 70%,
             #0b0e16 97%,
@@ -340,6 +350,13 @@ export class HomeplanViewerScreen extends LitElement {
       :host([data-night]) .night-sky,
       :host([data-night]) .night-floor {
         opacity: 1;
+      }
+      /* A renderer with a plain backdrop (21.11): the sky alone, no glow or floor, by day and at night. */
+      :host([data-plain-backdrop]) .backdrop {
+        background: linear-gradient(var(--hp-stage-sky) 0%, var(--hp-stage-horizon) 100%);
+      }
+      :host([data-plain-backdrop]) .night-floor {
+        display: none;
       }
       canvas {
         position: absolute;
@@ -753,6 +770,7 @@ export class HomeplanViewerScreen extends LitElement {
         }, 1000);
       }
       viewer.setEditMode(this.editing);
+      this.toggleAttribute("data-plain-backdrop", viewer.backdrop() === "plain");
       this.viewer = viewer;
       // The overlay gets the viewer as its projector on the next render.
       this.requestUpdate();

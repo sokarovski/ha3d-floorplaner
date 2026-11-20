@@ -100,8 +100,8 @@ import type { Stage } from "./stage";
 import { computeAreaFloorGeometry } from "@shared/geometry/areaGeometry";
 import { strongerFade } from "../../src/renderer/surfaceMaterialKey";
 import { createRoomCutaway } from "./roomCutaway";
-import { viewerLimits } from "./prototypeFlags";
-import type { ViewerLimits } from "./prototypeFlags";
+import { deviceRenderer } from "./renderers";
+import type { Backdrop, ViewerRenderer } from "./renderers";
 import type { RoomCutaway } from "./roomCutaway";
 import { chooseView, floorSamples } from "./roomFocus";
 import type { OrbitView } from "./roomFocus";
@@ -138,13 +138,6 @@ type StatedInstance = Readonly<{
 type StatedCache<T> = Map<string, { source: T; key: string; value: T }>;
 
 const stageRadiusM = 40;
-/**
- * The glass reflection under the house, off by default since Phase 21 (owner, 2026-11-20: optimise rendering; it is
- * kept as a viewer property, `setReflection`, to enable when wanted). Measured on the demo Family house's ground
- * floor (desktop Chrome, pixel ratio 2): a frame 11.5 ms with it against about 4 ms without (90th percentile 29.8 ms
- * against 5.5–10 ms), since it draws the house a second time, with every lamp, behind a half-size target.
- */
-const defaultReflection = false;
 /** The view is shifted so the house sits on the backdrop glow in the lower third (fraction of height). */
 const viewShiftDown = 0.05;
 const fovDeg = 35;
@@ -557,8 +550,13 @@ export class HouseViewer {
   private outline: readonly FramePoint[] = [];
   /** Room cutaway while a room is open (Phase 8.2a). */
   private readonly cutaway: RoomCutaway;
-  /** Phase 21 prototype limits (prototypeFlags.ts), read once. */
-  private readonly limits: ViewerLimits = viewerLimits();
+  /**
+   * This device's renderer (Phase 21.11, renderers.ts), read once: the frame draw, the room fade, limits, reflection,
+   * backdrop and the floors during a ride. The glass reflection is off in every built-in renderer (owner,
+   * 2026-11-20: a frame took 11.5 ms with it against about 4 ms without, on the demo Family house's ground floor,
+   * desktop); `setReflection` still turns it on.
+   */
+  private readonly rendering: ViewerRenderer = deviceRenderer();
   /** Dev readout (Phase 21.1): the slowest render since the readout last asked (ms). */
   private worstRenderMs = 0;
   /** Room hit volumes of the shown floor (Phase 8.1). */
@@ -648,7 +646,7 @@ export class HouseViewer {
     this.renderer.shadowMap.type = PCFShadowMap;
     // Static shadow maps (Phase 7.10): redrawn only when the content or a light changes, never for camera moves.
     this.renderer.shadowMap.autoUpdate = false;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.limits.pixelRatioCap));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.rendering.limits().pixelRatioCap));
     canvas.addEventListener("webglcontextlost", this.handleContextLost);
     canvas.addEventListener("webglcontextrestored", this.handleContextRestored);
 
@@ -742,14 +740,14 @@ export class HouseViewer {
     this.lights = createLightsLayer(
       this.helperMaterials,
       this.floorShadowBudget(),
-      this.limits.pointShadowSize,
+      this.rendering.limits().pointShadowSize,
     );
     this.lights.setPinsVisible(false);
     this.effects = createEffectsLayer(() => {
       this.requestRender();
     });
     this.camera.layers.enable(effectsLayer);
-    this.stage.setReflectionVisible(defaultReflection);
+    this.stage.setReflectionVisible(this.rendering.reflection());
     // Objects hidden for the reflection pass come back as they were (a hidden one stays hidden).
     let reflectionHidden: Object3D[] = [];
     this.stage.setReflectionFilter((visible) => {
@@ -777,6 +775,8 @@ export class HouseViewer {
       },
       invalidate,
     });
+    this.cutaway.setMode(this.rendering.roomFade());
+    this.cutaway.setDitherLevels(this.rendering.ditherLevels());
     this.sweeps = createIntrusionSweeps({
       planRoot: this.planRoot,
       get floorScene(): FloorScene {
@@ -931,7 +931,9 @@ export class HouseViewer {
         [this.lastFloorId, ground?.id].filter((id): id is string => id !== null && id !== undefined),
       );
     } else exterior.setLoadOrder([floorId]);
-    exterior.setFocus(floorId === null ? null : { floorId, withBelow: riding });
+    exterior.setFocus(
+      floorId === null ? null : { floorId, withBelow: riding && this.rendering.floorsBelowDuringRide() },
+    );
     exterior.sync(house, openingSizeFromParameters);
   }
 
@@ -1179,6 +1181,11 @@ export class HouseViewer {
    * The glass reflection under the house on or off (Phase 21: off by default). Off, its pass is never drawn, so its
    * half-size target is never allocated on the GPU.
    */
+  /** The stage this device's renderer draws behind the house (the screen draws it, 21.11). */
+  backdrop(): Backdrop {
+    return this.rendering.backdrop();
+  }
+
   setReflection(enabled: boolean): void {
     this.stage.setReflectionVisible(enabled);
     this.requestRender();
@@ -2413,7 +2420,8 @@ export class HouseViewer {
   /** A floor's shadow lamps: the GPU's budget, or the prototype's low limit (21.6). */
   private floorShadowBudget(): number {
     const budget = shadowBudget(this.renderer.capabilities.maxTextures);
-    return this.limits.floorShadowLamps === null ? budget : Math.min(budget, this.limits.floorShadowLamps);
+    const lamps = this.rendering.limits().floorShadowLamps;
+    return lamps === null ? budget : Math.min(budget, lamps);
   }
 
   /**
@@ -2438,7 +2446,9 @@ export class HouseViewer {
       info.programs?.length ?? 0,
     )} · calls ${String(info.render.calls)} · dpr ${String(this.renderer.getPixelRatio())} ${String(
       canvas.width,
-    )}×${String(canvas.height)} · shadows ~${String(Math.round(shadowMb))} MB · worst ${worst.toFixed(0)} ms`;
+    )}×${String(canvas.height)} · shadows ~${String(Math.round(shadowMb))} MB · worst ${worst.toFixed(0)} ms · ${
+      this.rendering.id
+    }`;
   }
 
   /** One frame: the animations have stepped; uploads, shadows, and the render follow. */
@@ -2480,11 +2490,11 @@ export class HouseViewer {
     const ride = this.ride;
     const progress = this.slideProgress;
     if (ride === null || progress === null) {
-      this.renderer.render(this.scene, this.camera);
+      this.rendering.draw({ renderer: this.renderer, scene: this.scene, camera: this.camera });
       return;
     }
     const resting = this.placeSlideCamera(ride, progress);
-    this.renderer.render(this.scene, this.camera);
+    this.rendering.draw({ renderer: this.renderer, scene: this.scene, camera: this.camera });
     this.restoreCamera(resting);
   }
 

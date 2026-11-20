@@ -23,6 +23,7 @@ import {
   MeshLambertMaterial,
   MeshPhongMaterial,
   MeshStandardMaterial,
+  Vector2,
   Vector3,
   Vector4,
 } from "three";
@@ -33,7 +34,15 @@ import type { FadeLevel } from "../../src/renderer/surfaceMaterialKey";
 import type { Funnel, FunnelParams } from "./cutawayFunnel";
 import { cutAmount, defaultFunnelParams, funnelFor, funnelGlsl } from "./cutawayFunnel";
 import type { DitherEdge, GroundPoint } from "./ditherFade";
-import { distanceToSegment, ditherGlsl, ditherLevel, maxDitherEdges, nearEdges } from "./ditherFade";
+import {
+  defaultDitherLevels,
+  distanceToSegment,
+  ditherGlsl,
+  ditherLevel,
+  maxDitherEdges,
+  nearEdges,
+} from "./ditherFade";
+import type { DitherLevels } from "./ditherFade";
 
 export type CutawayMode = "fade" | "dome" | "dither" | "off";
 
@@ -51,6 +60,8 @@ export type CutawayContext = Readonly<{
 export type RoomCutaway = Readonly<{
   mode: () => CutawayMode;
   setMode: (mode: CutawayMode) => void;
+  /** C: how much of the other rooms and of the room's near walls stays drawn (a renderer setting, 21.11). */
+  setDitherLevels: (levels: DitherLevels) => void;
   /** Applies the cutaway around a room, or (null) restores the whole house. */
   focus: (areaId: string | null) => void;
   /** Every frame before rendering: follows the camera (near walls in A, the ring's reach in B). */
@@ -134,11 +145,13 @@ export const createRoomCutaway = (
   const patched = new WeakMap<Material, Role>();
   const ditherPatched = new WeakMap<Material, Role>();
   let ditherEdges: readonly DitherEdge[] = [];
+  let ditherLevelsNow: DitherLevels = defaultDitherLevels;
   let ditherNearKey = "";
   const ditherUniforms = {
     hpDitherOn: { value: 0 },
     hpDitherCount: { value: 0 },
     hpDitherMargin: { value: 0 },
+    hpDitherLevels: { value: new Vector2(defaultDitherLevels.dimmed, defaultDitherLevels.faded) },
     hpDitherEdges: { value: Array.from({ length: maxDitherEdges }, () => new Vector4()) },
     hpDitherNear: { value: Array.from({ length: maxDitherEdges / 4 }, () => new Vector4()) },
   };
@@ -410,6 +423,11 @@ export const createRoomCutaway = (
   return {
     cutUniforms: uniforms,
     mode: () => mode,
+    setDitherLevels: (next) => {
+      ditherLevelsNow = next;
+      ditherUniforms.hpDitherLevels.value.set(next.dimmed, next.faded);
+      context.invalidate();
+    },
     setMode: (next) => {
       if (next === mode) return;
       mode = next;
@@ -447,7 +465,15 @@ export const createRoomCutaway = (
       if (room === null) return false;
       if (mode === "dither" && room.dither !== null) {
         const wall = wallMeshes().has(hit.object);
-        return ditherLevel({ x: hit.point.x, z: hit.point.z }, ditherEdges, room.dither.margin, wall) < 0.5;
+        return (
+          ditherLevel(
+            { x: hit.point.x, z: hit.point.z },
+            ditherEdges,
+            room.dither.margin,
+            wall,
+            ditherLevelsNow,
+          ) < 0.5
+        );
       }
       if (mode === "fade" || mode === "dither") {
         const material = hitMaterial(hit);

@@ -111,6 +111,7 @@ async def pure_checks() -> None:
                 "devMode": False,
                 "generation": 1,
                 "origin": "manual",
+                "servers": [],
             }
         ),
         0,
@@ -944,10 +945,11 @@ async def discovery_checks() -> None:
                 "devMode": devmode,
                 "generation": 3,
                 "origin": origin,
+                "servers": [],
             }
             and snapshot["revision"] == 7
             and record(snapshot["viewer"])["houseId"] == "h_kept1",
-            f"stored connection without origin upgrades in place to {origin} (URL, DEV MODE, house kept)",
+            f"stored connection without origin upgrades in place to {origin} (URL, DEV MODE, house kept; no floor planners)",
         )
     probes = 0
     compatible = True
@@ -1109,6 +1111,7 @@ async def discovery_checks() -> None:
                             record(value["connection"])["generation"]
                         ),
                         "origin": None,
+                        "servers": [],
                     }
                     value["viewer"] = {"houseId": "h_kept1", "testEntityId": None}
                     value["bindings"] = {"h_kept1": copy.deepcopy(EMPTY_BINDINGS)}
@@ -1152,10 +1155,19 @@ async def discovery_checks() -> None:
                 check(
                     result["type"] == FlowResultType.ABORT
                     and result["reason"] == "manual_source_kept"
-                    and record(kept["connection"]) == manual
+                    and {
+                        key: item
+                        for key, item in record(kept["connection"]).items()
+                        if key != "servers"
+                    }
+                    == {key: item for key, item in manual.items() if key != "servers"}
                     and probes == probes_before
                     and app.discovery_offer() == app_url,
                     "discovery (c): a manual URL and DEV MODE are kept; the app becomes an offer",
+                )
+                check(
+                    record(kept["connection"])["servers"] == [app_url],
+                    "floor planners: the found app is listed beside a kept manual URL",
                 )
                 options = await hass.config_entries.options.async_init(
                     entries[0].entry_id
@@ -1185,12 +1197,73 @@ async def discovery_checks() -> None:
                     and switched["generation"] == integer(manual["generation"]) + 1,
                     "using the offered app switches the one URL to discovered and turns DEV MODE off",
                 )
+                check(
+                    switched["servers"] == ["http://laptop.local:5173/"],
+                    "floor planners: the previous default stays listed; the new default is not listed twice",
+                )
                 diagnostics = await async_get_config_entry_diagnostics(hass, entries[0])
                 check(
                     diagnostics["connectionOrigin"] == "discovered"
                     and app_url not in json.dumps(diagnostics),
                     "diagnostics show the source origin without its address",
                 )
+                # Floor planners (Phase 21): the list is normalised, de-duplicated, never holds the default,
+                # and making one the default moves the previous default into it without other changes.
+                listed = await app.connection_patch(
+                    {
+                        "expectedRevision": integer(
+                            app.configuration.snapshot()["revision"]
+                        ),
+                        "patch": {
+                            "servers": [
+                                "http://laptop.local:5173",
+                                "http://laptop.local:5173/",
+                                app_url,
+                                "http://office.local:5173/",
+                            ]
+                        },
+                    }
+                )
+                planners = record(listed["connection"])
+                check(
+                    planners["servers"]
+                    == ["http://laptop.local:5173/", "http://office.local:5173/"]
+                    and planners["builderUrl"] == app_url
+                    and planners["generation"] == switched["generation"],
+                    "floor planners: a list edit normalises, drops duplicates and the default, keeps the source",
+                )
+                promoted = record(
+                    (
+                        await app.connection_patch(
+                            {
+                                "expectedRevision": integer(
+                                    app.configuration.snapshot()["revision"]
+                                ),
+                                "patch": {"builderUrl": "http://office.local:5173/"},
+                            }
+                        )
+                    )["connection"]
+                )
+                check(
+                    promoted["builderUrl"] == "http://office.local:5173/"
+                    and promoted["servers"] == [app_url, "http://laptop.local:5173/"]
+                    and promoted["origin"] == "manual"
+                    and promoted["generation"] == integer(planners["generation"]) + 1,
+                    "floor planners: making one the default lists the previous default first",
+                )
+                try:
+                    await app.connection_patch(
+                        {
+                            "expectedRevision": integer(
+                                app.configuration.snapshot()["revision"]
+                            ),
+                            "patch": {"servers": ["ftp://nope/"]},
+                        }
+                    )
+                    rejected = False
+                except HomeplanError:
+                    rejected = True
+                check(rejected, "floor planners: an invalid address is refused")
                 await async_unload_entry(hass, entries[0])
             finally:
                 await hass.async_stop()

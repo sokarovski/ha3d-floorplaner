@@ -27,6 +27,8 @@ import type {
   RoomProposal,
   SuggestionContext,
 } from "@shared/domain/homeAssistant/suggestions";
+import { settingsPageTitle } from "./connectionSettings";
+import type { SettingsPage } from "./connectionSettings";
 import type { ClickableFields } from "./bindingFields";
 import { kindLabels } from "./bindingTargets";
 import type { BindingTarget, TargetKind } from "./bindingTargets";
@@ -90,6 +92,13 @@ export type SettingsFloor = Readonly<{ id: string; name: string }>;
 
 const icon = (path: string): TemplateResult =>
   html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d=${path}></path></svg>`;
+
+/** The footer pages' subtitles (Phase 21). */
+const pageSubtitles: Readonly<Record<SettingsPage, string>> = {
+  floorPlanners: "The Floor Builders this Home Assistant connects to; the default one is used.",
+  houses: "Choose the house the viewer shows, from Home Assistant's copies or the default floor planner.",
+  panels: "The viewer code that runs: shipped with the integration, or downloaded from a floor planner.",
+};
 
 const emptyDashboard = (): HaDashboardValue => ({
   urlPath: null,
@@ -519,8 +528,12 @@ export class HomeplanBindingEditor extends LitElement {
         border-top: 1px solid var(--hp-divider);
       }
       footer .message {
-        margin-right: auto;
         padding: 0;
+      }
+      /* Floor planners, Houses, Panels (Phase 21): icon buttons at the bottom left. */
+      footer .pages {
+        margin-right: auto;
+        display: flex;
       }
     `,
   ];
@@ -554,6 +567,8 @@ export class HomeplanBindingEditor extends LitElement {
   /** On a narrow screen only one pane shows: the list, or the editor with Back. */
   private narrow = false;
   private pane: "tree" | "editor" = "tree";
+  /** A connection page opened from the footer (Phase 21: Floor planners, Houses, Panels), else null. */
+  private page: SettingsPage | null = null;
   private resizeObserver: ResizeObserver | null = null;
   /** The selected row is scrolled into view after the next render (opened by a tap in Edit mode). */
   private revealPending = false;
@@ -749,6 +764,7 @@ export class HomeplanBindingEditor extends LitElement {
         ? undefined
         : this.targets.find((item) => item.kind === target.kind && item.id === target.id);
     this.selection = found === undefined ? houseSelection : { kind: found.kind, id: found.id };
+    this.page = null;
     this.pane = target === null ? "tree" : "editor";
     if (found !== undefined && reveal) {
       const keys = revealKeys(found);
@@ -763,12 +779,14 @@ export class HomeplanBindingEditor extends LitElement {
 
   private selectHouse(): void {
     this.selection = houseSelection;
+    this.page = null;
     this.pane = "editor";
     this.requestUpdate();
   }
 
   private selectFloor(): void {
     this.selection = floorSelection;
+    this.page = null;
     this.pane = "editor";
     this.requestUpdate();
   }
@@ -1086,6 +1104,7 @@ export class HomeplanBindingEditor extends LitElement {
 
   private open(target: BindingTarget): void {
     this.selection = { kind: target.kind, id: target.id };
+    this.page = null;
     this.pane = "editor";
     this.requestUpdate();
   }
@@ -1128,9 +1147,7 @@ export class HomeplanBindingEditor extends LitElement {
       <span class="link">${icon(homeIcon)}</span>
       <span class="names">
         <span class="name">House</span>
-        <span class="area"
-          >${this.integrationClient === undefined ? "Dashboard" : "House setup, dashboard"}</span
-        >
+        <span class="area">${this.houseId === null ? "Houses" : "Room cards, main view, navigation"}</span>
       </span>
     </button>`;
   }
@@ -1430,10 +1447,14 @@ export class HomeplanBindingEditor extends LitElement {
     `;
   }
 
-  /** Room cards and Navigation first, House setup last (15.12). */
-  private renderHouse(): TemplateResult {
+  /**
+   * The house's own settings (Room cards, Main view, Navigation). The builder connection lives on the footer's pages
+   * (Phase 21); before any house is shown, the House node shows the Houses page.
+   */
+  private renderHouse(): TemplateResult | typeof nothing {
+    if (this.houseId === null) return this.renderConnectionPage("houses");
     return html`${
-      this.houseId === null || this.draft === null
+      this.draft === null
         ? nothing
         : html`<homeplan-house-settings
             .store=${this.store}
@@ -1445,16 +1466,45 @@ export class HomeplanBindingEditor extends LitElement {
               this.setDashboard(event.detail);
             }}
           ></homeplan-house-settings>`
-    }
-    ${
-      this.integrationClient === undefined
-        ? nothing
-        : html`<homeplan-connection-settings
-            .client=${this.integrationClient}
-            .selectedId=${this.houseId}
-            .guard=${() => this.saveBeforeSwitch()}
-          ></homeplan-connection-settings>`
     }`;
+  }
+
+  /** A connection page (Floor planners, Houses, Panels; Phase 21) with the shown house and the save guard. */
+  private renderConnectionPage(page: SettingsPage): TemplateResult | typeof nothing {
+    return this.integrationClient === undefined
+      ? nothing
+      : html`<homeplan-connection-settings
+          .client=${this.integrationClient}
+          .view=${page}
+          .selectedId=${this.houseId}
+          .guard=${() => this.saveBeforeSwitch()}
+          @settings-page=${(event: CustomEvent<SettingsPage>) => {
+            this.openPage(event.detail);
+          }}
+        ></homeplan-connection-settings>`;
+  }
+
+  private openPage(page: SettingsPage): void {
+    this.page = page;
+    this.pane = "editor";
+    this.requestUpdate();
+  }
+
+  /** On a narrow screen the editor covers the list: a back button returns to it. */
+  private renderBack(): TemplateResult | typeof nothing {
+    return this.narrow
+      ? html`<button
+          class="icon-button"
+          title="Back to the list"
+          aria-label="Back to the list"
+          @click=${() => {
+            this.pane = "tree";
+            this.requestUpdate();
+          }}
+        >
+          ${icon(backIcon)}
+        </button>`
+      : nothing;
   }
 
   private selectedTarget(): BindingTarget | undefined {
@@ -1504,6 +1554,18 @@ export class HomeplanBindingEditor extends LitElement {
   }
 
   private renderEditor(): TemplateResult {
+    const page = this.page;
+    if (page !== null)
+      return html`
+        <div class="editor-head">
+          ${this.renderBack()}
+          <span class="titles">
+            <h2>${settingsPageTitle(page)}</h2>
+            <span class="subtitle">${pageSubtitles[page]}</span>
+          </span>
+        </div>
+        ${this.renderConnectionPage(page)}
+      `;
     const target = this.selectedTarget();
     const floor = this.selection.kind === "floor" ? this.floor : null;
     const title = target?.name ?? floor?.name ?? "House";
@@ -1515,21 +1577,7 @@ export class HomeplanBindingEditor extends LitElement {
           : `${kindLabels[target.kind]}${target.areaName === "" ? "" : ` in ${target.areaName}`}`;
     return html`
       <div class="editor-head">
-        ${
-          this.narrow
-            ? html`<button
-                class="icon-button"
-                title="Back to the list"
-                aria-label="Back to the list"
-                @click=${() => {
-                  this.pane = "tree";
-                  this.requestUpdate();
-                }}
-              >
-                ${icon(backIcon)}
-              </button>`
-            : nothing
-        }
+        ${this.renderBack()}
         <span class="titles">
           <h2>${title}</h2>
           <span class="subtitle">${subtitle}</span>
@@ -1735,6 +1783,20 @@ export class HomeplanBindingEditor extends LitElement {
           <section class="editor-pane">${this.renderEditor()}</section>
         </div>
         <footer>
+          <span class="pages">
+            ${
+              this.integrationClient === undefined
+                ? nothing
+                : html`<homeplan-connection-settings
+                    .client=${this.integrationClient}
+                    .view=${"footer"}
+                    .activePage=${this.page}
+                    @settings-page=${(event: CustomEvent<SettingsPage>) => {
+                      this.openPage(event.detail);
+                    }}
+                  ></homeplan-connection-settings>`
+            }
+          </span>
           ${this.error === null ? nothing : html`<span class="message" data-error>${this.error}</span>`}
           <button
             class="text-button"

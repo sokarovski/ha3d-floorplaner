@@ -1,6 +1,7 @@
 // Dev-only fake Home Assistant for harness.html: sets panel, narrow, and a new hass object per change,
 // keeping unchanged entity objects identical like HA does.
 import "./main";
+import { deviceRenderer, rendererList, saveDeviceRenderer } from "./three/renderers";
 import { createId } from "@shared/domain/ids";
 import type { HaHouseBubblesValue } from "@shared/domain/schemas/homeAssistant";
 import { createFakeHome } from "./fakeHome";
@@ -188,29 +189,14 @@ document.querySelector("#bubbles")?.addEventListener("click", () => {
   });
 });
 
-// Phase 21 prototype switch (three/prototypeFlags.ts): the button flips its localStorage key and reloads.
-const protoSwitch = (
-  selector: string,
-  key: string,
-  label: string,
-  values: readonly [string, string],
-): void => {
-  const button = document.querySelector(selector);
-  if (button === null) return;
-  let current = values[0];
-  try {
-    current = window.localStorage.getItem(key) === values[1] ? values[1] : values[0];
-  } catch {
-    // Storage blocked: the switch shows the default and cannot change.
-  }
-  button.textContent = `${label}: ${current} (switch)`;
-  button.addEventListener("click", () => {
-    try {
-      window.localStorage.setItem(key, current === values[0] ? values[1] : values[0]);
-    } catch {
-      return;
-    }
-    window.location.reload();
+// The renderer this browser uses (Phase 21.11, three/renderers.ts): the button cycles through them and reloads.
+const rendererButton = document.querySelector("#renderer");
+if (rendererButton !== null) {
+  const current = deviceRenderer();
+  rendererButton.textContent = `Renderer: ${current.label} (next)`;
+  rendererButton.addEventListener("click", () => {
+    const index = rendererList.findIndex((entry) => entry.id === current.id);
+    const next = rendererList[(index + 1) % rendererList.length];
+    if (next !== undefined && saveDeviceRenderer(next.id, {})) window.location.reload();
   });
-};
-protoSwitch("#proto-limits", "homeplan.proto.limits", "Limits", ["standard", "low"]);
+}

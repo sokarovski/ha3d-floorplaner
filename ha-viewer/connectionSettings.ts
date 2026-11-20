@@ -13,6 +13,18 @@ import type { MemoryState } from "./connectionMemory";
 import { fieldStyles } from "./formHelpers";
 import type { IntegrationClient } from "./integrationClient";
 import { tokens } from "./styles/tokens";
+import { availableRenderers, deviceRenderer, saveDeviceRenderer } from "./three/renderers";
+import type { ViewerRenderer } from "./three/renderers";
+
+/**
+ * The Settings pages for the builder connection (Phase 21, owner 2026-11-20): Floor planners (the builders this
+ * Home Assistant knows, one the default), Houses (local copies and the default floor planner's houses) and Panels
+ * (the viewer that runs: shipped, downloaded, or offered by the floor planner). `footer` is the row of icon
+ * buttons at the bottom left of Settings: it connects to the default floor planner in the background when
+ * Settings opens and opens a page with a `settings-page` event.
+ */
+export type SettingsPage = "floorPlanners" | "houses" | "panels";
+export type ConnectionView = "footer" | SettingsPage;
 
 /** What Connect last found, kept for this browser session (15.12). */
 type RememberedConnection = Readonly<{
@@ -23,13 +35,46 @@ type RememberedConnection = Readonly<{
   statuses: readonly (readonly [string, SourceStatusValue | string])[];
 }>;
 
+type FrontendState = Readonly<{
+  shipped: FrontendManifestValue;
+  active: FrontendManifestValue | null;
+  previous: FrontendManifestValue | null;
+}>;
+
 const remembered = createConnectionMemory<IntegrationClient, RememberedConnection>(() => Date.now());
+
+/** Every view of the connection on screen hears when another one changed it (a connect, a saved list). */
+const changes = new EventTarget();
+const announce = (): void => {
+  changes.dispatchEvent(new Event("change"));
+};
+
+/** mdi:server (Floor planners) */
+const serverIcon =
+  "M4,1H20A1,1 0 0,1 21,2V6A1,1 0 0,1 20,7H4A1,1 0 0,1 3,6V2A1,1 0 0,1 4,1M4,9H20A1,1 0 0,1 21,10V14A1,1 0 0,1 20,15H4A1,1 0 0,1 3,14V10A1,1 0 0,1 4,9M4,17H20A1,1 0 0,1 21,18V22A1,1 0 0,1 20,23H4A1,1 0 0,1 3,22V18A1,1 0 0,1 4,17M9,5H10V3H9V5M9,13H10V11H9V13M9,21H10V19H9V21M5,3V5H7V3H5M5,11V13H7V11H5M5,19V21H7V19H5Z";
+/** mdi:home-city (Houses) */
+const housesIcon =
+  "M0,21V10L7.5,5L15,10V21H10V14H5V21H0M24,2V21H17V8.93L16,8.27V6H14V6.93L10,4.27V2H24M21,14H19V16H21V14M21,10H19V12H21V10M21,6H19V8H21V6Z";
+/** mdi:monitor (Panels) */
+const panelsIcon =
+  "M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z";
+
+const icon = (path: string): TemplateResult =>
+  html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d=${path}></path></svg>`;
+
+const pageTitles: Readonly<Record<SettingsPage, string>> = {
+  floorPlanners: "Floor planners",
+  houses: "Houses",
+  panels: "Panels",
+};
 
 export class HomeplanConnectionSettings extends LitElement {
   static override properties: PropertyDeclarations = {
     client: { attribute: false },
     selectedId: { attribute: false },
     guard: { attribute: false },
+    view: { attribute: false },
+    activePage: { attribute: false },
   };
   static override styles = [
     tokens,
@@ -39,6 +84,10 @@ export class HomeplanConnectionSettings extends LitElement {
         display: grid;
         gap: 20px;
         min-width: 0;
+      }
+      :host([data-view="footer"]) {
+        display: flex;
+        gap: 4px;
       }
       section {
         display: grid;
@@ -66,20 +115,21 @@ export class HomeplanConnectionSettings extends LitElement {
         align-items: center;
         gap: 8px;
       }
-      .houses {
+      .list {
         display: grid;
         border-top: 1px solid var(--hp-divider);
       }
-      .house {
+      .row {
         display: grid;
         gap: 4px;
         padding: 12px 0;
         border-bottom: 1px solid var(--hp-divider);
       }
-      .house-name {
+      .row-name {
         font-weight: 500;
+        overflow-wrap: anywhere;
       }
-      .house[data-selected] .house-name {
+      .row[data-selected] .row-name {
         color: var(--hp-accent);
       }
       .status {
@@ -88,16 +138,65 @@ export class HomeplanConnectionSettings extends LitElement {
       .status:empty {
         display: none;
       }
-      .text-button:disabled {
+      .text-button:disabled,
+      .page:disabled {
         opacity: 0.4;
         cursor: default;
+      }
+      a.text-button {
+        text-decoration: none;
+      }
+      .page {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--hp-muted);
+        cursor: pointer;
+      }
+      .page[data-active] {
+        color: var(--hp-accent);
+        background: var(--hp-hover, rgba(127, 127, 127, 0.12));
+      }
+      .page svg {
+        width: 22px;
+        height: 22px;
+        fill: currentColor;
+      }
+      .page .dot {
+        position: absolute;
+        right: 7px;
+        bottom: 7px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        border: 2px solid var(--hp-surface, #fff);
+        background: var(--hp-muted);
+      }
+      .page .dot[data-state="connected"] {
+        background: var(--success-color, #43a047);
+      }
+      .page .dot[data-state="failed"] {
+        background: var(--warning-color, #ffa600);
       }
     `,
   ];
   declare client: IntegrationClient | undefined;
   declare selectedId: string | null;
   declare guard: (() => Promise<boolean>) | undefined;
-  private connection: ConnectionValue = { builderUrl: null, devMode: false, generation: 0, origin: null };
+  declare view: ConnectionView;
+  declare activePage: SettingsPage | null;
+  private connection: ConnectionValue = {
+    builderUrl: null,
+    devMode: false,
+    generation: 0,
+    origin: null,
+    servers: [],
+  };
   private urlDraft = "";
   private remoteHouses: readonly HouseCardValue[] = [];
   private localHouses: readonly HouseCardValue[] = [];
@@ -106,7 +205,7 @@ export class HomeplanConnectionSettings extends LitElement {
   private offer: FrontendManifestValue | null = null;
   /** With no URL yet: this browser's computer as the builder (its IP as HA sees it, the builder's dev port). */
   private proposal: string | null = null;
-  private localFrontend: FrontendManifestValue | null = null;
+  private frontend: FrontendState | null = null;
   private busy = false;
   private error: string | null = null;
   private message = "";
@@ -117,21 +216,49 @@ export class HomeplanConnectionSettings extends LitElement {
   /** Whether the shown houses come from memory, and how current they are (15.12). */
   private memoryState: MemoryState | null = null;
   private refreshing = false;
+  /** This device's renderer choice being edited on the Panels page (21.11), applied with a reload. */
+  private renderers: readonly ViewerRenderer[] = [];
+  private rendererId = "";
+  private rendererSettings: Record<string, number> = {};
+  private readonly onChange = (): void => {
+    void this.perform(() => this.refresh(), false);
+  };
+
+  constructor() {
+    super();
+    this.selectedId = null;
+    this.view = "houses";
+    this.activePage = null;
+  }
 
   override connectedCallback(): void {
     super.connectedCallback();
     this.alive = true;
+    if (this.view === "panels") {
+      this.renderers = availableRenderers();
+      const current = deviceRenderer();
+      this.rendererId = current.id;
+      this.rendererSettings = { ...current.currentSettings() };
+    }
+    changes.addEventListener("change", this.onChange);
     void this.initialize();
   }
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.alive = false;
+    changes.removeEventListener("change", this.onChange);
+  }
+  protected override willUpdate(): void {
+    this.dataset.view = this.view;
   }
   /** Shows the remembered result at once; a result for another URL or source generation is dropped. */
   private applyRemembered(): void {
     const client = this.client;
     const view = client === undefined ? undefined : remembered.view(client);
-    if (client === undefined || view === undefined) return;
+    if (client === undefined || view === undefined) {
+      this.memoryState = null;
+      return;
+    }
     const { value } = view;
     if (value.builderUrl !== this.connection.builderUrl || value.generation !== this.connection.generation) {
       remembered.forget(client);
@@ -154,11 +281,14 @@ export class HomeplanConnectionSettings extends LitElement {
     });
     this.memoryState = "connected";
   }
-  /** Every opening: refresh the remembered connection without blocking (not when no URL is saved). */
+  /**
+   * When Settings opens (the footer view): connect to the default floor planner without blocking, the first time
+   * too, and again on every opening after a success (15.12); not when no floor planner is saved.
+   */
   private async backgroundRefresh(): Promise<void> {
     const client = this.client;
     if (client === undefined || this.connection.builderUrl === null || this.busy || this.refreshing) return;
-    if (!remembered.autoRefresh(client)) return;
+    if (remembered.view(client) !== undefined && !remembered.autoRefresh(client)) return;
     this.refreshing = true;
     this.requestUpdate();
     try {
@@ -169,9 +299,11 @@ export class HomeplanConnectionSettings extends LitElement {
       this.offer = result.frontendOffer;
       await this.checkSources();
       this.remember();
+      announce();
     } catch {
       remembered.markFailed(client);
-      if (this.memoryState !== null) this.memoryState = "notRefreshed";
+      this.memoryState = remembered.view(client)?.state ?? "notRefreshed";
+      announce();
     } finally {
       this.refreshing = false;
       this.requestUpdate();
@@ -180,15 +312,15 @@ export class HomeplanConnectionSettings extends LitElement {
   private async initialize(): Promise<void> {
     await this.perform(async () => {
       await this.refresh();
+      if (this.view === "footer") return;
       const jobs = await this.client?.jobs();
       const active = jobs?.jobs.find((job) => job.status === "pending" || job.status === "running");
       if (active !== undefined) {
         await this.track(active);
         await this.changed(active.houseId);
       }
-      this.applyRemembered();
     });
-    void this.backgroundRefresh();
+    if (this.view === "footer") void this.backgroundRefresh();
   }
   private async refresh(): Promise<void> {
     if (this.client === undefined) return;
@@ -197,14 +329,14 @@ export class HomeplanConnectionSettings extends LitElement {
       this.client.config(),
       this.client.frontend(),
     ]);
-    const oldUrl = this.connection.builderUrl;
     this.connection = state.connection;
-    if (this.urlDraft === "" || this.urlDraft === oldUrl) this.urlDraft = state.connection.builderUrl ?? "";
+    this.urlDraft = state.connection.builderUrl ?? "";
     this.copies = new Map(Object.entries(config.configuration.houses));
-    this.localFrontend = frontend.active ?? frontend.shipped;
+    this.frontend = frontend;
     const { HouseListResponse } = await import("@shared/contracts/houses");
     this.localHouses = (await this.client.request(HouseListResponse, ["houses"])).houses;
-    if (state.connection.builderUrl === null && this.proposal === null) {
+    this.applyRemembered();
+    if (state.connection.builderUrl === null && this.proposal === null && this.view === "floorPlanners") {
       try {
         this.proposal = builderUrlFor((await this.client.clientAddress()).address);
       } catch {
@@ -213,11 +345,12 @@ export class HomeplanConnectionSettings extends LitElement {
     }
     this.requestUpdate();
   }
-  private perform(action: () => Promise<void>): Promise<void> {
+  private perform(action: () => Promise<void>, clearMessage = true): Promise<void> {
     const next = this.pending.then(async () => {
       if (!this.alive) return;
       this.busy = true;
       this.error = null;
+      if (clearMessage) this.message = "";
       this.requestUpdate();
       try {
         await action();
@@ -234,14 +367,18 @@ export class HomeplanConnectionSettings extends LitElement {
   private async allowed(): Promise<boolean> {
     return this.guard === undefined || (await this.guard());
   }
-  private async saveUrl(): Promise<void> {
-    if (this.client === undefined || this.urlDraft.trim() === (this.connection.builderUrl ?? "")) return;
-    if (!(await this.allowed())) return;
+  /** One connection edit, refused when the settings changed elsewhere; a new source drops what was found. */
+  private async saveConnection(
+    patch: Readonly<{ builderUrl?: string | null; devMode?: boolean; servers?: readonly string[] }>,
+  ): Promise<void> {
+    if (this.client === undefined) return;
     const current = await this.client.connection();
     if (JSON.stringify(current.connection) !== JSON.stringify(this.connection))
-      throw new Error("Connection settings changed elsewhere. Reopen House setup and reapply your edit.");
+      throw new Error("Connection settings changed elsewhere. Reopen Settings and try again.");
+    const { servers, ...rest } = patch;
     const saved = await this.client.saveConnection(current.revision, {
-      builderUrl: this.urlDraft.trim() || null,
+      ...rest,
+      ...(servers === undefined ? {} : { servers: [...servers] }),
     });
     if (this.connection.generation !== saved.connection.generation) {
       this.remoteHouses = [];
@@ -259,20 +396,19 @@ export class HomeplanConnectionSettings extends LitElement {
     );
     this.connection = saved.connection;
     this.urlDraft = saved.connection.builderUrl ?? "";
-    this.message = "URL saved. Press Connect to list houses.";
   }
   private async connect(): Promise<void> {
-    await this.saveUrl();
     if (this.client === undefined) return;
     const state = await this.client.connection();
     if (state.connection.generation !== this.connection.generation)
-      throw new Error("The source changed. Reopen House setup and Connect again.");
+      throw new Error("The default floor planner changed. Reopen Settings and connect again.");
     let result;
     try {
       result = await this.client.connect(state.revision);
     } catch (error) {
       remembered.markFailed(this.client);
       if (this.memoryState !== null) this.memoryState = "notRefreshed";
+      announce();
       throw error;
     }
     if (result.generation !== state.connection.generation || !this.alive) return;
@@ -281,8 +417,35 @@ export class HomeplanConnectionSettings extends LitElement {
     this.offer = result.frontendOffer;
     await this.checkSources();
     this.remember();
+    announce();
     this.message =
-      result.houses.length === 0 ? "Connected. No houses found." : "Connected. Choose Use this house below.";
+      result.houses.length === 0
+        ? "Connected. It has no houses yet."
+        : "Connected. Its houses are under Houses.";
+  }
+  /** Adds a floor planner; the first one becomes the default and connects. */
+  private async addPlanner(url: string): Promise<void> {
+    const trimmed = url.trim();
+    if (trimmed === "" || !(await this.allowed())) return;
+    if (this.connection.builderUrl === null) {
+      await this.saveConnection({ builderUrl: trimmed });
+      await this.connect();
+    } else await this.saveConnection({ servers: [...this.connection.servers, trimmed] });
+    this.urlDraft = "";
+    this.message ||= "Floor planner added.";
+    announce();
+  }
+  /** Makes a listed floor planner the default (the previous default stays listed) and connects to it. */
+  private async makeDefault(url: string): Promise<void> {
+    if (!(await this.allowed())) return;
+    await this.saveConnection({ builderUrl: url });
+    announce();
+    await this.connect();
+  }
+  private async removePlanner(url: string): Promise<void> {
+    await this.saveConnection({ servers: this.connection.servers.filter((server) => server !== url) });
+    this.message = "Floor planner removed.";
+    announce();
   }
   private async checkSources(): Promise<void> {
     const client = this.client;
@@ -298,7 +461,7 @@ export class HomeplanConnectionSettings extends LitElement {
           } catch (error) {
             this.sourceStatuses.set(
               house.id,
-              error instanceof Error ? error.message : "Builder unavailable.",
+              error instanceof Error ? error.message : "Floor planner unavailable.",
             );
           }
         }),
@@ -306,20 +469,8 @@ export class HomeplanConnectionSettings extends LitElement {
     }
   }
   private async toggleDev(next: boolean): Promise<void> {
-    if (this.client === undefined || !(await this.allowed())) return;
-    await this.saveUrl();
-    const current = await this.client.connection();
-    if (JSON.stringify(current.connection) !== JSON.stringify(this.connection))
-      throw new Error("Connection settings changed elsewhere. Reopen House setup and reapply your edit.");
-    const saved = await this.client.saveConnection(current.revision, { devMode: next });
-    this.dispatchEvent(
-      new CustomEvent("configuration-advanced", {
-        detail: { previous: current.revision, next: saved.revision },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-    this.connection = saved.connection;
+    if (!(await this.allowed())) return;
+    await this.saveConnection({ devMode: next });
     this.reloadRequired = true;
     this.message = "DEV MODE saved. Reload the page to switch panel code and house transport together.";
   }
@@ -337,12 +488,21 @@ export class HomeplanConnectionSettings extends LitElement {
     }
     if (this.job.status === "failed" || this.job.status === "canceled")
       throw new Error(
-        this.job.error?.message ?? "The upgrade was canceled; the previous local copy is unchanged.",
+        this.job.error?.message ??
+          (this.job.kind === "panelUpgrade"
+            ? "The panel download was canceled; the current panel is unchanged."
+            : "The upgrade was canceled; the previous local copy is unchanged."),
       );
-    this.message = this.job.outcome === "unchanged" ? "Already up to date." : "Verified local copy upgraded.";
+    this.message =
+      this.job.outcome === "unchanged"
+        ? "Already up to date."
+        : this.job.kind === "panelUpgrade"
+          ? "Panel downloaded and checked."
+          : "Verified local copy upgraded.";
   }
   private async changed(houseId: string | null, selection = false): Promise<void> {
     await this.refresh();
+    announce();
     this.dispatchEvent(
       new CustomEvent("house-loaded", { detail: { houseId, selection }, bubbles: true, composed: true }),
     );
@@ -351,7 +511,7 @@ export class HomeplanConnectionSettings extends LitElement {
     if (this.client === undefined || !(await this.allowed())) return;
     const state = await this.client.connection();
     if (state.connection.generation !== this.connection.generation)
-      throw new Error("The source changed. Reopen House setup and Connect again.");
+      throw new Error("The default floor planner changed. Reopen Settings and connect again.");
     const result = await this.client.useHouse(houseId, state.revision, state.connection.generation);
     if ("job" in result) await this.track(result.job);
     await this.changed(houseId, true);
@@ -360,7 +520,7 @@ export class HomeplanConnectionSettings extends LitElement {
     if (this.client === undefined || !(await this.allowed())) return;
     const state = await this.client.connection();
     if (state.connection.generation !== this.connection.generation)
-      throw new Error("The source changed. Connect again before upgrading.");
+      throw new Error("The default floor planner changed. Connect again before upgrading.");
     const status = this.sourceStatuses.get(houseId);
     await this.track(
       (
@@ -374,16 +534,262 @@ export class HomeplanConnectionSettings extends LitElement {
     await this.checkSources();
     await this.changed(houseId);
   }
+  private async upgradePanel(): Promise<void> {
+    if (this.client === undefined || !(await this.allowed())) return;
+    const state = await this.client.connection();
+    await this.track((await this.client.upgradeFrontend(state.connection.generation)).job);
+    this.reloadRequired = true;
+    this.message = "Panel downloaded. Reload the page to use it.";
+    await this.refresh();
+  }
+  private async useShipped(): Promise<void> {
+    if (this.client === undefined || !(await this.allowed())) return;
+    const state = await this.client.connection();
+    await this.client.restoreFrontend(state.revision);
+    this.reloadRequired = true;
+    this.message = "Back to the panel shipped with the integration. Reload the page to use it.";
+    await this.refresh();
+  }
+  private openPage(page: SettingsPage): void {
+    this.dispatchEvent(new CustomEvent("settings-page", { detail: page, bubbles: true, composed: true }));
+  }
+
+  // ---- rendering ----------------------------------------------------------------------------------------------
+
+  private connectedState(): "connected" | "failed" | "none" {
+    if (this.connection.builderUrl === null) return "none";
+    if (this.memoryState === "connected") return "connected";
+    return this.memoryState === null && this.refreshing ? "none" : "failed";
+  }
+  private renderFooter(): TemplateResult {
+    const state = this.connectedState();
+    const housesReady = state === "connected" || this.localHouses.length > 0;
+    const plannerTitle =
+      state === "connected"
+        ? "Floor planners · connected"
+        : state === "failed"
+          ? "Floor planners · not connected"
+          : "Floor planners";
+    return html`<button
+        class="page"
+        title=${plannerTitle}
+        aria-label=${plannerTitle}
+        ?data-active=${this.activePage === "floorPlanners"}
+        @click=${() => {
+          this.openPage("floorPlanners");
+        }}
+      >
+        ${icon(serverIcon)}<span class="dot" data-state=${state}></span>
+      </button>
+      <button
+        class="page"
+        title=${housesReady ? "Houses" : "Houses · connect a floor planner first"}
+        aria-label="Houses"
+        ?disabled=${!housesReady}
+        ?data-active=${this.activePage === "houses"}
+        @click=${() => {
+          this.openPage("houses");
+        }}
+      >
+        ${icon(housesIcon)}
+      </button>
+      <button
+        class="page"
+        title="Panels"
+        aria-label="Panels"
+        ?data-active=${this.activePage === "panels"}
+        @click=${() => {
+          this.openPage("panels");
+        }}
+      >
+        ${icon(panelsIcon)}
+      </button>`;
+  }
+  private renderFeedback(): TemplateResult {
+    return html`<div class="status" role="status">${this.message}</div>
+      ${this.error === null ? nothing : html`<span class="error" role="alert">${this.error}</span>`}`;
+  }
+  private renderMemory(): TemplateResult | typeof nothing {
+    if (this.connection.builderUrl === null) return nothing;
+    const text =
+      this.memoryState === null
+        ? this.refreshing
+          ? "Connecting…"
+          : "Not connected"
+        : this.memoryState === "connected"
+          ? this.refreshing
+            ? "Connected · refreshing…"
+            : "Connected"
+          : this.memoryState === "notRefreshed"
+            ? "Not refreshed · showing the last result"
+            : this.refreshing
+              ? "Not connected · refreshing…"
+              : "Not connected · showing the last result (older than 15 minutes)";
+    return html`<span class="hint" role="status">${text}</span>`;
+  }
+  private renderOpen(url: string, label = "Open"): TemplateResult {
+    return html`<a class="text-button" href=${plannerPage(url)} target="_blank" rel="noopener noreferrer"
+      >${label}</a
+    >`;
+  }
+  private renderDevToggle(): TemplateResult {
+    if (this.connection.origin === "discovered" && !this.connection.devMode)
+      return html`<span class="hint" data-origin="discovered"
+        >DEV MODE is for a Floor Builder running on your own computer.</span
+      >`;
+    return html`<label class="toggle"
+        ><input
+          type="checkbox"
+          .checked=${this.connection.devMode}
+          ?disabled=${this.busy}
+          @change=${(event: Event) => {
+            if (event.target instanceof HTMLInputElement) {
+              const enabled = event.target.checked;
+              void this.perform(() => this.toggleDev(enabled));
+            }
+          }}
+        />DEV MODE</label
+      >
+      <span class="hint">
+        Loads the panel code and the house's current (unsaved) state from the default floor planner on every
+        page load. Off uses the copies stored in Home Assistant. Takes effect after a page reload.
+      </span>`;
+  }
+  private renderFloorPlanners(): TemplateResult {
+    const builderUrl = this.connection.builderUrl;
+    return html`${this.renderFeedback()}
+      <section>
+        <h3>Default</h3>
+        ${
+          builderUrl === null
+            ? html`<span class="hint">
+                No floor planner yet. Add one below: the first becomes the default, and Settings connects to
+                it whenever it opens.
+              </span>`
+            : html`<div class="list">
+                <div class="row">
+                  <span class="row-name">${plannerName(builderUrl)}</span>
+                  <span class="hint">${builderUrl}</span>
+                  ${
+                    this.connection.origin === "discovered"
+                      ? html`<span class="hint" data-origin="discovered"
+                          >Found automatically: the Homeplan app on this Home Assistant.</span
+                        >`
+                      : nothing
+                  }
+                  ${this.renderMemory()}
+                  <div class="actions">
+                    <button
+                      class="button"
+                      ?disabled=${this.busy}
+                      @click=${() => void this.perform(() => this.connect())}
+                    >
+                      ${this.busy && this.job === null ? "Connecting…" : "Connect"}
+                    </button>
+                    ${this.renderOpen(builderUrl)}
+                  </div>
+                </div>
+              </div>`
+        }
+      </section>
+      <section>
+        <h3>Other floor planners</h3>
+        ${
+          this.connection.servers.length === 0
+            ? html`<span class="hint"
+                >None. Floor planners you add or replace as the default are kept here.</span
+              >`
+            : html`<div class="list">
+                ${this.connection.servers.map(
+                  (url) =>
+                    html`<div class="row">
+                      <span class="row-name">${plannerName(url)}</span>
+                      <span class="hint">${url}</span>
+                      <div class="actions">
+                        <button
+                          class="text-button"
+                          ?disabled=${this.busy}
+                          @click=${() => void this.perform(() => this.makeDefault(url))}
+                        >
+                          Make default
+                        </button>
+                        ${this.renderOpen(url)}
+                        <button
+                          class="text-button"
+                          ?disabled=${this.busy}
+                          @click=${() => void this.perform(() => this.removePlanner(url))}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>`,
+                )}
+              </div>`
+        }
+      </section>
+      <section>
+        <h3>Add a floor planner</h3>
+        <label
+          >Floor planner URL<input
+            type="url"
+            .value=${builderUrl === null ? this.urlDraft : ""}
+            placeholder="http://builder-host:5173/"
+            ?disabled=${this.busy}
+            @input=${(event: Event) => {
+              if (event.target instanceof HTMLInputElement) this.urlDraft = event.target.value;
+            }}
+            @keydown=${(event: KeyboardEvent) => {
+              if (event.key === "Enter") void this.perform(() => this.addPlanner(this.urlDraft));
+            }}
+        /></label>
+        <span class="hint">
+          Its address as Home Assistant reaches it (not localhost). Nothing is copied until you choose a
+          house.
+        </span>
+        <div class="actions">
+          <button
+            class="button"
+            ?disabled=${this.busy}
+            @click=${() => void this.perform(() => this.addPlanner(this.urlDraft))}
+          >
+            Add
+          </button>
+          ${
+            this.proposal !== null
+              ? html`<button
+                  class="text-button"
+                  ?disabled=${this.busy}
+                  @click=${() => {
+                    const proposal = this.proposal;
+                    if (proposal !== null) void this.perform(() => this.addPlanner(proposal));
+                  }}
+                >
+                  Use this computer: ${this.proposal}
+                </button>`
+              : nothing
+          }
+        </div>
+      </section>
+      ${
+        builderUrl === null
+          ? nothing
+          : html`<section>
+              <h3>Development</h3>
+              ${this.renderDevToggle()}
+            </section>`
+      }
+      ${this.renderReload()}`;
+  }
   private renderHouse(house: HouseCardValue): TemplateResult {
     const copy = this.copies.get(house.id);
     const source = this.sourceStatuses.get(house.id);
     const selected = this.selectedId === house.id;
-    return html`<div class="house" ?data-selected=${selected}>
-      <span class="house-name"
+    return html`<div class="row" ?data-selected=${selected}>
+      <span class="row-name"
         >${house.status === "ok" ? house.name : house.id}${selected ? " · Shown" : ""}</span
       >
       ${copy === undefined ? html`<span class="hint">No copy in Home Assistant yet.</span>` : html`<span class="hint">Copy of the Save from ${new Date(copy.savedAt).toLocaleString()} · ${copy.sourceRevisionId.slice(0, 10)}</span>`}
-      ${source === undefined ? nothing : typeof source === "string" ? html`<span class="error">${source}</span>` : html`<span class="hint">${source.relation === "same" ? "Up to date with the builder" : source.relation === "newer" ? "A newer Save is available" : source.relation === "different" ? "A different Save is available" : "Saved house available"} · ${source.sourceRevisionId.slice(0, 10)}</span>`}
+      ${source === undefined ? nothing : typeof source === "string" ? html`<span class="error">${source}</span>` : html`<span class="hint">${source.relation === "same" ? "Up to date with the floor planner" : source.relation === "newer" ? "A newer Save is available" : source.relation === "different" ? "A different Save is available" : "Saved house available"} · ${source.sourceRevisionId.slice(0, 10)}</span>`}
       ${house.status === "invalid" ? html`<span class="error">${house.problem.message}</span>` : nothing}
       <div class="actions">
         <button
@@ -403,102 +809,40 @@ export class HomeplanConnectionSettings extends LitElement {
       </div>
     </div>`;
   }
-  private renderMemory(): TemplateResult | typeof nothing {
-    if (this.memoryState === null) return nothing;
-    const text =
-      this.memoryState === "connected"
-        ? this.refreshing
-          ? "Connected · refreshing…"
-          : "Connected"
-        : this.memoryState === "notRefreshed"
-          ? "Not refreshed · showing the last result"
-          : this.refreshing
-            ? "Not connected · refreshing…"
-            : "Not connected · showing the last result (older than 15 minutes)";
-    return html`<span class="hint" role="status">${text}</span>`;
-  }
-  private renderDevToggle(): TemplateResult {
-    return html`<label class="toggle"
-        ><input
-          type="checkbox"
-          .checked=${this.connection.devMode}
-          ?disabled=${this.busy}
-          @change=${(event: Event) => {
-            if (event.target instanceof HTMLInputElement) {
-              const enabled = event.target.checked;
-              void this.perform(() => this.toggleDev(enabled));
-            }
-          }}
-        />DEV MODE</label
-      >
-      <span class="hint">
-        Loads the panel code and the house's current (unsaved) state from the builder on every page load. Off
-        uses the copies stored in Home Assistant. Takes effect after a page reload.
-      </span>`;
-  }
-  protected override render(): TemplateResult {
+  private renderHouses(): TemplateResult {
+    const builderUrl = this.connection.builderUrl;
     const houses = new Map([...this.localHouses, ...this.remoteHouses].map((house) => [house.id, house]));
     const transferring =
       this.job !== null && (this.job.status === "pending" || this.job.status === "running");
-    return html`<section>
-        <h3>House setup</h3>
-        <label
-          >Floor Builder URL<input
-            type="url"
-            .value=${this.urlDraft}
-            placeholder="http://builder-host:5173/"
-            ?disabled=${this.busy}
-            @input=${(event: Event) => {
-              if (event.target instanceof HTMLInputElement) this.urlDraft = event.target.value;
-            }}
-            @change=${() => void this.perform(() => this.saveUrl())}
-            @keydown=${(event: KeyboardEvent) => {
-              if (event.key === "Enter") void this.perform(() => this.connect());
-            }}
-        /></label>
-        ${
-          this.proposal !== null && this.urlDraft.trim() === ""
-            ? html`<div class="actions">
-                <button
-                  class="text-button"
-                  ?disabled=${this.busy}
-                  @click=${() => {
-                    if (this.proposal === null) return;
-                    this.urlDraft = this.proposal;
-                    void this.perform(() => this.saveUrl());
-                  }}
-                >
-                  Use this computer: ${this.proposal}
-                </button>
-              </div>`
-            : nothing
-        }
-        ${
-          this.connection.origin === "discovered" && this.urlDraft.trim() === this.connection.builderUrl
-            ? html`<span class="hint" data-origin="discovered"
-                >Found automatically: the Homeplan app on this Home Assistant.</span
-              >`
-            : nothing
-        }
-        <span class="hint">
-          The builder's address as Home Assistant reaches it (not localhost). Connect lists its houses;
-          nothing is copied until Use this house.
-        </span>
-        <div class="actions">
-          <button
-            class="button"
-            ?disabled=${this.busy || this.urlDraft.trim() === ""}
-            @click=${() => void this.perform(() => this.connect())}
-          >
-            ${this.busy && this.job === null ? "Connecting…" : "Connect"}
-          </button>
-        </div>
-        <div class="status" role="status">${this.message}</div>
-        ${this.renderMemory()}
-        ${this.error === null ? nothing : html`<span class="error" role="alert">${this.error}</span>`}
-      </section>
+    const app = builderUrl !== null && isAppPlanner(builderUrl);
+    return html`${this.renderFeedback()}
       <section>
-        <h3>Houses</h3>
+        ${
+          builderUrl === null
+            ? html`<span class="hint">Houses stored in Home Assistant. Add a floor planner to get more.</span>
+                <div class="actions">
+                  <button
+                    class="text-button"
+                    @click=${() => {
+                      this.openPage("floorPlanners");
+                    }}
+                  >
+                    Floor planners
+                  </button>
+                </div>`
+            : html`<span class="hint">From ${plannerName(builderUrl)} and the copies in Home Assistant.</span>
+                ${this.renderMemory()}
+                <div class="actions">
+                  <button
+                    class="text-button"
+                    ?disabled=${this.busy}
+                    @click=${() => void this.perform(() => this.connect())}
+                  >
+                    Check again
+                  </button>
+                  ${this.renderOpen(builderUrl, app ? "Create or edit a house" : "Open floor planner")}
+                </div>`
+        }
         ${
           transferring && this.job !== null
             ? html`<div class="actions">
@@ -518,50 +862,265 @@ export class HomeplanConnectionSettings extends LitElement {
             : nothing
         }
         ${
-          houses.size === 0
-            ? html`<span class="hint">No houses yet. Enter the Floor Builder URL and press Connect.</span>`
-            : html`<div class="houses">${[...houses.values()].map((house) => this.renderHouse(house))}</div>`
+          houses.size > 0
+            ? html`<div class="list">${[...houses.values()].map((house) => this.renderHouse(house))}</div>`
+            : builderUrl !== null && app
+              ? html`<span class="hint">No houses yet.</span>
+                  <div class="actions">
+                    <a
+                      class="button"
+                      href=${plannerPage(builderUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >Create your house</a
+                    >
+                  </div>`
+              : html`<span class="hint">No houses yet.</span>`
         }
-      </section>
+      </section>`;
+  }
+  private renderPanels(): TemplateResult {
+    const frontend = this.frontend;
+    const running = frontend?.active ?? frontend?.shipped ?? null;
+    const integrationVersion = frontend?.shipped.version ?? null;
+    const offer = this.offer;
+    const needs =
+      offer !== null &&
+      integrationVersion !== null &&
+      newerVersion(offer.minimumIntegrationVersion, integrationVersion)
+        ? offer.minimumIntegrationVersion
+        : null;
+    const runningOffer = offer !== null && running !== null && offer.bundleId === running.bundleId;
+    const builderUrl = this.connection.builderUrl;
+    return html`${this.renderFeedback()}
       <section>
-        <h3>Development</h3>
-        ${
-          this.connection.origin === "discovered" && !this.connection.devMode
-            ? html`<span class="hint" data-origin="discovered"
-                >DEV MODE is for a Floor Builder running on your own computer.</span
-              >`
-            : this.renderDevToggle()
-        }
-      </section>
-      <section>
-        <h3>Panel</h3>
+        <h3>Running</h3>
         <span class="hint">
-          This panel ${this.localFrontend?.version ?? "…"} ·
-          ${this.localFrontend?.bundleId.slice(0, 10) ?? ""}
-          ${this.offer === null ? nothing : html`<br />Builder offers ${this.offer.version} · ${this.offer.bundleId.slice(0, 10)}`}
+          ${running === null ? "…" : html`${frontend?.active === null ? "Shipped with the integration" : "Downloaded"} · ${running.version} · ${running.bundleId.slice(0, 10)}`}
         </span>
+        ${
+          frontend !== null && frontend.active !== null
+            ? html`<span class="hint"
+                  >Shipped with the integration · ${frontend.shipped.version} ·
+                  ${frontend.shipped.bundleId.slice(0, 10)}</span
+                >
+                <div class="actions">
+                  <button
+                    class="text-button"
+                    ?disabled=${this.busy}
+                    @click=${() => void this.perform(() => this.useShipped())}
+                  >
+                    Use the shipped panel
+                  </button>
+                </div>`
+            : nothing
+        }
+      </section>
+      <section>
+        <h3>From the default floor planner</h3>
+        ${
+          builderUrl === null
+            ? html`<span class="hint">No floor planner yet, so nothing is offered.</span>`
+            : offer === null
+              ? html`<span class="hint"
+                  >${plannerName(builderUrl)} offers no panel, or could not be reached.</span
+                >`
+              : html`<span class="hint"
+                    >${plannerName(builderUrl)} offers ${offer.version} · ${offer.bundleId.slice(0, 10)}</span
+                  >
+                  ${
+                    needs !== null
+                      ? html`<span class="error"
+                          >It needs integration ${needs} or newer; this Home Assistant has
+                          ${integrationVersion}. Update the integration first.</span
+                        >`
+                      : runningOffer
+                        ? html`<span class="hint">This panel is already running.</span>`
+                        : nothing
+                  }`
+        }
         <div class="actions">
           <button
-            class="text-button"
-            ?disabled=${this.busy || this.offer === null}
-            @click=${() =>
-              void this.perform(async () => {
-                if (this.client === undefined || !(await this.allowed())) return;
-                const state = await this.client.connection();
-                await this.track((await this.client.upgradeFrontend(state.connection.generation)).job);
-                this.reloadRequired = true;
-                this.message = "Panel upgraded. Reload the page to use it.";
-                await this.refresh();
-              })}
+            class="button"
+            ?disabled=${this.busy || offer === null || needs !== null || runningOffer}
+            @click=${() => void this.perform(() => this.upgradePanel())}
           >
             Upgrade panel
           </button>
-          ${this.reloadRequired ? html`<button class="button" @click=${() => location.reload()}>Reload page</button>` : nothing}
+          ${
+            builderUrl === null
+              ? nothing
+              : html`<button
+                  class="text-button"
+                  ?disabled=${this.busy}
+                  @click=${() => void this.perform(() => this.connect())}
+                >
+                  Check again
+                </button>`
+          }
         </div>
-      </section>`;
+        ${
+          this.job !== null && this.job.kind === "panelUpgrade" && this.job.status === "running"
+            ? html`<span class="hint"
+                >Downloading · ${this.job.stage ?? ""} · ${this.job.filesDone}/${this.job.filesTotal}
+                files</span
+              >`
+            : nothing
+        }
+      </section>
+      ${this.renderDevice()} ${this.renderReload()}`;
+  }
+  /** This device's renderer (21.11): stored in this browser; any change applies with a reload. */
+  private renderDevice(): TemplateResult {
+    const chosen = this.renderers.find((renderer) => renderer.id === this.rendererId) ?? this.renderers[0];
+    const stored = deviceRenderer();
+    const changed =
+      chosen !== undefined &&
+      (chosen.id !== stored.id ||
+        JSON.stringify(this.rendererSettings) !== JSON.stringify(stored.currentSettings()));
+    return html`<section>
+      <h3>This device</h3>
+      <label
+        >Renderer<select
+          @change=${(event: Event) => {
+            if (!(event.target instanceof HTMLSelectElement)) return;
+            const id = event.target.value;
+            const next = this.renderers.find((renderer) => renderer.id === id);
+            if (next === undefined) return;
+            this.rendererId = next.id;
+            this.rendererSettings = { ...next.currentSettings() };
+            this.requestUpdate();
+          }}
+        >
+          ${this.renderers.map(
+            (renderer) =>
+              html`<option value=${renderer.id} ?selected=${renderer.id === this.rendererId}>
+                ${renderer.label}
+              </option>`,
+          )}
+        </select></label
+      >
+      ${chosen === undefined ? nothing : html`<span class="hint">${chosen.description}</span>`}
+      ${(chosen?.settingsSchema() ?? []).map((setting) => {
+        const value = this.rendererSettings[setting.key] ?? setting.defaultValue;
+        return html`<label
+            >${setting.label} ·
+            ${setting.percent ? `${String(Math.round(value * 100))} %` : String(value)}<input
+              type="range"
+              min=${setting.min}
+              max=${setting.max}
+              step=${setting.step}
+              .value=${String(value)}
+              @input=${(event: Event) => {
+                if (!(event.target instanceof HTMLInputElement)) return;
+                this.rendererSettings = {
+                  ...this.rendererSettings,
+                  [setting.key]: Number(event.target.value),
+                };
+                this.requestUpdate();
+              }}
+          /></label>
+          <span class="hint">${setting.hint}</span>`;
+      })}
+      <span class="hint"
+        >Stored in this browser only: each device (a wall tablet, a phone) keeps its own.</span
+      >
+      <div class="actions">
+        <button
+          class="button"
+          ?disabled=${!changed}
+          @click=${() => {
+            if (chosen !== undefined && saveDeviceRenderer(chosen.id, this.rendererSettings))
+              location.reload();
+            else {
+              this.error = "This browser does not allow storing the choice.";
+              this.requestUpdate();
+            }
+          }}
+        >
+          Apply and reload
+        </button>
+      </div>
+    </section>`;
+  }
+  private renderReload(): TemplateResult | typeof nothing {
+    return this.reloadRequired
+      ? html`<div class="actions">
+          <button
+            class="button"
+            @click=${() => {
+              location.reload();
+            }}
+          >
+            Reload page
+          </button>
+        </div>`
+      : nothing;
+  }
+  protected override render(): TemplateResult {
+    switch (this.view) {
+      case "footer":
+        return this.renderFooter();
+      case "floorPlanners":
+        return this.renderFloorPlanners();
+      case "panels":
+        return this.renderPanels();
+      case "houses":
+        return this.renderHouses();
+    }
   }
 }
+
+/** A settings page's title (the editor pane's heading). */
+export const settingsPageTitle = (page: SettingsPage): string => pageTitles[page];
 
 /** The builder's dev server (Vite, port 5173) on the given IP; IPv6 goes in brackets. */
 const builderUrlFor = (address: string | null): string | null =>
   address === null ? null : `http://${address.includes(":") ? `[${address}]` : address}:5173/`;
+
+/**
+ * A Homeplan app on this Home Assistant: the Supervisor hostname of an app slug (`<repository>_homeplan` becomes
+ * `<repository>-homeplan`) on the app's port, as discovery announces it.
+ */
+const appHost = /^([a-z0-9]+)-homeplan$/;
+
+const parsed = (url: string): URL | null => {
+  try {
+    return new URL(url);
+  } catch {
+    return null;
+  }
+};
+
+const isAppPlanner = (url: string): boolean => {
+  const address = parsed(url);
+  return address !== null && address.port === "8099" && appHost.test(address.hostname);
+};
+
+/**
+ * Where Open goes: an app found on this Home Assistant opens as its sidebar page (`/<slug>`, through HA's ingress,
+ * since its own address is only reachable inside HA); any other floor planner opens at its address.
+ */
+const plannerPage = (url: string): string => {
+  const address = parsed(url);
+  if (address === null || !isAppPlanner(url)) return url;
+  return `${window.location.origin}/${address.hostname.replace(/-/g, "_")}`;
+};
+
+/** A short name for a floor planner: the Homeplan app, or its host and port. */
+const plannerName = (url: string): string => {
+  if (isAppPlanner(url)) return "Homeplan app";
+  const address = parsed(url);
+  return address === null ? url : address.host;
+};
+
+/** True when version `a` (x.y.z) is newer than `b`. */
+const newerVersion = (a: string, b: string): boolean => {
+  const left = a.split(".").map(Number);
+  const right = b.split(".").map(Number);
+  for (let index = 0; index < 3; index += 1) {
+    const difference = (left[index] ?? 0) - (right[index] ?? 0);
+    if (difference !== 0) return difference > 0;
+  }
+  return false;
+};

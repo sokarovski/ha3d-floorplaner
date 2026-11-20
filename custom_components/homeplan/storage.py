@@ -38,6 +38,7 @@ def defaults() -> dict[str, object]:
             "devMode": False,
             "generation": 0,
             "origin": None,
+            "servers": [],
         },
         "dashboard": copy.deepcopy(DEFAULT_DASHBOARD),
         "bindings": {},
@@ -100,6 +101,7 @@ def _migrated(value: object) -> object:
     - The house-wide `panelColumns` became per-room `areaColumns` (2026-11-17); the old value is dropped.
     - The connection gained `origin` (app discovery): a URL saved before discovery existed was typed by the
       operator, so it becomes "manual" and is never replaced by a discovered app.
+    - The connection gained `servers` (Phase 21, other floor planners besides the default): none before.
     """
     if not isinstance(value, dict):
         return value
@@ -110,7 +112,10 @@ def _migrated(value: object) -> object:
     connection = value.get("connection")
     if isinstance(connection, dict) and "origin" not in connection:
         origin = None if connection.get("builderUrl") is None else "manual"
-        value = {**value, "connection": {**connection, "origin": origin}}
+        connection = {**connection, "origin": origin}
+        value = {**value, "connection": connection}
+    if isinstance(connection, dict) and "servers" not in connection:
+        value = {**value, "connection": {**connection, "servers": []}}
     return value
 
 

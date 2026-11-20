@@ -80,7 +80,7 @@ export const createIntegrationClient = (currentHass: () => Hass | null) => {
     clientAddress: () => request(ClientAddressResponse, ["client-address"]),
     saveConnection: (
       expectedRevision: number,
-      patch: Readonly<{ builderUrl?: string | null; devMode?: boolean }>,
+      patch: Readonly<{ builderUrl?: string | null; devMode?: boolean; servers?: string[] }>,
     ) => request(ConnectionResponse, ["connection"], { expectedRevision, patch }, "PATCH"),
     connect: (expectedRevision: number) =>
       request(ConnectResponse, ["source", "connect"], { expectedRevision }),
