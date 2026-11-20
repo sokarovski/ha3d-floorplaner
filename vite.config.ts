@@ -1,7 +1,54 @@
+import { createReadStream, existsSync, statSync } from "node:fs";
+import { extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
+import type { Plugin } from "vite";
+
+/**
+ * The dev harness's fake Home Assistant (ha-viewer/fakeHaHost.ts) uses real Home Assistant cards, like the live demo:
+ * the dev server serves the HA cards bundle that `npm run demo:ha-cards` builds (dist/live-demo-public/ha-cards/) at
+ * <base>ha-viewer/ha-cards/. Dev only; nothing outside that folder is served.
+ */
+const haCardsInDev = (basePath: string): Plugin => {
+  const root = fileURLToPath(new URL("./dist/live-demo-public/ha-cards/", import.meta.url));
+  const prefix = `${basePath.replace(/\/$/, "")}/ha-viewer/ha-cards/`;
+  const types: Readonly<Record<string, string>> = {
+    ".js": "text/javascript",
+    ".json": "application/json",
+    ".css": "text/css",
+    ".txt": "text/plain",
+    ".woff2": "font/woff2",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+  };
+  return {
+    name: "homeplan-ha-cards-dev",
+    apply: "serve",
+    configureServer: (server) => {
+      server.middlewares.use((request, response, next) => {
+        const path = (request.url ?? "").split("?")[0] ?? "";
+        if (!path.startsWith(prefix)) {
+          next();
+          return;
+        }
+        const file = normalize(join(root, decodeURIComponent(path.slice(prefix.length))));
+        if (
+          !file.startsWith(root.endsWith(sep) ? root : root + sep) ||
+          !existsSync(file) ||
+          !statSync(file).isFile()
+        ) {
+          response.statusCode = 404;
+          response.end();
+          return;
+        }
+        response.setHeader("content-type", types[extname(file)] ?? "application/octet-stream");
+        createReadStream(file).pipe(response);
+      });
+    },
+  };
+};
 
 export default defineConfig(({ command, mode }) => {
   // HOMEPLAN_* settings come from the shell or from an untracked .env.local (for example the developer's own
@@ -24,7 +71,7 @@ export default defineConfig(({ command, mode }) => {
     // prefix (HOMEPLAN_BASE_PATH, or Home Assistant ingress's per-install X-Ingress-Path), so one build runs under
     // any prefix. The dev server keeps the configured absolute base.
     base: command === "build" ? "./" : basePath,
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), haCardsInDev(basePath)],
     resolve: {
       alias: {
         "@shared": fileURLToPath(new URL("./shared", import.meta.url)),

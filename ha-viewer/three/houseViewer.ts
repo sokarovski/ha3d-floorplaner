@@ -2773,7 +2773,9 @@ export class HouseViewer {
     this.uploadSome();
     if (this.templatesDirty && this.warmingKeys.size === 0 && now >= this.lastAdmitAt + admitGapMs)
       this.admitTemplates(now);
-    return this.uploads.length > 0;
+    // A due batch keeps the loop until it is placed: an admit scheduled while the loop ran was absorbed by it, so
+    // ending first would leave loaded templates unplaced (a room opened mid-load showed no furniture).
+    return this.uploads.length > 0 || (this.templatesDirty && this.warmingKeys.size === 0);
   }
 
   /** Decoded images: uploaded in frames, at least one per frame and more while within `uploadBudgetMs`. */

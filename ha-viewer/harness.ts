@@ -1,21 +1,26 @@
-// Dev-only fake Home Assistant for harness.html: sets panel, narrow, and a new hass object per change,
-// keeping unchanged entity objects identical like HA does.
+// Dev-only fake Home Assistant for harness.html (Phase 21: the fake HA works like the website's live demo): the
+// shared fake Home Assistant of fakeHaHost.ts with real HA cards, as an HA admin (Edit mode and Settings), on the
+// fake home with the entities of Setup HA laid over it (fakeHaStore.ts, kept in this browser). The step buttons
+// change the demo entities; every service call is shown as the last action.
 import "./main";
 import { deviceRenderer, rendererList, saveDeviceRenderer } from "./three/renderers";
 import { createId } from "@shared/domain/ids";
 import type { HaHouseBubblesValue } from "@shared/domain/schemas/homeAssistant";
+import { startFakeHa } from "./fakeHaHost";
+import { createFakeHaStore } from "./fakeHaStore";
+import "./fakeHaSetup";
 import { createFakeHome } from "./fakeHome";
 import type { FakeControl } from "./fakeHome";
-import type { Hass } from "./hassStore";
 
-const home = createFakeHome();
+const store = createFakeHaStore(createFakeHome());
+let home = store.home();
 
 let darkMode = false;
 
 const panel = document.querySelector("homeplan-panel");
 if (panel === null) throw new Error("harness.html has no <homeplan-panel>.");
 
-/** The last action the viewer ran, shown in the controls: HA's more-info dialog and services do not exist here. */
+/** The last action the viewer ran, shown in the controls. */
 const showAction = (text: string): void => {
   const label = document.querySelector("#last-action");
   if (label !== null) label.textContent = `Last action: ${text}`;
@@ -26,35 +31,36 @@ document.addEventListener("hass-more-info", (event) => {
   showAction(`more-info ${typeof entityId === "string" ? entityId : "?"}`);
 });
 
+const fake = await startFakeHa({
+  panel,
+  home: () => home,
+  dashboard: () => store.dashboard(),
+  admin: true,
+  // The dev server serves the cards bundle (npm run demo:ha-cards) next to this page (vite.config.ts).
+  cardsBase: document.baseURI,
+  darkMode: () => darkMode,
+  onService: (domain, service, data) => {
+    const entityId = data?.entity_id;
+    console.info("[harness] callService", domain, service, data);
+    const tilt = data?.tilt_position ?? data?.position ?? data?.option;
+    showAction(
+      `${domain}.${service}${typeof entityId === "string" ? ` ${entityId}` : ""}${
+        typeof tilt === "number" || typeof tilt === "string" ? ` ${String(tilt)}` : ""
+      }`,
+    );
+  },
+});
 const publish = (): void => {
-  const hass: Hass = {
-    states: home.states(),
-    entities: home.entities,
-    devices: home.devices,
-    areas: home.areas,
-    themes: { darkMode },
-    // Fake services (fakeHome.ts): lights, covers, select, the AC, the lock and the TV on the fake entities, and
-    // toggle/turn_on/turn_off on the others (entity in the data or the target); everything is logged.
-    callWS: () => Promise.reject(new Error("The harness has no Home Assistant websocket.")),
-    callService: (domain, service, data, target) => {
-      const entityId = data?.entity_id ?? target?.entity_id;
-      console.info("[harness] callService", domain, service, data, target);
-      const tilt = data?.tilt_position ?? data?.position ?? data?.option;
-      showAction(
-        `${domain}.${service}${typeof entityId === "string" ? ` ${entityId}` : ""}${
-          typeof tilt === "number" || typeof tilt === "string" ? ` ${String(tilt)}` : ""
-        }`,
-      );
-      if (home.callService(domain, service, data, target)) publish();
-      return Promise.resolve(undefined);
-    },
-  };
   panel.setAttribute("data-dark", String(darkMode));
   document.body.style.background = darkMode ? "#111" : "#fafafa";
-  Reflect.set(panel, "hass", hass);
+  fake.publish();
 };
 
-Reflect.set(panel, "narrow", window.innerWidth < 870);
+const narrow = (): void => {
+  Reflect.set(panel, "narrow", window.innerWidth < 870);
+};
+narrow();
+window.addEventListener("resize", narrow);
 // `?house=<id>` shows that house instead of the viewer setup's (the setup is not changed); without it, the setup's.
 const houseParam = new URLSearchParams(window.location.search).get("house");
 Reflect.set(panel, "panel", {
@@ -65,6 +71,20 @@ Reflect.set(panel, "panel", {
   },
 });
 publish();
+
+// Setup HA: the fake entities, edited in this browser; a save applies at once.
+document.querySelector("#setup-ha")?.addEventListener("click", () => {
+  const setup = document.createElement("homeplan-fake-ha-setup");
+  Reflect.set(setup, "store", store);
+  setup.addEventListener("fake-ha-changed", () => {
+    home = store.home();
+    publish();
+  });
+  setup.addEventListener("close", () => {
+    setup.remove();
+  });
+  document.body.append(setup);
+});
 
 const controls: readonly FakeControl[] = [
   "toggle-test",
