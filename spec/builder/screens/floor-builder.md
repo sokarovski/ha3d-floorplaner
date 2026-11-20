@@ -1,6 +1,6 @@
 # Screen 2: Floor Builder
 
-Updated: 2026-11-18.
+Updated: 2026-11-19.
 
 Status: owner requirements, with defaults resolved in [D04](../../decisions.md#d04-footprints-walls-and-stable-boundaries), [D05](../../decisions.md#d05-walls-between-adjacent-areas), [D14](../../decisions.md#d14-project-management-and-names), [D16](../../decisions.md#d16-interaction-defaults-and-support-limits), and [D21](../../decisions.md#d21-wall-reliefs). Describes the app as built; owner decisions from the Phase 3, 4, and 5 feedback rounds are written in here. Visual design details are left to implementation.
 

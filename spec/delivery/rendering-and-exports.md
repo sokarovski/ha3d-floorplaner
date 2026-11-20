@@ -1,6 +1,6 @@
 # Rendering and exports
 
-Updated: 2026-11-16.
+Updated: 2026-11-18.
 
 Status: local PNG preview and final export are MVP Phase 1 and implemented. The optional backend photorealistic render is MVP Phase 2 ([D11](../decisions.md#d11-photorealistic-render-and-image-mode)) and implemented with Blender/Cycles; the engine is an implementation choice. HA scene packages and image layers are post-MVP ([publishing](../home-assistant/publishing.md)).
 

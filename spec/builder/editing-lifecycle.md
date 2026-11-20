@@ -1,6 +1,6 @@
 # Editing lifecycle
 
-Updated: 2026-11-16.
+Updated: 2026-11-18.
 
 Status: resolved ([D09](../decisions.md#d09-saving-cancellation-and-model-undo)). One editing session per house; cross-tab collaboration is out of scope. Model history follows [undo/redo](undo-redo.md).
 

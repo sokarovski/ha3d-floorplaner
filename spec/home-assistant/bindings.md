@@ -1,6 +1,6 @@
 # Home Assistant bindings
 
-Updated: 2026-11-18 (Phase 13.5 state-mapping editor on HA selectors; Phase 13.6 light lumens and temperature overrides; Phase 13.7 floor level in Settings). Earlier: 2026-11-17 (Phase 9.7 state parameters; Phase 10.3 binding suggestions; Phase 10.4 tilt conventions; Phase 10.5 second entities, louvers, appliance doors).
+Updated: 2026-11-20 (Phase 21: Shown when hides a light, Always and Never, Home Assistant's default gestures). Earlier: 2026-11-18 (Phase 13.5 state-mapping editor on HA selectors; Phase 13.6 light lumens and temperature overrides; Phase 13.7 floor level in Settings); 2026-11-17 (Phase 9.7 state parameters; Phase 10.3 binding suggestions; Phase 10.4 tilt conventions; Phase 10.5 second entities, louvers, appliance doors).
 
 Status: **resolved ([D25](../decisions.md#d25-home-assistant-bindings)), implemented (Phase 8.0).** Owner decisions Q1–Q3 (2026-11-16): the builder owns what a thing is, the HA mapping owns what it is doing now; bindings, conditions, and bubbles are authored in an Edit mode inside the [HA viewer](viewer-mvp.md) and stored in the installation-global preferences; conditions are a subset of Home Assistant's dashboard card conditions. The schema details, the nesting limit, and the editor layout are review inference; timings and limits are implementation conventions. Active work under [D23](../decisions.md#d23-ha-viewer-mvp) (viewer only; the builder has no HA UI).
 

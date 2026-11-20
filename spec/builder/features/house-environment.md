@@ -1,6 +1,6 @@
 # House environment: location, north, and sunlight
 
-Updated: 2026-11-16.
+Updated: 2026-11-18.
 
 Status: MVP Phase 1. Central house location and orientation, current or chosen render time, calculated sunlight, and the London date/time fallback are owner requirements. Defaults below are resolved; library choices are implementation conventions.
 

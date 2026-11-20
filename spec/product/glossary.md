@@ -1,6 +1,6 @@
 # Domain glossary
 
-Updated: 2026-11-16.
+Updated: 2026-11-20 (material preset wording).
 
 Status: terminology consolidated from the feature specifications and the built app. Field names are those of the schemas in `shared/domain/schemas/` ([model](../builder/model.md#document-tree-ids-and-the-entity-index)); other type spellings are implementation conventions.
 

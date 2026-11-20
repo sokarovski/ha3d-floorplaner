@@ -1,6 +1,6 @@
 # Object groups
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: **resolved by the owner (2026-11-16) and implemented, awaiting owner check.** Field names are implementation conventions.
 

@@ -1,6 +1,6 @@
 # Measuring tape and construction guides
 
-Updated: 2026-11-16.
+Updated: 2026-11-18.
 
 Status: MVP Phase 1. A tape tool with guide-line and point-marker results, live typed distances, and unit conversion is an owner requirement. Defaults are resolved in [D16](../../decisions.md#d16-interaction-defaults-and-support-limits).
 

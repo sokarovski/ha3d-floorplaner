@@ -1,6 +1,6 @@
 # React state and resource access
 
-Updated: 2026-11-17 (Phase 11 source/storage adapter).
+Updated: 2026-11-19. Earlier: 2026-11-17 (Phase 11 source/storage adapter).
 
 Status: D13 is resolved. Zustand stores, typed fetch clients, and the state/resource boundaries below are selected for MVP. Server endpoint names and DTO schemas remain implementation contracts where feature specifications have not finalized them.
 

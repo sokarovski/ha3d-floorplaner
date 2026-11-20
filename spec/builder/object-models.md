@@ -1,6 +1,6 @@
 # Object models and property metadata
 
-Updated: 2026-11-16.
+Updated: 2026-11-20 (the material chooser).
 
 Status: **resolved; approved by the owner** ([D18](../decisions.md#d18-property-schemas-and-the-property-panel)). This page collects every object type's properties from the feature specifications and adds the property metadata the [property system](property-system.md) needs. Each table becomes that type's JSON Schema, and the [editor list](#editors-needed) is the property-editor specification. Limits and defaults not attributed to an owner decision are implementation conventions that may be tuned.
 

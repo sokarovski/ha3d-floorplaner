@@ -1,6 +1,6 @@
 # Materials, walls, and object contracts
 
-Updated: 2026-11-16.
+Updated: 2026-11-20 (the material chooser with its editor, Create material, proposed texture values, texture rotation slider).
 
 Status: owner requirements. Defaults are resolved in [D04](../../decisions.md#d04-footprints-walls-and-stable-boundaries), [D05](../../decisions.md#d05-walls-between-adjacent-areas), and [D07](../../decisions.md#d07-template-library-and-updates). Carpets are in MVP Phase 1; their selection, handles, and Carpet Editor are Phase 5.14. Field names follow `shared/domain/schemas/`.
 

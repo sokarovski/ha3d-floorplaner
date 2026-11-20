@@ -1,6 +1,6 @@
 # Backend API
 
-Updated: 2026-11-17 (Phase 11 implemented transfer/integration contracts).
+Updated: 2026-11-20 (Phase 21: floor planners in the connection, house archives (download, upload, remove copy), other floor planners' houses, the previous panel, images' proposed material values). Earlier: 2026-11-17 (Phase 11 implemented transfer/integration contracts).
 
 Status: resolved route map for MVP. With the house model, asset ownership, saving, and revisions settled ([D09](../decisions.md#d09-saving-cancellation-and-model-undo), [D12](../decisions.md#d12-user-identity-and-access), [D14](../decisions.md#d14-project-management-and-names)), this document is the single owner of `/api/` routes. Feature documents link here instead of listing routes. Request and response payloads are defined as TypeBox schemas in `shared/contracts/` (one module per section below, re-exported from `shared/contracts/index.ts`); the notes here summarize them. Route shapes, methods, and status codes are the contract. The existing builder routes are registered (checked against `server/routes/` and `server/app.ts`, 2026-11-16). The Phase 11 section below is implemented in the builder and separately packaged HA integration; owner installation/acceptance is pending. Builder and HA integration APIs are on different origins and have different authentication rules.
 

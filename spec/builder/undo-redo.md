@@ -1,6 +1,6 @@
 # Model undo and redo
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: adopted design ([D09](../decisions.md#d09-saving-cancellation-and-model-undo)), implemented. History is session-local, uses reversible command transactions (Immer patch pairs), and is bounded to 200 entries (implementation convention; the oldest entries drop first). All model data is one `house.json` per house.
 

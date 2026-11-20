@@ -1,6 +1,6 @@
 # Frontend architecture and code placement
 
-Updated: 2026-11-17 (Phase 11 production host).
+Updated: 2026-11-19. Earlier: 2026-11-17 (Phase 11 production host).
 
 Status: D13 is resolved. The route/module layout, React Router Data Mode, Zustand, and typed client/service/domain/repository boundaries below are the selected MVP conventions. The map and source layout describe the folders that exist (checked 2026-11-16); concrete schemas and method signatures live in the source.
 

@@ -1,6 +1,6 @@
 # Screen 1: Houses
 
-Updated: 2026-11-19.
+Updated: 2026-11-20 (Upload house (house archive)).
 
 Status: MVP Phase 1, implemented; restyled in Phase 5.10. The card listing and folder data source are owner requirements; lifecycle behavior is resolved in [D14](../../decisions.md#d14-project-management-and-names).
 

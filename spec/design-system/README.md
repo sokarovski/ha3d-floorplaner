@@ -1,6 +1,6 @@
 # Design system, themes, and React conventions
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: a reusable design system, named light/dark tokens, Light/Dark/Auto settings, data-attribute styling, `.tw.css` filenames, and the React conventions below are owner requirements. Tailwind is the selected MVP styling engine under D13. The visual rules (§1), the two-level colours (§3), instant settings, segmented choices, and Yes/No toggles are owner decisions from the Phase 5 redesign (5.5–5.10 and follow-up rounds). The component list in §7 is what exists in `src/design-system/`; exact token values are implementation conventions.
 

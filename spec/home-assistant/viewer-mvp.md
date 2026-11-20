@@ -1,6 +1,6 @@
 # HA viewer MVP
 
-Updated: 2026-11-18 (Phase 16.1/16.3 whole house, floor switching and transitions; Phase 13.7 floor widgets). Earlier: 2026-11-17 (Phase 11 production component; standalone dev behavior retained).
+Updated: 2026-11-20 (Phase 21: dithered room fade, one set of floors, floor ride, renderers with fields, views prepared after load, the fake HA in the dev harness). Earlier: 2026-11-18 (Phase 16.1/16.3 whole house, floor switching and transitions; Phase 13.7 floor widgets); 2026-11-17 (Phase 11 production component; standalone dev behavior retained).
 
 Status: **owner requirement**, decided in [D23](../decisions.md#d23-ha-viewer-mvp). This is the first Home Assistant deliverable. It is a proof of concept that runs alongside the builder MVP and does not change the builder's own MVP gates. The rest of `home-assistant/` stays future design context.
 

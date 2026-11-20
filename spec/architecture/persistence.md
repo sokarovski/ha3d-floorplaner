@@ -1,6 +1,6 @@
 # Folder and JSON persistence
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: folder/JSON storage, one `house.json` per house containing its floors, house-owned `textures/`, full-JSON saves, Git-style revision history, and server-owned asset metadata are owner requirements. Naming, deletion, durability, and Git details are resolved in [D09](../decisions.md#d09-saving-cancellation-and-model-undo) and [D14](../decisions.md#d14-project-management-and-names). Schemas are implementation work.
 

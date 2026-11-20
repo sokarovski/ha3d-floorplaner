@@ -1,6 +1,6 @@
 # Screen 3: Object Editor
 
-Updated: 2026-11-16.
+Updated: 2026-11-18.
 
 Status: MVP Phase 2, implemented. A dedicated screen for importing models and saving them as reusable templates is an owner requirement. Templates are glTF with Homeplan metadata ([D17](../../decisions.md#d17-object-asset-format-and-template-metadata)); GLB/glTF and STL imports are accepted. Library scope and versioning are resolved in [D07](../../decisions.md#d07-template-library-and-updates); layout details are implementation choices.
 

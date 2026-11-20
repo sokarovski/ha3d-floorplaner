@@ -1,6 +1,6 @@
 # Lighting: fixtures, linear sources, color modes, and groups
 
-Updated: 2026-11-18 (Phase 17.3 wall-mounted lights, outside wall lights; Phase 15.5 sky light through windows and the indoor sky fill; Phase 15.4 strip gloss).
+Updated: 2026-11-19. Earlier: 2026-11-18 (Phase 17.3 wall-mounted lights, outside wall lights; Phase 15.5 sky light through windows and the indoor sky fill; Phase 15.4 strip gloss).
 
 Status: MVP Phase 1; lamp types, natural strips, fixture emitters, and the calibration below are Phase 8.9. The following are owner requirements: area-owned visible and invisible sources, fixture attachments, adjustable output and color, light groups, linear lighting, and RGB. Units, emitters, shadows, and group behavior are resolved in [D08](../../decisions.md#d08-lighting-and-groups). Pins, handles, and the light controls were added in Phase 5 (5.11, 5.12 and a follow-up). Field names match `shared/domain/schemas/light.ts`.
 

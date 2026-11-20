@@ -1,6 +1,6 @@
 # Global application preferences and browser-state synchronization
 
-Updated: 2026-11-17 (Phase 11 implementation).
+Updated: 2026-11-19. Earlier: 2026-11-17 (Phase 11 implementation).
 
 Status: D12 is resolved. There are no application users, accounts, profiles, ownership filters, or per-user preferences. All durable application data is global to the installation. JSON preferences, selected browser caches/session state, and occasional synchronization remain required; exact field/default/timing policies remain implementation details.
 

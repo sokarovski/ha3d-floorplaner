@@ -1,6 +1,6 @@
 # Stairs and floor openings
 
-Updated: 2026-11-18.
+Updated: 2026-11-19.
 
 Status: Phase 16.14 (owner decisions, 2026-11-18). Stairs are ordinary objects placed in any room, and floors are cut automatically by a derived step. This replaces the Phase 2–5 **staircase area** (an area whose `kind` was `staircase`, with an opening footprint and one fitted stair instance); see [history](#history). The file keeps its name so existing links stay valid. Field names match `shared/domain/schemas/instances.ts`.
 

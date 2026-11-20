@@ -1,6 +1,6 @@
 # Editor settings: appearance, ground grid, and measurement units
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: MVP Phase 1. The following are owner requirements: Light/Dark/Auto appearance, a ground-plane grid, a saved project length unit (default mm), mixed-unit input with realtime conversion, and **1 internal unit = 1 mm** with fractions. Display formatting follows [D16](../../decisions.md#d16-interaction-defaults-and-support-limits).
 

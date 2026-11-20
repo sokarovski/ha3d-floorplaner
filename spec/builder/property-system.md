@@ -1,6 +1,6 @@
 # Property schemas and the property panel
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: resolved ([D18](../decisions.md#d18-property-schemas-and-the-property-panel)). Owner requirements:
 - Every object type has its own property schema and metadata.

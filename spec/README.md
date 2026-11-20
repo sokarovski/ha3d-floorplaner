@@ -1,6 +1,6 @@
 # Home floor-plan specification
 
-Updated: 2026-11-19. This folder holds the specification; the MVP application lives next to it (see the [project README](../README.md)).
+Updated: 2026-11-20. This folder holds the specification; the MVP application lives next to it (see the [project README](../README.md)).
 
 The product is an editable, open-top 3D model of a home that later becomes a Home Assistant control surface. The **MVP is the builder alone**: a React SPA with a Node.js backend, folder/JSON storage, one building floor rendered at a time, and no ceilings. All Home Assistant work comes after the MVP's usability gate, with one exception: the read-only [HA viewer MVP](home-assistant/viewer-mvp.md) ([D23](decisions.md#d23-ha-viewer-mvp)) is active work.
 

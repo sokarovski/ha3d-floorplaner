@@ -1,6 +1,6 @@
 # Light state in Home Assistant
 
-Updated: 2026-11-18 (Phase 13.6: lumens and temperature overrides from HA Settings).
+Updated: 2026-11-19. Earlier: 2026-11-18 (Phase 13.6: lumens and temperature overrides from HA Settings).
 
 Status: post-MVP design notes ([D15](../decisions.md#d15-card-interaction-and-state-policy)). Moved here from the [lighting specification](../builder/features/lighting.md) so that MVP feature documents contain only builder behavior. The builder MVP authors light identity, capabilities, and defaults; everything below is card/runtime work.
 

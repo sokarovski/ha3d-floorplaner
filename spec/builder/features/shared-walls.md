@@ -1,6 +1,6 @@
 # Arranging areas and merging walls
 
-Updated: 2026-11-16.
+Updated: 2026-11-18.
 
 Status: resolved ([D05](../../decisions.md#d05-walls-between-adjacent-areas)). The following are owner requirements:
 

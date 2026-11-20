@@ -1,6 +1,6 @@
 # Yards: lawn, fences, gates, and pathways
 
-Updated: 2026-11-18.
+Updated: 2026-11-19.
 
 Status: implemented (Phase 17.2). Owner requirements (2026-11-18) are marked as such; the rest are resolved review inferences or implementation conventions, labelled where they matter.
 

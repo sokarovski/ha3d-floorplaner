@@ -1,6 +1,6 @@
 # Floor Plan Builder
 
-Updated: 2026-11-16.
+Updated: 2026-11-18.
 
 Status: the builder is the whole MVP ([D01](../decisions.md#d01-first-useful-release)); phases are defined in [MVP scope](../product/mvp-scope.md), including the [owner additions](../product/mvp-scope.md#owner-additions-after-the-initial-phases) of Phases 3–6. All Home Assistant work is post-MVP, except the [HA viewer MVP](../home-assistant/viewer-mvp.md) ([D23](../decisions.md#d23-ha-viewer-mvp)), which reads houses but does not edit them.
 

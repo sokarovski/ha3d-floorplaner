@@ -1,6 +1,6 @@
 # Design-system documentation application
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: the unlisted `/ds` route, design-system home, color/theme documentation, individual component pages, live examples, props, and View source popups are owner requirements. Route names below the root and the catalog organization are implementation conventions; the pages below are built (`src/features/design-system-docs/`, routes in `src/app/routes/designSystemRoutes.ts`).
 

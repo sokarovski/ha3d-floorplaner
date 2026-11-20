@@ -1,6 +1,6 @@
 # Floor data model and geometry rendering
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: the storage hierarchy, Floor/Area hierarchy, local geometry groups/transforms, 1 mm internal unit, floor shape and wall guides with derived RealFloor/RealWall, and local TypeScript renderers are resolved ([D03](../decisions.md#d03-coordinates-units-and-floor-local-geometry), [D04](../decisions.md#d04-footprints-walls-and-stable-boundaries)). Implemented: the `house.json` schema is built (house schema version 6) in TypeBox in `shared/domain/schemas/`; field names on this page match it. Per-type properties are listed in [object models](object-models.md).
 

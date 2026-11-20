@@ -1,6 +1,6 @@
 # Geometry groups, guides, and derived real geometry
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: resolved ([D03](../../decisions.md#d03-coordinates-units-and-floor-local-geometry), [D04](../../decisions.md#d04-footprints-walls-and-stable-boundaries)). Field names and kernel details are implementation conventions.
 

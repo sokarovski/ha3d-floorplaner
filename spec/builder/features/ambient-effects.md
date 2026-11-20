@@ -1,6 +1,6 @@
 # Ambient effects: swirls and vapour on objects
 
-Updated: 2026-11-16.
+Updated: 2026-11-19.
 
 Status: **resolved ([D24](../../decisions.md#d24-ambient-effects)) and implemented (Phase 7.11).** Owner requirement (2026-11-16): small animations that run every 20 seconds; for a start, wind-like swirls that play like a stop-motion animation for 3–4 seconds, red above a water heater or boiler (heating water), blue in front of an AC unit (blowing cold air), later water vapour above a dryer. Everything else (model, editing, the frame drawings) is review inference under "use your best judgement"; timings and shapes are implementation conventions.
 

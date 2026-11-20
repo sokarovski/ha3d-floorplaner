@@ -1,6 +1,6 @@
 # React and Three.js integration
 
-Updated: 2026-11-16.
+Updated: 2026-11-20 (Phase 21: one set of floors, the dithered room fade).
 
 Status: D13 is resolved. MVP uses a typed Three.js runtime hosted by a small React viewport component, with Zustand subscriptions and the shared document/command layer. React Three Fiber is not selected. Since [D23](../decisions.md#d23-ha-viewer-mvp), `src/renderer/` is also used by the Lit [HA viewer](../home-assistant/viewer-mvp.md), so it must stay free of React, stores, and design-system imports (owner requirement, AGENTS.md).
 

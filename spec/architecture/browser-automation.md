@@ -1,6 +1,6 @@
 # Browser automation
 
-Updated: 2026-11-19.
+Updated: 2026-11-20 (Phase 21: the dev harness's fake HA bridge).
 
 Status: owner requirement (2026-11-15): expose editor operations and discoverable documentation through global JavaScript functions. Owner request (2026-11-19): expose house-level tools on the Houses screen too ([Houses-level bridge](#houses-level-bridge)). The agent calls these wrappers; Homeplan performs backend requests through its configured resource clients. This is a documented exception to the prohibition on undocumented global state, not a global service locator.
 

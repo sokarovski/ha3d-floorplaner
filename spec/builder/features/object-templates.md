@@ -1,6 +1,6 @@
 # Object templates: glTF assets with placement metadata
 
-Updated: 2026-11-18 (Phase 17.3 outdoor family).
+Updated: 2026-11-19. Earlier: 2026-11-18 (Phase 17.3 outdoor family).
 
 Status: resolved ([D17](../../decisions.md#d17-object-asset-format-and-template-metadata)). Owner requirements: reuse an open 3D standard instead of a project-specific format, add the application's own properties (direction, resizing, stacking, attachment) on top of it, and keep reusing existing STL collections. Versioning follows [D07](../../decisions.md#d07-template-library-and-updates). The metadata schema is implemented in TypeBox in `shared/domain/templates/metadata.ts` (published as JSON Schema) and the resize engine in `shared/geometry/templateResize.ts`.
 

@@ -1,6 +1,6 @@
 # Production viewer integration and local snapshots
 
-Updated: 2026-11-19 (discovery, release packaging, brand images).
+Updated: 2026-11-20 (Phase 21: Settings tabs (Floor planners, Houses, Panels), house archives, renderers per device). Earlier: 2026-11-19 (discovery, release packaging, brand images).
 
 Status: **implemented and owner-accepted on a real installation** (owner requirements from Phase 11, resolved in [D27](../decisions.md#d27-production-ha-viewer-and-local-snapshots)). The component, snapshot routes and bundle are delivered; DEV MODE, panel Upgrade and a full backup/restore were not part of that acceptance. This document owns runtime/storage behavior; the [API spec](../architecture/api.md#phase-11-snapshot-transfer-and-integration-api) owns routes.
 

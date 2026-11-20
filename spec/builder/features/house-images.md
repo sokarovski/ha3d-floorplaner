@@ -1,6 +1,6 @@
 # House image uploads and reusable textures
 
-Updated: 2026-11-16.
+Updated: 2026-11-20 (proposed material values of an image).
 
 Status: MVP Phase 1. Image uploads stored in each house's `textures/` folder and reused as surface textures are owner requirements; accepted formats are JPEG, PNG, and WebP ([D19](../../decisions.md#d19-materials)). The image index is server-owned ([D14](../../decisions.md#d14-project-management-and-names)). Limits and deletion follow [D14](../../decisions.md#d14-project-management-and-names) and [D16](../../decisions.md#d16-interaction-defaults-and-support-limits).
 
