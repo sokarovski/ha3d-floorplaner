@@ -4,7 +4,7 @@ import Type from "typebox";
 import type { Static } from "typebox";
 import { hp } from "../schemas/annotations";
 import type { SurfaceMaterialValue } from "../schemas/values";
-import { Angle, Vector2Length } from "../schemas/values";
+import { Vector2Length } from "../schemas/values";
 
 const toSrgbChannel = (linear: number): number => {
   const clamped = Math.min(1, Math.max(0, linear));
@@ -44,7 +44,13 @@ export const MaterialView = Type.Object(
     image: Type.Optional(Type.String({ title: "Texture", ...hp({ editor: "image", order: 1 }) })),
     ...colorFields,
     tileSizeMm: Vector2Length({ title: "Tile size", order: 5 }),
-    rotationDeg: Angle({ title: "Texture rotation", order: 6 }),
+    // A slider over a full turn (owner, 2026-11-20); stored angles outside 0–360 are shown as their equivalent.
+    rotationDeg: Type.Number({
+      title: "Texture rotation",
+      minimum: 0,
+      maximum: 360,
+      ...hp({ editor: "slider", step: 1, quantity: "angle", order: 6 }),
+    }),
     offsetMm: Vector2Length({ title: "Texture offset", order: 7 }),
   },
   { additionalProperties: false },
@@ -71,7 +77,7 @@ export const toMaterialView = (material: SurfaceMaterialValue): MaterialViewValu
     roughness: pbr.roughnessFactor,
     metallic: pbr.metallicFactor,
     tileSizeMm: placement?.tileSizeMm ?? { x: 1000, y: 1000 },
-    rotationDeg: placement?.rotationDeg ?? 0,
+    rotationDeg: (((placement?.rotationDeg ?? 0) % 360) + 360) % 360,
     offsetMm: placement?.offsetMm ?? { x: 0, y: 0 },
   };
 };

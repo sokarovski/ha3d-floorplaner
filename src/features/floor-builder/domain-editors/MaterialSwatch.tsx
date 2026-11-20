@@ -11,8 +11,8 @@ type MaterialSwatchProps = Readonly<{
 }>;
 
 /**
- * A material as a square swatch (the material chooser): its texture repeated at its tile size over `spanMm` and
- * tinted by its colour, or the flat colour; shinier materials get a soft highlight.
+ * A material as a square swatch (the material chooser): its texture repeated at its tile size over `spanMm`, turned
+ * by its rotation and tinted by its colour, or the flat colour; shinier materials get a soft highlight.
  */
 export const MaterialSwatch = ({ material, spanMm, size }: MaterialSwatchProps): ReactElement => {
   const data = useDomainEditorData();
@@ -21,6 +21,8 @@ export const MaterialSwatch = ({ material, spanMm, size }: MaterialSwatchProps):
   const repeatX = tile === undefined || tile.x <= 0 ? 100 : Math.min(100, (tile.x / spanMm) * 100);
   const repeatY = tile === undefined || tile.y <= 0 ? 100 : Math.min(100, (tile.y / spanMm) * 100);
   const shine = 1 - material.pbrMetallicRoughness.roughnessFactor;
+  // glTF's texture rotation turns the image counter-clockwise on the surface.
+  const rotation = -(material.extras?.homeplan.rotationDeg ?? 0);
   return (
     <span
       aria-hidden="true"
@@ -36,7 +38,9 @@ export const MaterialSwatch = ({ material, spanMm, size }: MaterialSwatchProps):
           return;
         }
         element.style.setProperty("--swatch-image", `url("${data.thumbnailUrl(texture.imageId)}")`);
-        element.style.setProperty("--swatch-repeat", `${String(repeatX)}% ${String(repeatY)}%`);
+        // The texture layer is twice the swatch's size (so a turned texture still covers it): half the repeat.
+        element.style.setProperty("--swatch-repeat", `${String(repeatX / 2)}% ${String(repeatY / 2)}%`);
+        element.style.setProperty("--swatch-rotation", `${String(rotation)}deg`);
       }}
     />
   );

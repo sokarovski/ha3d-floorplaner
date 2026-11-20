@@ -203,15 +203,27 @@
     background-image: linear-gradient(135deg, rgb(255 255 255 / var(--swatch-shine, 0)) 0%, transparent 55%);
   }
 
+  /* The texture on a layer twice the swatch's size, turned by the material's rotation and tinted (multiply);
+     the sheen stays on the swatch above it. */
   [data-material-swatch][data-material-swatch-textured] {
-    background-image:
-      linear-gradient(135deg, rgb(255 255 255 / var(--swatch-shine, 0)) 0%, transparent 55%),
-      var(--swatch-image);
-    background-size:
-      100% 100%,
-      var(--swatch-repeat, 100% 100%);
-    background-repeat: no-repeat, repeat;
-    background-blend-mode: normal, multiply;
+    @apply relative overflow-hidden;
+    background-image: none;
+  }
+
+  [data-material-swatch][data-material-swatch-textured]::before {
+    @apply absolute content-[""];
+    inset: -50%;
+    background-color: var(--swatch-color, #ccc);
+    background-image: var(--swatch-image);
+    background-size: var(--swatch-repeat, 50% 50%);
+    background-repeat: repeat;
+    background-blend-mode: multiply;
+    transform: rotate(var(--swatch-rotation, 0deg));
+  }
+
+  [data-material-swatch][data-material-swatch-textured]::after {
+    @apply absolute inset-0 content-[""];
+    background-image: linear-gradient(135deg, rgb(255 255 255 / var(--swatch-shine, 0)) 0%, transparent 55%);
   }
 
   [data-material-swatch][data-material-swatch-preview] {

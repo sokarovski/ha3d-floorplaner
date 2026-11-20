@@ -239,6 +239,12 @@ export const MaterialPickerPopup = ({
                     </dd>
                   </>
                 )}
+                {selected.material.pbrMetallicRoughness.baseColorTexture === undefined ? null : (
+                  <>
+                    <dt>Rotation</dt>
+                    <dd>{String(Math.round(selected.material.extras?.homeplan.rotationDeg ?? 0))}°</dd>
+                  </>
+                )}
                 <dt>Shininess</dt>
                 <dd>
                   {String(Math.round((1 - selected.material.pbrMetallicRoughness.roughnessFactor) * 100))} %
