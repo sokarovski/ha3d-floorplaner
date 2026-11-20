@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.4
+
+- **Material chooser** in the builder: **More…** on any material opens a chooser like the object chooser, with search, categories (Used in this house, House presets, Paint and plain, Wood, Tiles and stone, Outdoor, Roofing) and swatches that show each texture at its real size and rotation.
+- The chooser's side pane edits the selected material with the same fields as the property panel. **Save** writes the changes back (a house preset, or every surface that uses that material, undone in one step), **Revert** goes back. Built-in materials show their values and can be applied, not changed. Choosing another material with unsaved changes asks to save, cancel or discard.
+- **Create material** makes a new white house preset you then give a texture and adjust. **Save as preset** saves the selected surface's own material.
+- Textures carry proposed values (the real size of one repeat, shininess, metallic): choosing a texture applies them. Texture rotation is a 0–360° slider.
+- Viewer renderers have settings: Dithered now has "Other rooms visible" (0 % shows only the open room, 100 % keeps every room solid), "Walls in front of the open room", "Picture quality" (Standard or Low power) and "Show the floors below during a floor switch". A device that used Low power, Rooms always fully visible or Only the open room keeps its look.
+- Fixed: a panel older than the integration (for example one brought back with Use previous) showed "Homeplan returned an incompatible response". Such a panel is no longer used; the integration's own panel loads instead.
+
 ## 0.1.3
 
 - Settings in the viewer are now tabs at the bottom: **House** (the things in your house, saved with Save), **Floor planners**, **Houses** and **Panels** (these apply at once). Fields use Home Assistant's own controls.
