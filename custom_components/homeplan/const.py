@@ -1,7 +1,7 @@
 """Homeplan protocol constants. No Homeplan user/account layer."""
 
 DOMAIN = "homeplan"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 MIN_HA_VERSION = "2025.7.0"
 LOADER_PROTOCOL = 1
 API_PROTOCOL = 1
