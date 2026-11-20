@@ -23,7 +23,10 @@ type Draft = Readonly<{
 }>;
 
 /** The page shown: Controls, an entity (its ID), or a new entity. */
-type Page = Readonly<{ kind: "controls" }> | Readonly<{ kind: "entity"; entityId: string | null }>;
+type Page =
+  | Readonly<{ kind: "controls" }>
+  | Readonly<{ kind: "device" }>
+  | Readonly<{ kind: "entity"; entityId: string | null }>;
 
 const emptyDraft: Draft = {
   entityId: "light.new_light",
@@ -327,6 +330,16 @@ export class FakeHaSetup extends LitElement {
         Controls
         <small>Step buttons, display, renderer</small>
       </button>
+      <button
+        class="item"
+        ?data-selected=${this.page.kind === "device"}
+        @click=${() => {
+          this.page = { kind: "device" };
+        }}
+      >
+        This device
+        <small>Renderer and its fields</small>
+      </button>
       ${domains.map(
         (domain) =>
           html`<h3>
@@ -556,9 +569,22 @@ export class FakeHaSetup extends LitElement {
     </section>`;
   }
 
+  /** This device's renderer and its fields: Settings → Panels → This device in HA, the same element and code. */
+  private renderDevice(): TemplateResult {
+    return html`<section class="page">
+      <homeplan-connection-settings .view=${"device"}></homeplan-connection-settings>
+    </section>`;
+  }
+
   override render(): TemplateResult {
     return html`${this.renderNav()}
-    ${this.page.kind === "controls" ? this.renderControls() : this.renderEntity()}`;
+    ${
+      this.page.kind === "controls"
+        ? this.renderControls()
+        : this.page.kind === "device"
+          ? this.renderDevice()
+          : this.renderEntity()
+    }`;
   }
 }
 

@@ -31,7 +31,8 @@ export type SettingsPage = "floorPlanners" | "houses" | "panels";
 /** The Settings footer's tabs: House (the dialog's own tree of things) and the connection pages. */
 export type SettingsTab = "house" | "setupHa" | SettingsPage;
 /** `plannerList`: the Floor planners tab's tree (the floor planners, + to add one). */
-export type ConnectionView = "footer" | "plannerList" | SettingsPage;
+/** `device`: only This device's renderer (the dev harness's Setup HA, which has no Panels tab). */
+export type ConnectionView = "footer" | "plannerList" | "device" | SettingsPage;
 
 /** What Connect last found, kept for this browser session (15.12). */
 type RememberedConnection = Readonly<{
@@ -381,7 +382,7 @@ export class HomeplanConnectionSettings extends LitElement {
   protected override willUpdate(): void {
     this.dataset.view = this.view;
     // The Panels tab may reuse an element first shown as another page: its renderer list is read when it shows.
-    if (this.view === "panels" && this.renderers.length === 0) {
+    if ((this.view === "panels" || this.view === "device") && this.renderers.length === 0) {
       this.renderers = availableRenderers();
       const current = deviceRenderer();
       this.rendererId = current.id;
@@ -1721,6 +1722,8 @@ export class HomeplanConnectionSettings extends LitElement {
         return this.renderFloorPlanners();
       case "panels":
         return this.renderPanels();
+      case "device":
+        return this.renderDevice();
       case "houses":
         return this.renderHouses();
     }
