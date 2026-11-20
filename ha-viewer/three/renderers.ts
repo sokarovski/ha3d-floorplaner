@@ -18,20 +18,61 @@ export type ViewerLimits = Readonly<{
   pointShadowSize: number;
 }>;
 
-/** One adjustable value of a renderer, shown as a slider (per device). */
-export type RendererSetting = Readonly<{
-  key: string;
-  label: string;
-  hint: string;
-  min: number;
-  max: number;
-  step: number;
-  defaultValue: number;
-  /** Shown as a percentage of the value (0.1 → 10 %). */
-  percent: boolean;
-}>;
+/**
+ * A renderer's editable fields (owner, 2026-11-20): each renderer class declares them in a static `fields` property,
+ * keyed by the stored name; Settings → Panels shows them as a form when the renderer is chosen, and the values are
+ * kept per device. Three types: a slider (a number in a range, optionally in %), a toggle (on or off) and a select
+ * (one of a few options). A stored value that does not fit its field reads as the field's default.
+ */
+export type RendererField =
+  | Readonly<{
+      type: "slider";
+      label: string;
+      hint?: string;
+      min: number;
+      max: number;
+      step: number;
+      /** Shown after the value ("%", "px"). */
+      unit?: string;
+      defaultValue: number;
+    }>
+  | Readonly<{ type: "toggle"; label: string; hint?: string; defaultValue: boolean }>
+  | Readonly<{
+      type: "select";
+      label: string;
+      hint?: string;
+      options: readonly Readonly<{ value: string; label: string }>[];
+      defaultValue: string;
+    }>;
 
-export type RendererSettings = Readonly<Record<string, number>>;
+export type RendererFields = Readonly<Record<string, RendererField>>;
+
+/** A field's value: a number (slider), a boolean (toggle) or a string (select). */
+export type RendererValue = number | boolean | string;
+export type RendererValues = Readonly<Record<string, RendererValue>>;
+
+/** The value if it fits the field (a slider's number is kept within its range), else the field's default. */
+export const fieldValue = (field: RendererField, value: unknown): RendererValue => {
+  switch (field.type) {
+    case "slider":
+      return typeof value === "number" && Number.isFinite(value)
+        ? Math.min(field.max, Math.max(field.min, value))
+        : field.defaultValue;
+    case "toggle":
+      return typeof value === "boolean" ? value : field.defaultValue;
+    case "select":
+      return field.options.some((option) => option.value === value) && typeof value === "string"
+        ? value
+        : field.defaultValue;
+  }
+};
+
+/** Every field's value from stored ones (unknown keys dropped, missing or invalid ones at their default). */
+export const fieldValues = (
+  fields: RendererFields,
+  stored: Readonly<Record<string, unknown>>,
+): RendererValues =>
+  Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, fieldValue(field, stored[key])]));
 
 /** One frame to draw: the WebGL renderer, the scene, and the camera already placed for this frame. */
 export type RenderFrame = Readonly<{ renderer: WebGLRenderer; scene: Scene; camera: Camera }>;
@@ -56,32 +97,31 @@ export abstract class ViewerRenderer {
   abstract readonly bestFor: string;
   /** What it costs or leaves out (the picker shows it). */
   abstract readonly tradeOffs: string;
-  protected readonly settings: RendererSettings;
+  /** The renderer's editable fields: its class's static `fields`. */
+  readonly fields: RendererFields;
+  /** This device's values, one per field. */
+  readonly values: RendererValues;
 
-  constructor(settings: RendererSettings = {}) {
-    this.settings = settings;
+  constructor(fields: RendererFields, stored: Readonly<Record<string, unknown>> = {}) {
+    this.fields = fields;
+    this.values = fieldValues(fields, stored);
   }
 
-  /** The values a device can adjust for this renderer. */
-  settingsSchema(): readonly RendererSetting[] {
-    return [];
+  /** A slider's value (NaN for another field). */
+  protected number(key: string): number {
+    const value = this.values[key];
+    return typeof value === "number" ? value : Number.NaN;
   }
 
-  /** Every setting's value on this device (for a picker). */
-  currentSettings(): RendererSettings {
-    return Object.fromEntries(
-      this.settingsSchema().map((setting) => [setting.key, this.setting(setting.key)]),
-    );
+  /** A toggle's value (false for another field). */
+  protected flag(key: string): boolean {
+    return this.values[key] === true;
   }
 
-  /** A setting's value on this device, within its range, else its default. */
-  protected setting(key: string): number {
-    const schema = this.settingsSchema().find((setting) => setting.key === key);
-    if (schema === undefined) return Number.NaN;
-    const value = this.settings[key];
-    return typeof value === "number" && Number.isFinite(value)
-      ? Math.min(schema.max, Math.max(schema.min, value))
-      : schema.defaultValue;
+  /** A select's value ("" for another field). */
+  protected choice(key: string): string {
+    const value = this.values[key];
+    return typeof value === "string" ? value : "";
   }
 
   limits(): ViewerLimits {
@@ -119,40 +159,97 @@ export abstract class ViewerRenderer {
   }
 }
 
-/** The default: the room fade by dither, with an adjustable share of what stays visible. */
+/** Picture quality: the standard limits, or lower sharpness with fewer, smaller lamp shadows. */
+const qualityField: RendererField = {
+  type: "select",
+  label: "Picture quality",
+  hint: "Low power: 1.5× sharpness and 4 lamp shadows of lower resolution (at night the other lamps shine through walls); for older phones and wall tablets.",
+  options: [
+    { value: "standard", label: "Standard" },
+    { value: "low", label: "Low power" },
+  ],
+  defaultValue: "standard",
+};
+
+const floorsBelowField: RendererField = {
+  type: "toggle",
+  label: "Show the floors below during a floor switch",
+  hint: "Off draws only the new floor while the camera rides to it (lighter).",
+  defaultValue: true,
+};
+
+/**
+ * The default (owner, 2026-11-20: one renderer with fields instead of one per variant): an open room fades the rest
+ * with the shader dither; how much stays visible goes from only the open room (0 %) to every room solid (100 %, no
+ * fading at all); the open room's walls on the camera's side keep their own share; quality and the ride's floors
+ * are fields too.
+ */
 export class DitheredRenderer extends ViewerRenderer {
+  static readonly fields: RendererFields = {
+    otherRooms: {
+      type: "slider",
+      label: "Other rooms visible",
+      hint: "While a room is open: 0 % shows only that room, 100 % keeps every room solid (nothing fades).",
+      min: 0,
+      max: 100,
+      step: 1,
+      unit: "%",
+      defaultValue: 10,
+    },
+    nearWalls: {
+      type: "slider",
+      label: "Walls in front of the open room",
+      hint: "How much of the open room's walls on your side stays drawn; 0 % lets you see straight in.",
+      min: 0,
+      max: 100,
+      step: 1,
+      unit: "%",
+      defaultValue: 25,
+    },
+    quality: qualityField,
+    floorsBelow: floorsBelowField,
+  };
   readonly id: string = "dithered";
   readonly label: string = "Dithered";
   readonly description: string =
-    "An open room fades the rest with a fine pixel pattern, without rebuilding anything.";
-  readonly bestFor: string = "Most devices: phones, tablets and desktops. The default.";
+    "An open room fades the rest with a fine pixel pattern, without rebuilding anything; how much stays visible is up to you.";
+  readonly bestFor: string =
+    "Every device: phones, tablets and desktops. The default. From 0 % (only the open room) to 100 % (nothing fades).";
   readonly tradeOffs: string =
-    "Up close the faded rooms look like a fine dot pattern rather than smooth glass. Adjust how much stays visible below.";
+    "Up close the faded rooms look like a fine dot pattern rather than smooth glass.";
 
-  override settingsSchema(): readonly RendererSetting[] {
-    return [
-      {
-        key: "othersVisible",
-        label: "Other rooms visible",
-        hint: "How much of the other rooms stays drawn while a room is open (the walls in front of it stay a bit more).",
-        min: 0.03,
-        max: 0.5,
-        step: 0.01,
-        defaultValue: defaultDitherLevels.dimmed,
-        percent: true,
-      },
-    ];
+  constructor(
+    stored: Readonly<Record<string, unknown>> = {},
+    fields: RendererFields = DitheredRenderer.fields,
+  ) {
+    super(fields, stored);
+  }
+
+  override limits(): ViewerLimits {
+    return this.choice("quality") === "low" ? lowLimits : standardLimits;
+  }
+
+  override floorsBelowDuringRide(): boolean {
+    return this.flag("floorsBelow");
+  }
+
+  override roomFade(): RoomFade {
+    return this.number("otherRooms") >= 100 ? "none" : "dither";
   }
 
   override ditherLevels(): DitherLevels {
-    const others = this.setting("othersVisible");
-    // The near walls keep 2.5 times as much (the default 10 % → 25 %), at most 75 %.
-    return { dimmed: others, faded: Math.min(0.75, others * 2.5) };
+    const others = this.number("otherRooms") / 100;
+    // The near walls never fade more than the other rooms.
+    return { dimmed: others, faded: Math.max(others, this.number("nearWalls") / 100) };
   }
 }
 
 /** The earlier look: other rooms as transparent copies (smooth, but each room open rebuilds and compiles). */
 export class SeeThroughRenderer extends DitheredRenderer {
+  static override readonly fields: RendererFields = {
+    quality: qualityField,
+    floorsBelow: floorsBelowField,
+  };
   override readonly id: string = "seeThrough";
   override readonly label: string = "See-through";
   override readonly description: string = "The other rooms turn smoothly transparent while a room is open.";
@@ -160,8 +257,8 @@ export class SeeThroughRenderer extends DitheredRenderer {
   override readonly tradeOffs: string =
     "Heavier: opening a room rebuilds walls and compiles shaders, which can stutter or crash a phone.";
 
-  override settingsSchema(): readonly RendererSetting[] {
-    return [];
+  constructor(stored: Readonly<Record<string, unknown>> = {}) {
+    super(stored, SeeThroughRenderer.fields);
   }
 
   override roomFade(): RoomFade {
@@ -169,90 +266,25 @@ export class SeeThroughRenderer extends DitheredRenderer {
   }
 }
 
-/** For phones and older tablets: lower sharpness, fewer and smaller lamp shadows, no extra floors during a ride. */
-export class LowPowerRenderer extends DitheredRenderer {
-  override readonly id: string = "lowPower";
-  override readonly label: string = "Low power";
-  override readonly description: string =
-    "Dithered, at 1.5× sharpness with 4 lamp shadows of lower resolution, and only the new floor during a floor switch.";
-  override readonly bestFor: string = "Older phones and wall tablets, or long-running screens on battery.";
-  override readonly tradeOffs: string =
-    "Slightly softer picture; at night only the 4 brightest lamps cast shadows, the others shine through walls.";
-
-  override limits(): ViewerLimits {
-    return lowLimits;
-  }
-
-  override floorsBelowDuringRide(): boolean {
-    return false;
-  }
-}
-
-/** No fading at all (owner, 2026-11-20): an open room is framed, and every room stays solid and fully visible. */
-export class FullyVisibleRenderer extends DitheredRenderer {
-  override readonly id: string = "fullyVisible";
-  override readonly label: string = "Rooms always fully visible";
-  override readonly description: string =
-    "Opening a room only frames it: nothing fades, every wall, room and object stays solid.";
-  override readonly bestFor: string =
-    "Open-plan homes and top-down views, where walls rarely hide the room, and the lightest work for the device.";
-  override readonly tradeOffs: string =
-    "Walls between the camera and the open room stay in the way; turn the view or use Top view to see in.";
-
-  override settingsSchema(): readonly RendererSetting[] {
-    return [];
-  }
-
-  override roomFade(): RoomFade {
-    return "none";
-  }
-}
-
-/**
- * Only the open room (owner, 2026-11-20): the dithered fade at nothing kept, so every other room, floor and object
- * disappears while a room is open; the room's walls on the camera's side can keep a share (default none).
- */
-export class RoomOnlyRenderer extends DitheredRenderer {
-  override readonly id: string = "roomOnly";
-  override readonly label: string = "Only the open room";
-  override readonly description: string =
-    "Opening a room hides everything else: the other rooms, their furniture and lights disappear until it closes.";
-  override readonly bestFor: string =
-    "Focusing on one room on small screens, and busy homes where neighbouring rooms distract.";
-  override readonly tradeOffs: string =
-    "You lose the context of the rest of the home while a room is open; hidden rooms still cast their shadows.";
-
-  override settingsSchema(): readonly RendererSetting[] {
-    return [
-      {
-        key: "nearWallsVisible",
-        label: "Walls in front visible",
-        hint: "How much of the open room's walls on your side stays drawn (none lets you see straight in).",
-        min: 0,
-        max: 0.5,
-        step: 0.01,
-        defaultValue: 0,
-        percent: true,
-      },
-    ];
-  }
-
-  override ditherLevels(): DitherLevels {
-    return { dimmed: 0, faded: this.setting("nearWallsVisible") };
-  }
-}
-
-/** Every renderer a device can pick, the default first. */
+/** Every renderer a device can pick, the default first, with its class's fields. */
 export const rendererList: readonly Readonly<{
   id: string;
-  create: (settings: RendererSettings) => ViewerRenderer;
+  fields: RendererFields;
+  create: (stored: Readonly<Record<string, unknown>>) => ViewerRenderer;
 }>[] = [
-  { id: "dithered", create: (settings) => new DitheredRenderer(settings) },
-  { id: "seeThrough", create: (settings) => new SeeThroughRenderer(settings) },
-  { id: "lowPower", create: (settings) => new LowPowerRenderer(settings) },
-  { id: "fullyVisible", create: (settings) => new FullyVisibleRenderer(settings) },
-  { id: "roomOnly", create: (settings) => new RoomOnlyRenderer(settings) },
+  { id: "dithered", fields: DitheredRenderer.fields, create: (stored) => new DitheredRenderer(stored) },
+  { id: "seeThrough", fields: SeeThroughRenderer.fields, create: (stored) => new SeeThroughRenderer(stored) },
 ];
+
+/**
+ * Renderers that became fields of Dithered (owner, 2026-11-20): a device that chose one keeps its look, as the
+ * Dithered renderer with these values.
+ */
+const merged: Readonly<Record<string, Readonly<{ id: string; values: RendererValues }>>> = {
+  lowPower: { id: "dithered", values: { quality: "low", floorsBelow: false } },
+  fullyVisible: { id: "dithered", values: { otherRooms: 100 } },
+  roomOnly: { id: "dithered", values: { otherRooms: 0, nearWalls: 0 } },
+};
 
 const choiceKey = "homeplan.renderer";
 const settingsKey = (id: string): string => `homeplan.renderer.${id}`;
@@ -265,39 +297,51 @@ const read = (key: string): string | null => {
   }
 };
 
-const readSettings = (id: string): RendererSettings => {
+/** A renderer's stored values in this browser (checked against its fields when the renderer is created). */
+const readValues = (id: string): Readonly<Record<string, unknown>> => {
   const raw = read(settingsKey(id));
   if (raw === null) return {};
   try {
     const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null) return {};
-    const values: Record<string, number> = {};
-    for (const [key, value] of Object.entries(parsed))
-      if (typeof value === "number" && Number.isFinite(value)) values[key] = value;
-    return values;
+    return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+      ? Object.fromEntries(Object.entries(parsed))
+      : {};
   } catch {
     return {};
   }
 };
 
-/** A renderer by ID with this device's settings for it (unknown IDs fall back to the default). */
-export const createRenderer = (id: string, settings: RendererSettings = readSettings(id)): ViewerRenderer => {
+/** A renderer by ID with these values (unknown IDs fall back to the default). */
+export const createRenderer = (
+  id: string,
+  stored: Readonly<Record<string, unknown>> = readValues(id),
+): ViewerRenderer => {
   const entry = rendererList.find((candidate) => candidate.id === id) ?? rendererList[0];
-  return entry === undefined ? new DitheredRenderer(settings) : entry.create(settings);
+  return entry === undefined ? new DitheredRenderer(stored) : entry.create(stored);
 };
 
-/** This device's renderer and its settings (the default when nothing is stored or storage is blocked). */
-export const deviceRenderer = (): ViewerRenderer => createRenderer(read(choiceKey) ?? "dithered");
+/** This device's renderer and its values (the default when nothing is stored or storage is blocked). */
+export const deviceRenderer = (): ViewerRenderer => {
+  const id = read(choiceKey) ?? "dithered";
+  const old = merged[id];
+  return old === undefined
+    ? createRenderer(id)
+    : createRenderer(old.id, { ...readValues(old.id), ...old.values });
+};
 
-/** Every renderer with this device's settings, for a picker. */
-export const availableRenderers = (): readonly ViewerRenderer[] =>
-  rendererList.map((entry) => entry.create(readSettings(entry.id)));
+/** Every renderer with this device's values for it, for a picker (the chosen one as it runs). */
+export const availableRenderers = (): readonly ViewerRenderer[] => {
+  const current = deviceRenderer();
+  return rendererList.map((entry) =>
+    entry.id === current.id ? current : entry.create(readValues(entry.id)),
+  );
+};
 
-/** Stores this device's choice and the chosen renderer's settings; false when storage is blocked. */
-export const saveDeviceRenderer = (id: string, settings: RendererSettings): boolean => {
+/** Stores this device's choice and the chosen renderer's values; false when storage is blocked. */
+export const saveDeviceRenderer = (id: string, values: RendererValues): boolean => {
   try {
     window.localStorage.setItem(choiceKey, id);
-    window.localStorage.setItem(settingsKey(id), JSON.stringify(settings));
+    window.localStorage.setItem(settingsKey(id), JSON.stringify(values));
     return true;
   } catch {
     return false;

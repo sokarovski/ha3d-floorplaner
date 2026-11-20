@@ -17,7 +17,8 @@ import type { IntegrationClient } from "./integrationClient";
 import { SourceError } from "./houseSource";
 import { tokens } from "./styles/tokens";
 import { availableRenderers, deviceRenderer, saveDeviceRenderer } from "./three/renderers";
-import type { ViewerRenderer } from "./three/renderers";
+import type { RendererField, RendererValue, ViewerRenderer } from "./three/renderers";
+import { fieldValue } from "./three/renderers";
 
 /**
  * The Settings pages for the builder connection (Phase 21, owner 2026-11-20): Floor planners (the builders this
@@ -346,7 +347,7 @@ export class HomeplanConnectionSettings extends LitElement {
   /** This device's renderer choice being edited on the Panels page (21.11), applied with a reload. */
   private renderers: readonly ViewerRenderer[] = [];
   private rendererId = "";
-  private rendererSettings: Record<string, number> = {};
+  private rendererSettings: Readonly<Record<string, RendererValue>> = {};
   private readonly onChange = (): void => {
     void this.perform(() => this.refresh(), false);
   };
@@ -384,7 +385,7 @@ export class HomeplanConnectionSettings extends LitElement {
       this.renderers = availableRenderers();
       const current = deviceRenderer();
       this.rendererId = current.id;
-      this.rendererSettings = { ...current.currentSettings() };
+      this.rendererSettings = current.values;
     }
     if (this.view === "houses" && this.otherHouses.size === 0 && this.connection.servers.length > 0)
       void this.loadOtherHouses();
@@ -1546,13 +1547,12 @@ export class HomeplanConnectionSettings extends LitElement {
     const stored = deviceRenderer();
     const changed =
       chosen !== undefined &&
-      (chosen.id !== stored.id ||
-        JSON.stringify(this.rendererSettings) !== JSON.stringify(stored.currentSettings()));
+      (chosen.id !== stored.id || JSON.stringify(this.rendererSettings) !== JSON.stringify(stored.values));
     const choose = (id: unknown): void => {
       const next = this.renderers.find((renderer) => renderer.id === id);
       if (next === undefined || next.id === this.rendererId) return;
       this.rendererId = next.id;
-      this.rendererSettings = { ...next.currentSettings() };
+      this.rendererSettings = next.values;
       this.requestUpdate();
     };
     return html`<section>
@@ -1590,42 +1590,7 @@ export class HomeplanConnectionSettings extends LitElement {
               <span class="hint"><strong>Best for:</strong> ${chosen.bestFor}</span>
               <span class="hint"><strong>Trade-offs:</strong> ${chosen.tradeOffs}</span>`
       }
-      ${(chosen?.settingsSchema() ?? []).map((setting) => {
-        const value = this.rendererSettings[setting.key] ?? setting.defaultValue;
-        const scale = setting.percent ? 100 : 1;
-        const set = (raw: unknown): void => {
-          const number = numberOf(raw);
-          if (number === undefined) return;
-          this.rendererSettings = { ...this.rendererSettings, [setting.key]: number / scale };
-          this.requestUpdate();
-        };
-        return html`${this.field(
-            setting.key,
-            setting.label,
-            {
-              number: {
-                min: setting.min * scale,
-                max: setting.max * scale,
-                step: setting.step * scale,
-                mode: "slider",
-                ...(setting.percent ? { unit_of_measurement: "%" } : {}),
-              },
-            },
-            Math.round(value * scale * 100) / 100,
-            set,
-            html`<label
-              >${setting.label} · ${String(Math.round(value * scale))}${setting.percent ? " %" : ""}<input
-                type="range"
-                min=${setting.min * scale}
-                max=${setting.max * scale}
-                step=${setting.step * scale}
-                .value=${String(value * scale)}
-                @input=${(event: Event) => {
-                  if (event.target instanceof HTMLInputElement) set(event.target.value);
-                }}
-            /></label>`,
-          )} <span class="hint">${setting.hint}</span>`;
-      })}
+      ${Object.entries(chosen?.fields ?? {}).map(([key, field]) => this.renderRendererField(key, field))}
       <span class="hint"
         >Stored in this browser only: each device (a wall tablet, a phone) keeps its own.</span
       >
@@ -1646,6 +1611,91 @@ export class HomeplanConnectionSettings extends LitElement {
         </button>
       </div>
     </section>`;
+  }
+  /**
+   * One of the chosen renderer's fields (its class's static `fields`): a slider, a toggle or a select, as HA's own
+   * number, boolean and select selectors (plain controls outside HA). Changes wait for Apply and reload.
+   */
+  private renderRendererField(key: string, field: RendererField): TemplateResult {
+    const value = fieldValue(field, this.rendererSettings[key]);
+    const set = (raw: unknown): void => {
+      const next = fieldValue(field, field.type === "slider" ? numberOf(raw) : raw);
+      if (next === value) return;
+      this.rendererSettings = { ...this.rendererSettings, [key]: next };
+      this.requestUpdate();
+    };
+    const hint = field.hint === undefined ? nothing : html`<span class="hint">${field.hint}</span>`;
+    switch (field.type) {
+      case "slider":
+        return html`${this.field(
+          key,
+          field.label,
+          {
+            number: {
+              min: field.min,
+              max: field.max,
+              step: field.step,
+              mode: "slider",
+              ...(field.unit === undefined ? {} : { unit_of_measurement: field.unit }),
+            },
+          },
+          value,
+          set,
+          html`<label
+            >${field.label} · ${String(value)}${field.unit === undefined ? "" : ` ${field.unit}`}<input
+              type="range"
+              min=${field.min}
+              max=${field.max}
+              step=${field.step}
+              .value=${String(value)}
+              @input=${(event: Event) => {
+                if (event.target instanceof HTMLInputElement) set(event.target.value);
+              }}
+          /></label>`,
+        )}
+        ${hint}`;
+      case "toggle":
+        return html`${this.field(
+          key,
+          field.label,
+          { boolean: {} },
+          value,
+          set,
+          html`<label class="toggle"
+            ><input
+              type="checkbox"
+              .checked=${value === true}
+              @change=${(event: Event) => {
+                if (event.target instanceof HTMLInputElement) set(event.target.checked);
+              }}
+            />${field.label}</label
+          >`,
+        )}
+        ${hint}`;
+      case "select":
+        return html`${this.field(
+          key,
+          field.label,
+          { select: { mode: "dropdown", options: field.options.map((option) => ({ ...option })) } },
+          value,
+          set,
+          html`<label
+            >${field.label}<select
+              @change=${(event: Event) => {
+                if (event.target instanceof HTMLSelectElement) set(event.target.value);
+              }}
+            >
+              ${field.options.map(
+                (option) =>
+                  html`<option value=${option.value} ?selected=${option.value === value}>
+                    ${option.label}
+                  </option>`,
+              )}
+            </select></label
+          >`,
+        )}
+        ${hint}`;
+    }
   }
   private renderReload(): TemplateResult | typeof nothing {
     return this.reloadRequired

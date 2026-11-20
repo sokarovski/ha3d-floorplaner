@@ -4,7 +4,13 @@
 // harness offers is in Settings → Setup HA (21.18: its Controls page holds the step buttons, dark mode, day and
 // night, the renderer and the demo bubbles) and on window.homeplan (fakeHaBridge.ts); the page has no bar of its own.
 import "./main";
-import { availableRenderers, deviceRenderer, rendererList, saveDeviceRenderer } from "./three/renderers";
+import {
+  availableRenderers,
+  deviceRenderer,
+  fieldValues,
+  rendererList,
+  saveDeviceRenderer,
+} from "./three/renderers";
 import { createId } from "@shared/domain/ids";
 import type { HaHouseBubblesValue } from "@shared/domain/schemas/homeAssistant";
 import { createFakeHaBridge } from "./fakeHaBridge";
@@ -115,8 +121,9 @@ const setDarkMode = (on: boolean): void => {
   darkMode = on;
   publish();
 };
-const setRenderer = (id: string): boolean => {
-  if (!rendererList.some((entry) => entry.id === id) || !saveDeviceRenderer(id, {})) return false;
+const setRenderer = (id: string, values: Readonly<Record<string, unknown>> = {}): boolean => {
+  const entry = rendererList.find((each) => each.id === id);
+  if (entry === undefined || !saveDeviceRenderer(id, fieldValues(entry.fields, values))) return false;
   window.location.reload();
   return true;
 };
@@ -188,6 +195,8 @@ Reflect.set(
         id: renderer.id,
         label: renderer.label,
         current: renderer.id === current,
+        fields: renderer.fields,
+        values: renderer.values,
       }));
     },
     setRenderer,

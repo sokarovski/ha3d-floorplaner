@@ -20,9 +20,16 @@ export type FakeHaBridgeContext = Readonly<{
   controls: () => readonly FakeHaControl[];
   lastAction: () => string;
   setDarkMode: (on: boolean) => void;
-  renderers: () => readonly Readonly<{ id: string; label: string; current: boolean }>[];
-  /** Saves this browser's renderer and reloads; false for an unknown one. */
-  setRenderer: (id: string) => boolean;
+  /** The renderers with their fields (a renderer class's static `fields`) and this browser's values. */
+  renderers: () => readonly Readonly<{
+    id: string;
+    label: string;
+    current: boolean;
+    fields: Readonly<Record<string, unknown>>;
+    values: Readonly<Record<string, unknown>>;
+  }>[];
+  /** Saves this browser's renderer with its values (checked against its fields) and reloads; false for an unknown one. */
+  setRenderer: (id: string, values: Readonly<Record<string, unknown>>) => boolean;
   /** Writes the demo bubbles for the house shown, then reloads. */
   writeDemoBubbles: () => Promise<void>;
 }>;
@@ -215,7 +222,8 @@ export const createFakeHaBridge = (context: FakeHaBridgeContext) => {
     },
     {
       name: "list_renderers",
-      description: "The viewer's renderers and which one this browser uses.",
+      description:
+        "The viewer's renderers, which one this browser uses, each renderer's fields (slider, toggle or select, with their defaults) and this browser's values.",
       effect: "read",
       inputSchema: Empty,
       examples: [{}],
@@ -224,12 +232,20 @@ export const createFakeHaBridge = (context: FakeHaBridgeContext) => {
     {
       name: "set_renderer",
       description:
-        "Chooses this browser's renderer; the page reloads, so reacquire window.homeplan afterwards.",
+        "Chooses this browser's renderer, optionally with values for its fields (missing or invalid ones take their defaults); the page reloads, so reacquire window.homeplan afterwards.",
       effect: "reload",
-      inputSchema: Type.Object({ id: Type.String() }, { additionalProperties: false }),
-      examples: [{ id: "dithered" }],
+      inputSchema: Type.Object(
+        {
+          id: Type.String(),
+          values: Type.Optional(
+            Type.Record(Type.String(), Type.Union([Type.Number(), Type.Boolean(), Type.String()])),
+          ),
+        },
+        { additionalProperties: false },
+      ),
+      examples: [{ id: "dithered", values: { otherRooms: 0, quality: "low" } }, { id: "seeThrough" }],
       run: (input) => {
-        if (!context.setRenderer(text(input.id)))
+        if (!context.setRenderer(text(input.id), record(input.values)))
           throw new BridgeError("NOT_FOUND", `No renderer ${text(input.id)}. Call list_renderers.`);
         return { id: input.id };
       },
