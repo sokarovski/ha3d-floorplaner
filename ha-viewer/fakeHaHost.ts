@@ -147,6 +147,14 @@ export type FakeHa = Readonly<{
   publish: () => void;
   /** Whether HA's own cards loaded. */
   withCards: () => boolean;
+  /** The hass last given to the panel (Setup HA's own HA fields read it, 21.18). */
+  hass: () => unknown;
+  /** A service call as the panel and the cards make it (window.homeplan's call_service, 21.18). */
+  callService: (
+    domain: string,
+    service: string,
+    data?: Readonly<Record<string, unknown>>,
+  ) => Promise<unknown>;
 }>;
 
 export const startFakeHa = async (options: FakeHaOptions): Promise<FakeHa> => {
@@ -181,6 +189,7 @@ export const startFakeHa = async (options: FakeHaOptions): Promise<FakeHa> => {
     return Promise.reject(new Error(`The fake Home Assistant has no ${String(message.type)}.`));
   };
   let localize: unknown = undefined;
+  let current: unknown = undefined;
   let update: ((next: unknown) => void) | null = null;
   let queue = Promise.resolve();
   const publish = (): void => {
@@ -197,6 +206,7 @@ export const startFakeHa = async (options: FakeHaOptions): Promise<FakeHa> => {
           ...(localize === undefined ? {} : { localize }),
         };
         if (cards === null) {
+          current = partial;
           Reflect.set(panel, "hass", partial);
           return;
         }
@@ -204,6 +214,7 @@ export const startFakeHa = async (options: FakeHaOptions): Promise<FakeHa> => {
         localize ??= typeof hass === "object" && hass !== null ? Reflect.get(hass, "localize") : undefined;
         if (update === null) update = cards.provideHass(document.body, hass);
         else update(hass);
+        current = hass;
         Reflect.set(panel, "hass", hass);
       })
       .catch((error: unknown) => {
@@ -222,5 +233,5 @@ export const startFakeHa = async (options: FakeHaOptions): Promise<FakeHa> => {
   };
   publish();
   await queue;
-  return { publish, withCards: () => cards !== null };
+  return { publish, withCards: () => cards !== null, hass: () => current, callService };
 };

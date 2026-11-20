@@ -57,6 +57,10 @@ Changing (`resource`) tools require a `requestId` and use the editor bridge's le
 
 Unmounting the Houses screen disposes the bridge: captured functions return `SESSION_CLOSED`, `describe()`/`docs.read()` throw, and a request that completes after disposal does not refresh the page. `open_house` reports success and then the Floor Builder's editor bridge replaces `window.homeplan`; the agent waits for `describe().level === "editor"` and reacquires the object. The agent instructions tell the agent to act only on houses the user asked about.
 
+## Fake HA bridge
+
+Owner request (2026-11-20, Phase 21.18). In the HA viewer's dev harness (`ha-viewer/harness.html`, never in Home Assistant or the website's live demo), `window.homeplan` is the fake Home Assistant's bridge (`ha-viewer/fakeHaBridge.ts`): the same shape (`apiVersion` `1`, `describe()` with `level: "fake-ha"`, instructions and tool definitions with `functionPath`, `description`, `effect`, `inputSchema` and `examples`; `tools.<name>(input)`; `callTool(name, input)`), results `{ ok: true, data }` or `{ ok: false, error: { code, message } }` with `INVALID_INPUT`, `NOT_FOUND` or `INTERNAL_ERROR`. Inputs are checked against TypeBox schemas with the shared Ajv configuration. It does what Settings → Setup HA does: `list_entities`, `get_entity`, `set_entity`, `delete_entity`, `reset_entities` (the entities kept in this browser), `call_service` (as the viewer and HA's cards call it), `list_controls` / `run_control` (the step controls), `set_dark_mode`, `get_last_action`, `list_renderers` / `set_renderer` and `write_demo_bubbles` (both reload the page). Fake data only: no request IDs or generations, and nothing reaches a real Home Assistant.
+
 ## Scope
 
 Supported tools are listed by the runtime catalog. The editor opens an existing house through the ordinary Houses screen (or the Houses-level `open_house`); the editor bridge operates on that house. External image interpretation, browser-extension permissions, and extension tool discovery are outside the bridge. Built-in image recognition remains outside the [MVP](../product/mvp-scope.md#outside-the-mvp).

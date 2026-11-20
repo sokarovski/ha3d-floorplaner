@@ -30,6 +30,7 @@ import type {
 } from "@shared/domain/homeAssistant/suggestions";
 import { haDefaultAction } from "./haActions";
 import { settingsPageTitle } from "./connectionSettings";
+import { setupHaTab } from "./setupHaTab";
 import type { SettingsPage, SettingsTab } from "./connectionSettings";
 import type { ClickableFields } from "./bindingFields";
 import { kindLabels } from "./bindingTargets";
@@ -254,6 +255,16 @@ export class HomeplanBindingEditor extends LitElement {
         min-height: 0;
         overflow: auto;
         overscroll-behavior: contain;
+      }
+      /* A tab whose content scrolls by itself (Setup HA, 21.18): the content fills the rest of the pane. */
+      .editor-pane[data-fill] {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .editor-pane[data-fill] > :last-child {
+        flex: 1;
+        min-height: 0;
       }
       .tree-pane {
         padding: 0 12px 16px;
@@ -1564,6 +1575,13 @@ export class HomeplanBindingEditor extends LitElement {
         <nav class="tree-pane" aria-label="Things to set up">${this.renderList()}</nav>
         <section class="editor-pane">${this.renderEditor()}</section>
       </div>`;
+    const setupHa = setupHaTab();
+    if (tab === "setupHa")
+      return setupHa === null
+        ? html`<div class="split" data-single></div>`
+        : html`<div class="split" data-single>
+            <section class="editor-pane" data-fill>${setupHa.element()}</section>
+          </div>`;
     if (tab === "floorPlanners")
       return html`<div class="split" data-pane=${this.pane}>
         <nav class="tree-pane" aria-label="Floor planners">
@@ -1851,10 +1869,15 @@ export class HomeplanBindingEditor extends LitElement {
       <div class="dialog" role="dialog" aria-modal="true" aria-label="Settings">
         <header>
           <span class="titles">
-            <h2>Settings</h2>
-            <span class="subtitle">
-              Tap a light, object, door, window, or room in Edit mode, or choose one here.
-            </span>
+            ${
+              this.shownTab() === "setupHa"
+                ? html`<h2>Setup HA</h2>
+                    <span class="subtitle">${setupHaTab()?.subtitle ?? ""}</span>`
+                : html`<h2>Settings</h2>
+                    <span class="subtitle">
+                      Tap a light, object, door, window, or room in Edit mode, or choose one here.
+                    </span>`
+            }
           </span>
           <button
             class="icon-button"
@@ -1870,13 +1893,14 @@ export class HomeplanBindingEditor extends LitElement {
         <footer>
           <span class="pages">
             ${
-              this.integrationClient === undefined
+              this.integrationClient === undefined && setupHaTab() === null
                 ? nothing
                 : html`<homeplan-connection-settings
                     .client=${this.integrationClient}
                     .view=${"footer"}
                     .activePage=${this.shownTab()}
                     .houseAvailable=${this.houseId !== null}
+                    .setupHa=${setupHaTab() !== null}
                     @settings-page=${(event: CustomEvent<SettingsTab>) => {
                       this.openTab(event.detail);
                     }}

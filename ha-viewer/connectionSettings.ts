@@ -28,7 +28,7 @@ import type { ViewerRenderer } from "./three/renderers";
  */
 export type SettingsPage = "floorPlanners" | "houses" | "panels";
 /** The Settings footer's tabs: House (the dialog's own tree of things) and the connection pages. */
-export type SettingsTab = "house" | SettingsPage;
+export type SettingsTab = "house" | "setupHa" | SettingsPage;
 /** `plannerList`: the Floor planners tab's tree (the floor planners, + to add one). */
 export type ConnectionView = "footer" | "plannerList" | SettingsPage;
 
@@ -65,6 +65,9 @@ const starIcon =
 const plusIcon = "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
 /** mdi:home (House: the shown house's settings) */
 const houseIcon = "M10,20V14H14V20H19V12H22L12,2L2,12H5V20H10Z";
+/** mdi:tune (the dev harness's Setup HA tab, 21.18). */
+const setupHaIcon =
+  "M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z";
 /** mdi:home-city (Houses) */
 const housesIcon =
   "M0,21V10L7.5,5L15,10V21H10V14H5V21H0M24,2V21H17V8.93L16,8.27V6H14V6.93L10,4.27V2H24M21,14H19V16H21V14M21,10H19V12H21V10M21,6H19V8H21V6Z";
@@ -91,6 +94,7 @@ export class HomeplanConnectionSettings extends LitElement {
     planner: { attribute: false },
     houseAvailable: { attribute: false },
     store: { attribute: false },
+    setupHa: { attribute: false },
   };
   static override styles = [
     tokens,
@@ -303,6 +307,8 @@ export class HomeplanConnectionSettings extends LitElement {
   declare houseAvailable: boolean;
   /** Home Assistant's state, for ha-form's own controls. */
   declare store: HassStore | undefined;
+  /** The footer offers Setup HA after House (the dev harness's fake HA, 21.18); without a client, only those two. */
+  declare setupHa: boolean;
   /** Whether HA's ha-form is available (inside Home Assistant), so fields use HA's own controls. */
   private haForm = false;
   /** The Homeplan app's address while discovery announces it: that floor planner cannot be deleted. */
@@ -352,6 +358,7 @@ export class HomeplanConnectionSettings extends LitElement {
     this.activePage = null;
     this.planner = null;
     this.houseAvailable = false;
+    this.setupHa = false;
   }
 
   override connectedCallback(): void {
@@ -806,7 +813,29 @@ export class HomeplanConnectionSettings extends LitElement {
       >
         ${icon(houseIcon)}
       </button>
-      <button
+      ${
+        this.setupHa
+          ? html`<button
+              class="page"
+              title="Setup HA"
+              aria-label="Setup HA"
+              ?data-active=${this.activePage === "setupHa"}
+              @click=${() => {
+                this.openPage("setupHa");
+              }}
+            >
+              ${icon(setupHaIcon)}
+            </button>`
+          : nothing
+      }
+      ${this.client === undefined ? nothing : this.renderConnectionTabs(state, housesReady, plannerTitle)}`;
+  }
+  private renderConnectionTabs(
+    state: "connected" | "failed" | "none",
+    housesReady: boolean,
+    plannerTitle: string,
+  ): TemplateResult {
+    return html`<button
         class="page"
         title=${plannerTitle}
         aria-label=${plannerTitle}

@@ -1,6 +1,7 @@
 <!doctype html>
 <!-- Dev-only stand-in for Home Assistant: hosts <homeplan-panel> with a fake hass so the viewer can be
-     checked without HA. Open http://localhost:5173/ha-viewer/harness.html (not part of the HA load path). -->
+     checked without HA. Open http://localhost:5173/ha-viewer/harness.html (not part of the HA load path). Its
+     controls live in the panel's Settings → Setup HA and on window.homeplan (harness.ts). -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -14,54 +15,10 @@
         font-family: system-ui, sans-serif;
         background: #fafafa;
       }
-      .controls {
-        position: fixed;
-        left: 50%;
-        bottom: 12px;
-        transform: translateX(-50%);
-        z-index: 1;
-        display: flex;
-        gap: 8px;
-        padding: 6px 10px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.9);
-        font-size: 13px;
-        flex-wrap: wrap;
-        justify-content: center;
-        max-width: calc(100vw - 32px);
-        box-sizing: border-box;
-      }
     </style>
     <script type="module" src="./harness.ts"></script>
   </head>
   <body>
-    <div class="controls">
-      <strong>Fake HA</strong>
-      <button id="setup-ha">Setup HA</button>
-      <button id="toggle-test">Toggle light.kitchen</button>
-      <button id="toggle-other">Toggle light.hallway (unrelated)</button>
-      <button id="climate">Cycle climate (cooling / heating / idle)</button>
-      <button id="washer">Washer power 0 / 450 W</button>
-      <button id="tv">TV app (Netflix / YouTube / off)</button>
-      <button id="motion">Hallway motion on / off</button>
-      <button id="door">Front door open / closed</button>
-      <button id="door-unavailable">Front door unavailable</button>
-      <button id="window">Kitchen window open / closed</button>
-      <button id="tilt">Blinds tilt 100 / 50 / 0</button>
-      <button id="lock">Lock locked / unlocked / open</button>
-      <button id="venetian">Venetian tilt 50 / 0 / 100</button>
-      <button id="window-two">Kitchen window closed / tilted / open (two sensors)</button>
-      <button id="handle">Window handle closed / tilted / open</button>
-      <button id="sliding-cover">Balcony door motor 0 / 50 / 100 %</button>
-      <button id="swing">AC swing off / vertical / horizontal / both</button>
-      <button id="vane">AC horizontal position (select)</button>
-      <button id="washer-door">Washer door open / closed</button>
-      <button id="dark">Dark mode</button>
-      <button id="night">Day / night</button>
-      <button id="renderer">Renderer: …</button>
-      <span id="last-action">Last action: none</span>
-    </div>
     <homeplan-panel></homeplan-panel>
   </body>
 </html>

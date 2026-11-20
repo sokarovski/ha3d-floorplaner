@@ -53,6 +53,9 @@ const LAZY_LOAD_TYPES: Record<string, () => Promise<unknown>> = {
   thermostat: () => import("../src/panels/lovelace/cards/hui-thermostat-card"),
   "media-control": () => import("../src/panels/lovelace/cards/hui-media-control-card"),
   entities: () => import("../src/panels/lovelace/cards/hui-entities-card"),
+  // Not shown as a card: the viewer's Settings build its editor once so HA loads ha-form and its selectors, as
+  // inside Home Assistant (ha-viewer/haElements.ts); the dev harness's Settings then use HA's own fields.
+  button: () => import("../src/panels/lovelace/cards/hui-button-card"),
 };
 
 export const createCardElement = (config: LovelaceCardConfig) =>

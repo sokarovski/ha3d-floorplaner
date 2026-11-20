@@ -26,7 +26,19 @@ const load = async (): Promise<boolean> => {
     if (typeof create !== "function") return false;
     // The button card's editor uses ha-form with entity and ui_action selectors.
     const card: unknown = Reflect.apply(create, helpers, [{ type: "button", entity: "sun.sun" }]);
-    const constructor: unknown = card instanceof HTMLElement ? card.constructor : undefined;
+    // A lazily loaded card type (the dev harness's cards bundle) is created before its class is defined: its
+    // class is the registered one, once defined.
+    const constructor: unknown =
+      card instanceof HTMLElement
+        ? await Promise.race([
+            customElements.whenDefined(card.localName),
+            new Promise<undefined>((resolve) => {
+              window.setTimeout(() => {
+                resolve(undefined);
+              }, 5000);
+            }),
+          ])
+        : undefined;
     const getConfigElement: unknown =
       typeof constructor === "function" ? Reflect.get(constructor, "getConfigElement") : undefined;
     if (typeof getConfigElement === "function") await Reflect.apply(getConfigElement, constructor, []);

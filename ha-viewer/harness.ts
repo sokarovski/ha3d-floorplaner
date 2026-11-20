@@ -1,29 +1,38 @@
 // Dev-only fake Home Assistant for harness.html (Phase 21: the fake HA works like the website's live demo): the
 // shared fake Home Assistant of fakeHaHost.ts with real HA cards, as an HA admin (Edit mode and Settings), on the
-// fake home with the entities of Setup HA laid over it (fakeHaStore.ts, kept in this browser). The step buttons
-// change the demo entities; every service call is shown as the last action.
+// fake home with the entities of Setup HA laid over it (fakeHaStore.ts, kept in this browser). Everything the
+// harness offers is in Settings → Setup HA (21.18: its Controls page holds the step buttons, dark mode, day and
+// night, the renderer and the demo bubbles) and on window.homeplan (fakeHaBridge.ts); the page has no bar of its own.
 import "./main";
-import { deviceRenderer, rendererList, saveDeviceRenderer } from "./three/renderers";
+import { availableRenderers, deviceRenderer, rendererList, saveDeviceRenderer } from "./three/renderers";
 import { createId } from "@shared/domain/ids";
 import type { HaHouseBubblesValue } from "@shared/domain/schemas/homeAssistant";
+import { createFakeHaBridge } from "./fakeHaBridge";
 import { startFakeHa } from "./fakeHaHost";
 import { createFakeHaStore } from "./fakeHaStore";
-import "./fakeHaSetup";
+import { FakeHaSetup } from "./fakeHaSetup";
+import type { FakeHaControl } from "./fakeHaSetup";
 import { createFakeHome } from "./fakeHome";
 import type { FakeControl } from "./fakeHome";
+import { registerSetupHaTab } from "./setupHaTab";
 
 const store = createFakeHaStore(createFakeHome());
 let home = store.home();
 
 let darkMode = false;
+let lastAction = "none";
 
 const panel = document.querySelector("homeplan-panel");
 if (panel === null) throw new Error("harness.html has no <homeplan-panel>.");
 
-/** The last action the viewer ran, shown in the controls. */
+// Settings → Setup HA (the second tab, after House): created once, kept while the page lives.
+const setup = new FakeHaSetup();
+setup.store = store;
+
+/** The last action the viewer (or a card) ran, shown on Setup HA's Controls page. */
 const showAction = (text: string): void => {
-  const label = document.querySelector("#last-action");
-  if (label !== null) label.textContent = `Last action: ${text}`;
+  lastAction = text;
+  setup.lastAction = text;
 };
 document.addEventListener("hass-more-info", (event) => {
   const entityId = event instanceof CustomEvent ? field(event.detail, "entityId") : undefined;
@@ -50,11 +59,19 @@ const fake = await startFakeHa({
     );
   },
 });
+setup.currentHass = () => fake.hass();
 const publish = (): void => {
   panel.setAttribute("data-dark", String(darkMode));
   document.body.style.background = darkMode ? "#111" : "#fafafa";
   fake.publish();
 };
+/** The stored entities changed (Setup HA or window.homeplan): the panel, the cards and Setup HA follow. */
+const refresh = (): void => {
+  home = store.home();
+  publish();
+  setup.requestUpdate();
+};
+setup.addEventListener("fake-ha-changed", refresh);
 
 const narrow = (): void => {
   Reflect.set(panel, "narrow", window.innerWidth < 870);
@@ -72,50 +89,111 @@ Reflect.set(panel, "panel", {
 });
 publish();
 
-// Setup HA: the fake entities, edited in this browser; a save applies at once.
-document.querySelector("#setup-ha")?.addEventListener("click", () => {
-  const setup = document.createElement("homeplan-fake-ha-setup");
-  Reflect.set(setup, "store", store);
-  setup.addEventListener("fake-ha-changed", () => {
-    home = store.home();
-    publish();
-  });
-  setup.addEventListener("close", () => {
-    setup.remove();
-  });
-  document.body.append(setup);
+/** The step controls of the demo entities (fakeHome.ts), by group. */
+const steps: readonly (readonly [FakeControl, string, string])[] = [
+  ["toggle-test", "Toggle light.kitchen", "Lights"],
+  ["toggle-other", "Toggle light.hallway", "Lights"],
+  ["night", "Day / night", "Display"],
+  ["climate", "Cycle climate (cooling / heating / idle)", "Climate"],
+  ["swing", "AC swing off / vertical / horizontal / both", "Climate"],
+  ["vane", "AC horizontal position (select)", "Climate"],
+  ["washer", "Washer power 0 / 450 W", "Appliances"],
+  ["washer-door", "Washer door open / closed", "Appliances"],
+  ["tv", "TV app (Netflix / YouTube / off)", "Appliances"],
+  ["motion", "Hallway motion on / off", "Sensors"],
+  ["door", "Front door open / closed", "Sensors"],
+  ["door-unavailable", "Front door unavailable", "Sensors"],
+  ["window", "Kitchen window open / closed", "Sensors"],
+  ["window-two", "Kitchen window closed / tilted / open (two sensors)", "Sensors"],
+  ["handle", "Window handle closed / tilted / open", "Sensors"],
+  ["tilt", "Blinds tilt 100 / 50 / 0", "Covers and locks"],
+  ["venetian", "Venetian tilt 50 / 0 / 100", "Covers and locks"],
+  ["sliding-cover", "Balcony door motor 0 / 50 / 100 %", "Covers and locks"],
+  ["lock", "Lock locked / unlocked / open", "Covers and locks"],
+];
+const setDarkMode = (on: boolean): void => {
+  darkMode = on;
+  publish();
+};
+const setRenderer = (id: string): boolean => {
+  if (!rendererList.some((entry) => entry.id === id) || !saveDeviceRenderer(id, {})) return false;
+  window.location.reload();
+  return true;
+};
+const controls: readonly FakeHaControl[] = [
+  ...steps.map(([id, label, group]) => ({
+    id,
+    label,
+    group,
+    run: () => {
+      home.control(id);
+      publish();
+      showAction(`control ${label}`);
+    },
+  })),
+  {
+    id: "dark",
+    label: "Dark mode on / off",
+    group: "Display",
+    run: () => {
+      setDarkMode(!darkMode);
+      showAction(`dark mode ${darkMode ? "on" : "off"}`);
+    },
+  },
+  {
+    id: "renderer",
+    label: `Renderer: ${deviceRenderer().label} (next, reloads)`,
+    group: "Viewer",
+    run: () => {
+      const index = rendererList.findIndex((entry) => entry.id === deviceRenderer().id);
+      const next = rendererList[(index + 1) % rendererList.length];
+      if (next !== undefined) setRenderer(next.id);
+    },
+  },
+  {
+    id: "bubbles",
+    label: "Demo bubbles (reloads)",
+    group: "Viewer",
+    run: () => {
+      writeDemoBubbles().catch((error: unknown) => {
+        console.error("[harness] demo bubbles", error);
+        window.alert(error instanceof Error ? error.message : "Could not write the demo bubbles.");
+      });
+    },
+  },
+];
+setup.controls = controls;
+registerSetupHaTab({
+  subtitle:
+    "The fake Home Assistant: step controls and entities, kept in this browser; changes apply at once.",
+  element: () => setup,
 });
 
-const controls: readonly FakeControl[] = [
-  "toggle-test",
-  "toggle-other",
-  "night",
-  "climate",
-  "washer",
-  "tv",
-  "motion",
-  "door",
-  "door-unavailable",
-  "window",
-  "tilt",
-  "lock",
-  "venetian",
-  "window-two",
-  "handle",
-  "sliding-cover",
-  "swing",
-  "vane",
-  "washer-door",
-];
-for (const control of controls)
-  document.querySelector(`#${control}`)?.addEventListener("click", () => {
-    home.control(control);
-    publish();
-  });
-document.querySelector("#dark")?.addEventListener("click", () => {
-  darkMode = !darkMode;
-  publish();
-});
+// window.homeplan (21.18): the same as Setup HA, for scripts and agents.
+Reflect.set(
+  window,
+  "homeplan",
+  createFakeHaBridge({
+    store,
+    refresh,
+    callService: (domain, service, data) => {
+      void fake.callService(domain, service, data);
+    },
+    controls: () => controls,
+    lastAction: () => lastAction,
+    setDarkMode,
+    renderers: () => {
+      const current = deviceRenderer().id;
+      return availableRenderers().map((renderer) => ({
+        id: renderer.id,
+        label: renderer.label,
+        current: renderer.id === current,
+      }));
+    },
+    setRenderer,
+    writeDemoBubbles: () => writeDemoBubbles(),
+  }),
+);
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -201,22 +279,3 @@ const writeDemoBubbles = async (): Promise<void> => {
   if (!response.ok) throw new Error(`The builder answered ${String(response.status)}.`);
   window.location.reload();
 };
-
-document.querySelector("#bubbles")?.addEventListener("click", () => {
-  writeDemoBubbles().catch((error: unknown) => {
-    console.error("[harness] demo bubbles", error);
-    window.alert(error instanceof Error ? error.message : "Could not write the demo bubbles.");
-  });
-});
-
-// The renderer this browser uses (Phase 21.11, three/renderers.ts): the button cycles through them and reloads.
-const rendererButton = document.querySelector("#renderer");
-if (rendererButton !== null) {
-  const current = deviceRenderer();
-  rendererButton.textContent = `Renderer: ${current.label} (next)`;
-  rendererButton.addEventListener("click", () => {
-    const index = rendererList.findIndex((entry) => entry.id === current.id);
-    const next = rendererList[(index + 1) % rendererList.length];
-    if (next !== undefined && saveDeviceRenderer(next.id, {})) window.location.reload();
-  });
-}
