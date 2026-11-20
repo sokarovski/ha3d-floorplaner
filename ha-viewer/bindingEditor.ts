@@ -279,6 +279,10 @@ export class HomeplanBindingEditor extends LitElement {
         gap: 8px;
         align-content: start;
       }
+      /* A connection tab without a heading of its own (its title is the dialog's): room above its content. */
+      .editor-pane > homeplan-connection-settings:first-child {
+        padding-top: 16px;
+      }
       .editor-head {
         position: sticky;
         top: 0;
@@ -1524,6 +1528,12 @@ export class HomeplanBindingEditor extends LitElement {
         ></homeplan-connection-settings>`;
   }
 
+  /** The shown connection tab (Floor planners, Houses, Panels); Houses for any other. */
+  private connectionTab(): SettingsPage {
+    const tab = this.shownTab();
+    return tab === "house" || tab === "setupHa" ? "houses" : tab;
+  }
+
   /** The shown tab: House needs a shown house; before one exists, Houses. */
   private shownTab(): SettingsTab {
     return this.tab === "house" && this.houseId === null ? "houses" : this.tab;
@@ -1538,13 +1548,12 @@ export class HomeplanBindingEditor extends LitElement {
   /** A connection tab's pane: its heading and page (Floor planners: the selected floor planner). */
   private renderTabEditor(page: SettingsPage): TemplateResult {
     return html`
-      <div class="editor-head">
-        ${page === "floorPlanners" ? this.renderBack() : nothing}
-        <span class="titles">
-          <h2>${settingsPageTitle(page)}</h2>
-          <span class="subtitle">${pageSubtitles[page]}</span>
-        </span>
-      </div>
+      ${
+        // The tab's title is the dialog's own (owner); on a narrow screen Floor planners keeps its back button.
+        page === "floorPlanners" && this.narrow
+          ? html`<div class="editor-head">${this.renderBack()}</div>`
+          : nothing
+      }
       ${
         this.integrationClient === undefined
           ? nothing
@@ -1873,10 +1882,13 @@ export class HomeplanBindingEditor extends LitElement {
               this.shownTab() === "setupHa"
                 ? html`<h2>Setup HA</h2>
                     <span class="subtitle">${setupHaTab()?.subtitle ?? ""}</span>`
-                : html`<h2>Settings</h2>
-                    <span class="subtitle">
-                      Tap a light, object, door, window, or room in Edit mode, or choose one here.
-                    </span>`
+                : this.shownTab() !== "house"
+                  ? html`<h2>${settingsPageTitle(this.connectionTab())}</h2>
+                      <span class="subtitle">${pageSubtitles[this.connectionTab()]}</span>`
+                  : html`<h2>Settings</h2>
+                      <span class="subtitle">
+                        Tap a light, object, door, window, or room in Edit mode, or choose one here.
+                      </span>`
             }
           </span>
           <button

@@ -897,11 +897,18 @@ export class HomeplanConnectionSettings extends LitElement {
       >${label}</a
     >`;
   }
+  /**
+   * The default floor planner is the Homeplan app (found by discovery, or its address typed in): not a dev Floor
+   * Builder, so no DEV MODE (owner), unless it is on already, so it can be turned off.
+   */
+  private devModeHidden(): boolean {
+    const url = this.connection.builderUrl;
+    const app =
+      this.connection.origin === "discovered" ||
+      (url !== null && (url === this.discoveredUrl || isAppPlanner(url)));
+    return app && !this.connection.devMode;
+  }
   private renderDevToggle(): TemplateResult {
-    if (this.connection.origin === "discovered" && !this.connection.devMode)
-      return html`<span class="hint" data-origin="discovered"
-        >DEV MODE is for a Floor Builder running on your own computer.</span
-      >`;
     return html`${this.field(
         "devMode",
         "DEV MODE",
@@ -1118,7 +1125,7 @@ export class HomeplanConnectionSettings extends LitElement {
         }
       </section>
       ${
-        isDefault
+        isDefault && !this.devModeHidden()
           ? html`<section>
               <h3>Development</h3>
               ${this.renderDevToggle()}
