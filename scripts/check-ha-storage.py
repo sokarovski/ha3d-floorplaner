@@ -1003,6 +1003,27 @@ panel.hass=hass;panel.narrow=false;document.body.append(panel);""".replace(
                         )
                     finally:
                         damaged.write_bytes(original_bytes)
+                    # A stored panel that cannot run (here: its files are gone) is replaced at startup; the note
+                    # about it is shown on the next page load only.
+                    missing_panel = {**restored.shipped, "bundleId": "e" * 64}
+
+                    def point_at_missing(value: dict[str, object]) -> None:
+                        value["frontend"] = {"active": missing_panel, "previous": None}
+
+                    await restored.configuration.mutate(point_at_missing)
+                    await restored._recover_copies()
+                    check(
+                        record(restored.configuration.snapshot()["frontend"])["active"]
+                        is None,
+                        "an unusable stored panel is replaced by the shipped one at startup",
+                    )
+                    _, first = await call("GET", "/api/homeplan/bootstrap")
+                    _, second = await call("GET", "/api/homeplan/bootstrap")
+                    check(
+                        "panel" in text(record(first)["recovery"])
+                        and record(second)["recovery"] is None,
+                        "the replaced-panel note is shown once, then not again",
+                    )
                     if os.environ.get("HOMEPLAN_HA_BROWSER") == "1":
                         # Reset only this temporary test installation for first-use UI checks.
                         def reset(value: dict[str, object]) -> None:

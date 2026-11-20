@@ -72,6 +72,9 @@ class HomeplanRuntime:
         self.tasks: dict[str, asyncio.Task[None]] = {}
         self.selection_intent = 0
         self.recovery: str | None = None
+        # An informational note (a panel replaced at startup) is shown once, on the next page load; notes that need
+        # action (a damaged house copy) stay until the next start.
+        self.recovery_once = False
         self._connected_generation: int | None = None
         self._connected_ids: set[str] = set()
         # Last app address announced through Supervisor discovery (memory only; the app re-announces).
@@ -1046,7 +1049,17 @@ class HomeplanRuntime:
                     value["frontend"] = {"active": replacement, "previous": None}
 
                 await self.configuration.mutate(recover_frontend)
-                self.recovery = "Recovered a compatible local frontend; the shipped baseline remains available in native Configure."
+                self.recovery = (
+                    "The panel in use could not run with this version of the integration "
+                    "(too old or damaged), so "
+                    + (
+                        "the previous panel"
+                        if replacement is not None
+                        else "the panel that comes with the integration"
+                    )
+                    + " is used instead. Settings → Panels shows the panels."
+                )
+                self.recovery_once = True
         await self._prefer_updated_shipped_frontend()
 
     async def _prefer_updated_shipped_frontend(self) -> None:

@@ -151,10 +151,15 @@ class HomeplanView(HomeAssistantView):
         method = request.method
         config = app.configuration.snapshot()
         if parts == ["bootstrap"] and method == "GET":
+            recovery = app.recovery
+            if app.recovery_once:
+                # Shown once: the replaced panel note is information, not something to fix.
+                app.recovery = None
+                app.recovery_once = False
             return response(
                 {
                     "revision": config["revision"],
-                    "recovery": app.recovery,
+                    "recovery": recovery,
                     "connection": config["connection"],
                     "viewer": config["viewer"],
                     "frontend": {"shipped": app.shipped, **record(config["frontend"])},
