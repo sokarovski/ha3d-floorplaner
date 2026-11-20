@@ -27,11 +27,11 @@
     "step": {
       "init": {
         "title": "Homeplan recovery",
-        "description": "These are the same URL and DEV MODE settings as House setup. Save, then reload the browser. Disable DEV MODE to use local copies. Restore packaged frontend recovers shipped UI code without deleting houses or bindings.\n\nCurrent Floor Builder URL: {origin}. Discovered Homeplan app: {discovered}.",
+        "description": "These are the same URL and DEV MODE settings as House setup. Save, then reload the browser. Disable DEV MODE to use local copies.\n\nIf the Homeplan panel shows an error such as \"incompatible response\", turn on Restore packaged frontend and Save: the panel that came with this integration is used again (houses and bindings are kept). Then reload the browser.\n\nCurrent Floor Builder URL: {origin}. Discovered Homeplan app: {discovered}.",
         "data": {
           "builder_url": "Floor Builder URL",
           "dev_mode": "DEV MODE (remote panel and house)",
-          "restore_packaged": "Restore packaged frontend",
+          "restore_packaged": "Restore packaged frontend (use the panel that came with the integration)",
           "use_discovered": "Use the discovered Homeplan app"
         },
         "data_description": {

@@ -193,6 +193,23 @@ export class HomeplanIntegrationApp extends LitElement {
     this.requestUpdate();
   }
   /** Loads the selected house again after a failure (13.1). */
+  /**
+   * The way out of a downloaded panel that does not work with this integration (2026-11-20): back to the panel
+   * that came with the integration, then reload. Admins only; Configure → Restore packaged frontend does the same.
+   */
+  private async useShippedPanel(): Promise<void> {
+    const client = this.context?.client;
+    if (client === undefined) return;
+    try {
+      const connection = await client.connection();
+      await client.restoreFrontend(connection.revision);
+      location.reload();
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : "Use Configure → Restore packaged frontend.";
+      this.requestUpdate();
+    }
+  }
+
   private retry(): void {
     const houseId = this.setup.houseId;
     this.error = null;
@@ -251,7 +268,20 @@ export class HomeplanIntegrationApp extends LitElement {
                       >
                         Retry
                       </button>
-                      ${admin ? setupButton : nothing}`
+                      ${admin ? setupButton : nothing}
+                      ${
+                        admin && context?.bootstrap.frontend.active != null
+                          ? html`<button
+                              class="button"
+                              @click=${() => {
+                                void this.useShippedPanel();
+                              }}
+                            >
+                              Use the integration's panel
+                            </button>`
+                          : nothing
+                      }
+                      <a href="/config/integrations/integration/homeplan">Devices & services → Homeplan</a>`
                   : noHouse
                     ? admin
                       ? setupButton

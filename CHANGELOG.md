@@ -3,6 +3,7 @@
 ## 0.1.5
 
 - Fixed: after updating to 0.1.4, some installs showed "Recovered a compatible local frontend…" over the viewer's Settings and Edit buttons until Home Assistant restarted. The note now appears only once, at the top left, says plainly that the integration's own panel is used because the old one could not run, and has **Open settings** (the Panels tab) and a close button.
+- A way out of a panel that does not match the integration: the "incompatible response" error now says how to fix it (Settings → Devices & services → Homeplan → Configure → Restore packaged frontend, then reload), the panel's error screen offers admins **Use the integration's panel**, and the Configure dialog explains the option.
 
 ## 0.1.4
 

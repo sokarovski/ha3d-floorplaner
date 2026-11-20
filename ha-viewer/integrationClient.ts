@@ -20,6 +20,12 @@ import { compileValidator } from "@shared/domain/validation/ajv";
 import type { Hass } from "./hassStore";
 import { SourceError } from "./houseSource";
 
+/** The way out of a panel that does not match the integration (2026-11-20: a reload alone does not fix it). */
+export const incompatibleMessage =
+  "Homeplan returned an incompatible response: this panel does not match the installed integration. " +
+  "To fix it, use the integration's own panel: Settings → Devices & services → Homeplan → Configure → " +
+  "Restore packaged frontend, then reload this page.";
+
 export const integrationUrl = (...segments: readonly string[]): string =>
   new URL(`/api/homeplan/${segments.map(encodeURIComponent).join("/")}`, location.origin).href;
 
@@ -66,11 +72,7 @@ export const createIntegrationClient = (currentHass: () => Hass | null) => {
         : { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) },
     );
     const payload: unknown = await response.json();
-    if (!compileValidator(schema)(payload))
-      throw new SourceError(
-        "Homeplan returned an incompatible response; update the integration or reload.",
-        null,
-      );
+    if (!compileValidator(schema)(payload)) throw new SourceError(incompatibleMessage, null);
     return payload;
   };
   return {
@@ -102,11 +104,7 @@ export const createIntegrationClient = (currentHass: () => Hass | null) => {
         },
       );
       const payload: unknown = await response.json();
-      if (!compileValidator(ArchiveImportResponse)(payload))
-        throw new SourceError(
-          "Homeplan returned an incompatible response; update the integration or reload.",
-          null,
-        );
+      if (!compileValidator(ArchiveImportResponse)(payload)) throw new SourceError(incompatibleMessage, null);
       return payload;
     },
     /** Another floor planner's houses, read only (Phase 21). */
