@@ -187,3 +187,30 @@ document.querySelector("#bubbles")?.addEventListener("click", () => {
     window.alert(error instanceof Error ? error.message : "Could not write the demo bubbles.");
   });
 });
+
+// Phase 21 prototype switch (three/prototypeFlags.ts): the button flips its localStorage key and reloads.
+const protoSwitch = (
+  selector: string,
+  key: string,
+  label: string,
+  values: readonly [string, string],
+): void => {
+  const button = document.querySelector(selector);
+  if (button === null) return;
+  let current = values[0];
+  try {
+    current = window.localStorage.getItem(key) === values[1] ? values[1] : values[0];
+  } catch {
+    // Storage blocked: the switch shows the default and cannot change.
+  }
+  button.textContent = `${label}: ${current} (switch)`;
+  button.addEventListener("click", () => {
+    try {
+      window.localStorage.setItem(key, current === values[0] ? values[1] : values[0]);
+    } catch {
+      return;
+    }
+    window.location.reload();
+  });
+};
+protoSwitch("#proto-limits", "homeplan.proto.limits", "Limits", ["standard", "low"]);

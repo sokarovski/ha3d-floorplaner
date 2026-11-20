@@ -748,7 +748,8 @@ export class HomeplanViewerScreen extends LitElement {
           const readout = this.renderRoot.querySelector(".frames");
           if (readout === null) return;
           const idle = Math.floor((performance.now() - this.lastFrameAt) / 1000);
-          readout.textContent = `3D frames ${String(this.frameCount)} · idle ${String(idle)} s`;
+          // Phase 21.1: the renderer's resources and the slowest render of the last second.
+          readout.textContent = `3D frames ${String(this.frameCount)} · idle ${String(idle)} s · ${viewer.debugStats()}`;
         }, 1000);
       }
       viewer.setEditMode(this.editing);

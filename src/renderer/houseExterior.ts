@@ -32,6 +32,14 @@
 // wall tops, drawn as screen-space lines `highlightLinePx` wide (thick enough to read on a tablet) over everything.
 // Each floor's box is built with the floor and hidden, so its shader compiles with the house.
 //
+// One set of floors (Phase 21.4, owner 2026-11-20: every floor's shell always loaded, once): the HA viewer's floor
+// view draws the shown floor from here too (`floorParts`), so no floor is built twice. `setFocus` shows one floor
+// with its frame at the root's origin (the root moves by minus the floor's placement), every other floor hidden, its
+// roofs hidden (a floor view draws only its attached roofs) and its batch dropped (a floor view picks per area);
+// during a floor switch the floors below it stay shown, so the camera rides past real geometry. `setContentFloors`
+// keeps the content (instances) of the given floors only: the others' instances are removed (a floor view keeps
+// only the shown floor's furniture). The focused floor's materials are the host's to assign (with its fades).
+//
 // Roofs (Phase 19.1, owner decision 4): each floor's roofs are drawn here (roofLayer.ts) inside the floor's group, so
 // they move, merge and cast shadows with it; a floor view never draws them. The bounds and framing points reach
 // the roofs' tops and corners.
@@ -126,6 +134,17 @@ export type HouseExterior = Readonly<{
   setHighlight: (floorId: string | null) => void;
   /** The viewport's size (CSS px), for the box's line width. */
   setResolution: (width: number, height: number) => void;
+  /**
+   * One floor shown at the root's origin (null: the whole house, every floor at its placement). `withBelow` also
+   * shows the floors below it at their places (a floor switch's ride).
+   */
+  setFocus: (focus: Readonly<{ floorId: string; withBelow: boolean }> | null) => void;
+  /** The floors whose content is kept and synced (null: every floor); the others' instances are removed. */
+  setContentFloors: (floorIds: ReadonlySet<string> | null) => void;
+  /** A floor's scene, content layer, and group (for a host's floor view), or null when the floor is not built. */
+  floorParts: (
+    floorId: string,
+  ) => Readonly<{ scene: FloorScene; content: InstanceLayer | null; group: Group }> | null;
   dispose: () => void;
 }>;
 
@@ -230,6 +249,26 @@ export const createHouseExterior = (
     ordered = [...floors.values()].sort((a, b) => rank(a.floor.id) - rank(b.floor.id));
   };
   let documentOrder: readonly string[] = [];
+  let focus: Readonly<{ floorId: string; withBelow: boolean }> | null = null;
+  let contentFloors: ReadonlySet<string> | null = null;
+  /** The live states last laid over the floors' content (`syncContent`), reused by `sync`. */
+  let lastStated: (floor: BuildingFloorValue) => BuildingFloorValue = (floor) => floor;
+
+  /** Visibility, roofs, batches and the root's offset for the focus (or the whole house). */
+  const applyFocus = (): void => {
+    const focused = focus === null ? undefined : floors.get(focus.floorId);
+    const base = focused?.offset.h ?? 0;
+    root.position.set(-(focused?.offset.x ?? 0), -(focused?.offset.y ?? 0), -base);
+    for (const entry of floors.values()) {
+      const isFocused = entry === focused;
+      entry.group.visible =
+        focused === undefined ||
+        isFocused ||
+        (focus?.withBelow === true && entry.offset.h < focused.offset.h);
+      entry.roofs.root.visible = focused === undefined;
+      if (isFocused) entry.batch.clear();
+    }
+  };
 
   const part = (
     parent: Group,
@@ -383,12 +422,18 @@ export const createHouseExterior = (
   ): ReadonlyMap<string, PlanPoint3> => {
     const emitters = new Map<string, PlanPoint3>();
     if (openingSizeOf === null) return emitters;
+    lastStated = stated;
     for (const entry of ordered) {
       // Roof windows (19.3) whose template has loaded since.
       entry.roofs.refresh();
       if (entry.content === null) continue;
       const scene = entry.scene;
-      const floorEmitters = entry.content.sync(stated(entry.floor), openingSizeOf, scene.contentGroup);
+      const kept = contentFloors === null || contentFloors.has(entry.floor.id);
+      const floorEmitters = entry.content.sync(
+        kept ? stated(entry.floor) : null,
+        openingSizeOf,
+        scene.contentGroup,
+      );
       for (const [lightId, point] of floorEmitters) emitters.set(lightId, point);
     }
     dropStaleBatches();
@@ -471,8 +516,9 @@ export const createHouseExterior = (
       }
       documentOrder = house.floors.map((floor) => floor.id);
       reorder(documentOrder);
-      syncContent();
+      syncContent(lastStated);
       applyHighlight();
+      applyFocus();
     },
     setLoadOrder: (floorIds) => {
       loadOrder = [...floorIds];
@@ -498,6 +544,7 @@ export const createHouseExterior = (
       for (const entry of floors.values()) entry.content?.setFixtureGlow(glow);
     },
     rebatch: () => {
+      if (focus !== null) return false;
       const next = ordered.find((entry) => !entry.batch.built() && !entry.batchEmpty);
       if (next === undefined) return false;
       next.batch.build(next.group, next.bucketOf);
@@ -519,6 +566,8 @@ export const createHouseExterior = (
     },
     applyMaterials: () => {
       for (const entry of floors.values()) {
+        // The focused floor's are the host's (its floor view assigns them with its fades).
+        if (focus !== null && entry.floor.id === focus.floorId) continue;
         entry.scene.applyMaterials();
         entry.content?.applyMaterials(() => "normal");
         entry.roofs.applyMaterials();
@@ -596,6 +645,17 @@ export const createHouseExterior = (
     },
     setResolution: (width, height) => {
       lineMaterial.resolution.set(Math.max(width, 1), Math.max(height, 1));
+    },
+    setFocus: (next) => {
+      focus = next;
+      applyFocus();
+    },
+    setContentFloors: (floorIds) => {
+      contentFloors = floorIds;
+    },
+    floorParts: (floorId) => {
+      const entry = floors.get(floorId);
+      return entry === undefined ? null : { scene: entry.scene, content: entry.content, group: entry.group };
     },
     dispose: () => {
       clear();

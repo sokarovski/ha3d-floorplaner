@@ -1,15 +1,19 @@
 // The room cutaway (Phase 8.2a): while a room is open, what stands between the camera and the room gets out of
-// the way. The viewer always uses A, the fade (owner 2026-11-17 ended the experiment and removed its setting);
-// variant B's code is kept unused for now.
+// the way. The viewer always uses C, the dithered fade (owner, Phase 21.3, 2026-11-20: much faster, no visible
+// difference); A remains its fallback, and variant B's code is kept unused for now.
 //
-// A. "fade" (default): the builder's isolation fades every other room (walls, floors, objects, fixtures) to the
+// A. "fade" (C's fallback): the builder's isolation fades every other room (walls, floors, objects, fixtures) to the
 //    "dimmed" level, and the room's own walls on the camera's side to "faded" (src/renderer/surfaceMaterialKey.ts
 //    opacities); the near walls follow the camera as it orbits. A neighbour's door or window in a wall the room
-//    shares counts as the room's own (Phase 15.7, floorScene.entityFade): clear, its doorway cut through the
+//    shares counts as the room's own (Phase 15.7, scene().entityFade): clear, its doorway cut through the
 //    room's wall layer, and faded with the room's wall there when that wall is near.
 // B. "dome": the reverse-dome mask (cutawayFunnel.ts): every mesh material gets a shader test that discards, with a
 //    dithered soft edge, whatever lies above the funnel from a ring around the house down to the room's floor
 //    centre. The room's own contents inside its plan box are never cut; its walls are.
+// C. "dither" (default; Phase 21.3, ditherFade.ts): the fade's look without its cost. A shader test on every
+//    material skips a fixed pattern of pixels outside the room (and on its near walls), so opening a room changes
+//    uniforms only: no isolation layers, no faded material copies, no shadow redraw. A room whose outline is not
+//    known (walls off) or has too many edges falls back to A.
 //
 // Picking looks through what the cutaway removed (cut fragments, faded surfaces), so a tap on the room's floor
 // behind a faded or cut wall still reaches the room.
@@ -28,10 +32,12 @@ import { setMaterialPatch } from "../../src/renderer/materialPatches";
 import type { FadeLevel } from "../../src/renderer/surfaceMaterialKey";
 import type { Funnel, FunnelParams } from "./cutawayFunnel";
 import { cutAmount, defaultFunnelParams, funnelFor, funnelGlsl } from "./cutawayFunnel";
+import type { DitherEdge, GroundPoint } from "./ditherFade";
+import { distanceToSegment, ditherGlsl, ditherLevel, maxDitherEdges, nearEdges } from "./ditherFade";
 
-export type CutawayMode = "fade" | "dome" | "off";
+export type CutawayMode = "fade" | "dome" | "dither" | "off";
 
-export const cutawayModes: readonly CutawayMode[] = ["fade", "dome", "off"];
+export const cutawayModes: readonly CutawayMode[] = ["fade", "dome", "dither", "off"];
 
 export type CutawayContext = Readonly<{
   floorScene: FloorScene;
@@ -97,8 +103,17 @@ const hitMaterial = (hit: Intersection): Material | null => {
   return material[hit.face?.materialIndex ?? 0] ?? null;
 };
 
+/** C: the open room's outline on the ground (world m), its centre, and how far its walls reach out (m). */
+type DitherRoom = Readonly<{
+  edges: readonly Readonly<{ a: GroundPoint; b: GroundPoint }>[];
+  center: GroundPoint;
+  margin: number;
+}>;
+
 type Focus = Readonly<{
   areaId: string;
+  /** C only: the outline the shader tests; null falls back to A. */
+  dither: DitherRoom | null;
   /** The room's floor centre and box, plan mm. */
   center: Readonly<{ x: number; y: number }>;
   bounds: Readonly<{ minX: number; minY: number; maxX: number; maxY: number }>;
@@ -108,13 +123,25 @@ export const createRoomCutaway = (
   context: CutawayContext,
   params: FunnelParams = defaultFunnelParams,
 ): RoomCutaway => {
-  const { floorScene, planRoot } = context;
-  let mode: CutawayMode = "fade";
+  const { planRoot } = context;
+  // Read on every use: the host's shown floor (and so its scene) changes with the view (Phase 21.4).
+  const scene = (): FloorScene => context.floorScene;
+  let mode: CutawayMode = "dither";
   let focused: Focus | null = null;
   let nearKey = "";
   let near: ReadonlySet<string> = new Set();
   let funnel: Funnel | null = null;
   const patched = new WeakMap<Material, Role>();
+  const ditherPatched = new WeakMap<Material, Role>();
+  let ditherEdges: readonly DitherEdge[] = [];
+  let ditherNearKey = "";
+  const ditherUniforms = {
+    hpDitherOn: { value: 0 },
+    hpDitherCount: { value: 0 },
+    hpDitherMargin: { value: 0 },
+    hpDitherEdges: { value: Array.from({ length: maxDitherEdges }, () => new Vector4()) },
+    hpDitherNear: { value: Array.from({ length: maxDitherEdges / 4 }, () => new Vector4()) },
+  };
   const uniforms: CutUniforms = {
     hpCutOn: { value: 0 },
     hpCutApex: { value: new Vector3() },
@@ -128,7 +155,12 @@ export const createRoomCutaway = (
     return planRoot.localToWorld(new Vector3(x, y, h));
   };
 
-  const wallMeshes = (): Set<Object3D> => new Set(floorScene.wallLayers().map((layer) => layer.mesh));
+  const wallMeshes = (): Set<Object3D> =>
+    new Set(
+      scene()
+        .wallLayers()
+        .map((layer) => layer.mesh),
+    );
 
   // ---- B: the dome shader ----------------------------------------------------------------------------
 
@@ -172,7 +204,7 @@ export const createRoomCutaway = (
 
   const updateFunnel = (eye: Vector3): void => {
     const room = focused;
-    const bounds = floorScene.bounds();
+    const bounds = scene().bounds();
     if (room === null || bounds === null) return;
     const apex = toWorld(room.center.x, room.center.y, 0);
     const houseCenter = toWorld((bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2, 0);
@@ -206,6 +238,99 @@ export const createRoomCutaway = (
     };
   };
 
+  // ---- C: the dithered fade -----------------------------------------------------------------------------
+
+  const patchDither = (material: Material, role: Role): void => {
+    if (ditherPatched.get(material) === role) return;
+    ditherPatched.set(material, role);
+    setMaterialPatch(material, "hpdither", {
+      key: () => role,
+      apply: (shader) => {
+        Object.assign(shader.uniforms, ditherUniforms);
+        shader.vertexShader = shader.vertexShader
+          .replace("#include <common>", "#include <common>\nvarying vec3 hpDitherWorld;")
+          .replace(
+            "#include <project_vertex>",
+            "#include <project_vertex>\n  hpDitherWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;",
+          );
+        shader.fragmentShader = shader.fragmentShader
+          .replace("#include <common>", `#include <common>\n${ditherGlsl}`)
+          .replace(
+            "void main() {",
+            `void main() {\n  if (hpDitherAway(${role === "wall" ? "true" : "false"})) discard;`,
+          );
+      },
+    });
+  };
+
+  /** Patched once per material while C is the mode, opened or not, so opening a room compiles nothing. */
+  const patchAllDither = (): void => {
+    const walls = wallMeshes();
+    planRoot.traverse((object) => {
+      if (!isMesh(object)) return;
+      const role: Role = walls.has(object) ? "wall" : "content";
+      for (const material of materialsOf(object)) {
+        if (!patchable(material)) continue;
+        if (ditherPatched.get(material) === "wall") continue;
+        patchDither(material, role);
+      }
+    });
+  };
+
+  /** The room's outline as ground edges and its walls' reach beyond it; null without an outline or with too many edges. */
+  const ditherRoom = (areaId: string): DitherRoom | null => {
+    const room = scene()
+      .indoorRooms()
+      .rooms.find((candidate) => candidate.areaId === areaId);
+    if (room === undefined) return null;
+    const ground = (x: number, y: number): GroundPoint => {
+      const world = toWorld(x, y, 0);
+      return { x: world.x, z: world.z };
+    };
+    const edges: { a: GroundPoint; b: GroundPoint }[] = [];
+    for (const polygon of room.outline.polygons)
+      for (const ring of [polygon.outer, ...polygon.holes])
+        ring.forEach((point, index) => {
+          const next = ring[(index + 1) % ring.length];
+          if (next !== undefined) edges.push({ a: ground(point.x, point.y), b: ground(next.x, next.y) });
+        });
+    if (edges.length === 0 || edges.length > maxDitherEdges) return null;
+    // The walls' reach: the farthest corner of the room's wall bands from its outline, plus a little.
+    let reach = 0;
+    for (const layer of scene().wallLayers())
+      for (const band of layer.walls.bands) {
+        if (band.areaId !== areaId) continue;
+        for (const point of band.ring) {
+          const p = ground(point.x, point.y);
+          const level = edges.reduce(
+            (best, { a, b }) => Math.min(best, distanceToSegment(p, a, b)),
+            Infinity,
+          );
+          reach = Math.max(reach, Math.min(level, 1));
+        }
+      }
+    const xs = edges.map(({ a }) => a.x);
+    const zs = edges.map(({ a }) => a.z);
+    return {
+      edges,
+      center: { x: (Math.min(...xs) + Math.max(...xs)) / 2, z: (Math.min(...zs) + Math.max(...zs)) / 2 },
+      margin: reach + 0.005,
+    };
+  };
+
+  const setDitherEdges = (room: DitherRoom, eye: Vector3): void => {
+    const edges = nearEdges(room.edges, room.center, { x: eye.x, z: eye.z });
+    const key = edges.map((edge) => (edge.near ? "1" : "0")).join("");
+    ditherEdges = edges;
+    if (key === ditherNearKey) return;
+    ditherNearKey = key;
+    edges.forEach((edge, index) => {
+      ditherUniforms.hpDitherEdges.value[index]?.set(edge.a.x, edge.a.z, edge.b.x, edge.b.z);
+      ditherUniforms.hpDitherNear.value[Math.floor(index / 4)]?.setComponent(index % 4, edge.near ? 1 : 0);
+    });
+    ditherUniforms.hpDitherCount.value = edges.length;
+  };
+
   // ---- A: fades ----------------------------------------------------------------------------------------
 
   /** The room's walls whose bands lie on the camera's side of the room centre. */
@@ -217,7 +342,7 @@ export const createRoomCutaway = (
     const eyeLength = Math.hypot(ex, ey);
     const near = new Set<string>();
     if (eyeLength < 1) return near;
-    for (const layer of floorScene.wallLayers())
+    for (const layer of scene().wallLayers())
       for (const band of layer.walls.bands) {
         if (band.areaId !== room.areaId || band.ring.length === 0) continue;
         const cx = band.ring.reduce((sum, point) => sum + point.x, 0) / band.ring.length - room.center.x;
@@ -233,7 +358,7 @@ export const createRoomCutaway = (
     if (key === nearKey) return;
     nearKey = key;
     near = next;
-    floorScene.setWallFade(
+    scene().setWallFade(
       next.size === 0 ? null : (wallId): FadeLevel => (next.has(wallId) ? "faded" : "normal"),
     );
     context.applyMaterials(false);
@@ -243,8 +368,17 @@ export const createRoomCutaway = (
 
   const apply = (): void => {
     const room = focused;
-    if (room !== null && mode === "fade") {
-      floorScene.setIsolation({
+    const dithered = room !== null && mode === "dither" && room.dither !== null;
+    if (dithered) {
+      ditherUniforms.hpDitherMargin.value = room.dither.margin;
+      ditherNearKey = "";
+      ditherUniforms.hpDitherOn.value = 1;
+    } else {
+      ditherUniforms.hpDitherOn.value = 0;
+      ditherEdges = [];
+    }
+    if (room !== null && (mode === "fade" || (mode === "dither" && !dithered))) {
+      scene().setIsolation({
         areaId: room.areaId,
         others: "faded",
         fadeOwnContent: false,
@@ -252,11 +386,11 @@ export const createRoomCutaway = (
       });
       nearKey = "";
       near = new Set();
-      floorScene.setWallFade(null);
+      scene().setWallFade(null);
       context.applyMaterials(true);
-    } else if (floorScene.isolation() !== null || nearKey !== "") {
-      floorScene.setIsolation(null);
-      floorScene.setWallFade(null);
+    } else if (scene().isolation() !== null || nearKey !== "") {
+      scene().setIsolation(null);
+      scene().setWallFade(null);
       nearKey = "";
       near = new Set();
       context.applyMaterials(true);
@@ -279,16 +413,18 @@ export const createRoomCutaway = (
     setMode: (next) => {
       if (next === mode) return;
       mode = next;
+      if (mode === "dither") patchAllDither();
       apply();
     },
     focus: (areaId) => {
       if (areaId === focused?.areaId) return;
-      const bounds = areaId === null ? null : floorScene.areaBounds(areaId);
+      const bounds = areaId === null ? null : scene().areaBounds(areaId);
       focused =
         areaId === null || bounds === null
           ? null
           : {
               areaId,
+              dither: mode === "dither" ? ditherRoom(areaId) : null,
               center: { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 },
               bounds,
             };
@@ -297,17 +433,23 @@ export const createRoomCutaway = (
     update: (eye) => {
       const room = focused;
       if (room === null) return;
-      if (mode === "fade") applyNear(nearWalls(room, eye));
+      if (mode === "dither" && room.dither !== null) setDitherEdges(room.dither, eye);
+      else if (mode === "fade" || mode === "dither") applyNear(nearWalls(room, eye));
       else if (mode === "dome") updateFunnel(eye);
     },
     wallFade: (wallId) => (wallId !== undefined && near.has(wallId) ? "faded" : "normal"),
     afterMaterials: () => {
       if (uniforms.hpCutOn.value > 0) patchAll();
+      if (mode === "dither") patchAllDither();
     },
     looksThrough: (hit) => {
       const room = focused;
       if (room === null) return false;
-      if (mode === "fade") {
+      if (mode === "dither" && room.dither !== null) {
+        const wall = wallMeshes().has(hit.object);
+        return ditherLevel({ x: hit.point.x, z: hit.point.z }, ditherEdges, room.dither.margin, wall) < 0.5;
+      }
+      if (mode === "fade" || mode === "dither") {
         const material = hitMaterial(hit);
         return material !== null && material.transparent && material.opacity < fadedOpacity;
       }

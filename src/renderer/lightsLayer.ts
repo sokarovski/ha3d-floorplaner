@@ -208,12 +208,12 @@ type Entry = {
   readonly strip: StripSource | null;
 };
 
-const configureShadow = (emitter: Emitter): void => {
+const configureShadow = (emitter: Emitter, pointSize: number): void => {
   emitter.shadow.camera.near = 0.05;
   emitter.shadow.camera.far = 60;
   emitter.shadow.bias = -0.0008;
   emitter.shadow.normalBias = 0.02;
-  const size = emitter instanceof PointLight ? pointShadowMapSize : spotShadowMapSize;
+  const size = emitter instanceof PointLight ? pointSize : spotShadowMapSize;
   emitter.shadow.mapSize.set(size, size);
 };
 
@@ -320,8 +320,15 @@ const createWallProbe = (start: Group): WallProbe => {
     });
 };
 
-/** maxShadowLights: the host's shadow budget (see `shadowBudget`). */
-export const createLightsLayer = (materials: HelperMaterials, initialShadowLights: number): LightsLayer => {
+/**
+ * maxShadowLights: the host's shadow budget (see `shadowBudget`); pointShadowSize: a point light's shadow map size
+ * (px; the HA viewer's low limits, Phase 21.6, use a smaller one).
+ */
+export const createLightsLayer = (
+  materials: HelperMaterials,
+  initialShadowLights: number,
+  pointShadowSize: number = pointShadowMapSize,
+): LightsLayer => {
   let maxShadowLights = Math.max(0, Math.floor(initialShadowLights));
   const entries = new Map<string, Entry>();
   let hovered: string | null = null;
@@ -467,7 +474,7 @@ export const createLightsLayer = (materials: HelperMaterials, initialShadowLight
       shadowed.push(emitter);
     }
     for (const emitter of emitters) {
-      configureShadow(emitter);
+      configureShadow(emitter, pointShadowSize);
       if (light.geometry.type === "linear") emitter.shadow.radius = linearShadowRadius;
       // Stable topology (Phase 16.6): an off emitter stays visible at intensity 0, and its shadow map, drawn once
       // when it is built, is not redrawn while it is off.

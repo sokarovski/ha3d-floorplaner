@@ -290,7 +290,9 @@ const drawn = (object: Object3D): boolean => {
 };
 
 export const createIntrusionSweeps = (context: SweepContext): IntrusionSweeps => {
-  const { planRoot, floorScene, cutUniforms, camera, canvas, requestFrame } = context;
+  const { planRoot, cutUniforms, camera, canvas, requestFrame } = context;
+  // Read on every use: the host's shown floor (and so its scene) changes with the view (Phase 21.4).
+  const scene = (): FloorScene => context.floorScene;
   const root = new Group();
   root.name = "intrusion-sweeps";
   /** Plan-frame children (markers, sensor dots): their matrix follows the plan root. */
@@ -420,10 +422,14 @@ export const createIntrusionSweeps = (context: SweepContext): IntrusionSweeps =>
 
   /** The room's drawn meshes (its area group) and the floor's wall layers, each with an up-to-date twin. */
   const syncTwins = (sweep: Sweep): void => {
-    const walls = new Set<Mesh>(floorScene.wallLayers().map((layer) => layer.mesh));
+    const walls = new Set<Mesh>(
+      scene()
+        .wallLayers()
+        .map((layer) => layer.mesh),
+    );
     const wanted = new Map<Mesh, ShaderMaterial>();
     for (const mesh of walls) if (drawn(mesh)) wanted.set(mesh, sweep.wallMaterial);
-    const group = floorScene.areaGroup(sweep.room.areaId);
+    const group = scene().areaGroup(sweep.room.areaId);
     group?.traverse((object) => {
       if (!isMesh(object) || walls.has(object) || !object.layers.isEnabled(0) || !drawn(object)) return;
       wanted.set(object, sweep.contentMaterial);

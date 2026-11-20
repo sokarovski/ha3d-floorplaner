@@ -2,17 +2,7 @@
 // animator and the ambient effects' timer under continuous frames (an orbit drag), and the asset load queue, all on a
 // fake clock; and the whole house's static batching (Phase 18.1, src/renderer/staticBatch.ts), which keeps a whole-house
 // frame to a few hundred draw calls. No browser or WebGL. Run: npm run frames:check
-import {
-  Group,
-  Mesh,
-  BufferGeometry,
-  MeshBasicMaterial,
-  PerspectiveCamera,
-  PointLight,
-  Scene,
-  SpotLight,
-  Object3D,
-} from "three";
+import { Group, Mesh, BufferGeometry, MeshBasicMaterial } from "three";
 import { createFrameScheduler } from "../src/renderer/frameScheduler.ts";
 import { createStateAnimator, stateAnimationMs } from "../src/renderer/stateAnimation.ts";
 import { createLoadQueue } from "../src/renderer/loadQueue.ts";
@@ -22,8 +12,6 @@ import {
   slidePose,
   startFloorSlide,
 } from "../ha-viewer/three/floorTransition.ts";
-import { captureFloorGhost } from "../ha-viewer/three/floorGhost.ts";
-import { createPlanRoot } from "../src/renderer/planFrame.ts";
 import { BoxGeometry, MeshStandardMaterial, Vector3 } from "three";
 import { batchBucketName, batchedLayer, createStaticBatch } from "../src/renderer/staticBatch.ts";
 
@@ -509,162 +497,7 @@ for (const hz of [60, 120]) {
     slidePose(from, to, 2).position[1] === 4.3 && slidePose(from, to, -1).position[1] === 1.5,
   );
 
-  // The departing view's copy (ha-viewer/three/floorGhost.ts): what it draws, its own lights, its real place.
-  const planRoot = createPlanRoot();
-  planRoot.position.set(-3, 0, 2);
-  const sunRoot = new Group();
-  sunRoot.position.copy(planRoot.position);
-  const scene = new Scene();
-  scene.add(planRoot, sunRoot);
-  const content = new Group();
-  planRoot.add(content);
-  const wallGeometry = new BufferGeometry();
-  const wallMaterial = new MeshBasicMaterial();
-  const wall = new Mesh(wallGeometry, wallMaterial);
-  wall.position.set(1000, 2000, 0);
-  const hidden = new Mesh(new BufferGeometry(), new MeshBasicMaterial());
-  hidden.visible = false;
-  const effect = new Mesh(new BufferGeometry(), new MeshBasicMaterial());
-  effect.layers.set(3);
-  const lamp = new PointLight(0xffffff, 10);
-  lamp.castShadow = true;
-  const spot = new SpotLight(0xffffff, 10);
-  const spotTarget = new Object3D();
-  spotTarget.position.set(0, 0, -1000);
-  spot.target = spotTarget;
-  content.add(wall, hidden, effect, lamp, spot, spotTarget);
-  const camera = new PerspectiveCamera(40, 1.5, 0.5, 60);
-  camera.position.set(4, 6, 10);
-  camera.updateMatrixWorld();
-  camera.updateProjectionMatrix();
-  // Departing: floor 1 (placed at x 500 mm, 2800 mm up); destination: the ground floor at the house's zero.
-  const ghost = captureFloorGhost({
-    planRoot,
-    sunRoot,
-    origin: { x: 500, y: 0, h: 2800 },
-    camera,
-    scene,
-    width: 8,
-    height: 8,
-    samples: 0,
-    halfFloat: false,
-  });
-  const destination = createPlanRoot();
-  destination.position.set(-1, 0, 2);
-  ghost.place(destination, { x: 0, y: 0, h: 0 });
-  const pose = ghost.startPose();
-  // The copy's plan root sits at the departing origin relative to the destination: (0.5, 2.8, 0) m from its root.
-  const expectedShift = [-1 + 0.5 - -3, 2.8, 0];
-  check(
-    "copy: the departing camera moves with the floor to its real place (2.8 m up, its plan offset)",
-    near(pose.position.x, 4 + expectedShift[0]) &&
-      near(pose.position.y, 6 + expectedShift[1]) &&
-      near(pose.position.z, 10 + expectedShift[2]) &&
-      pose.projection.equals(camera.projectionMatrix),
-  );
-  const meshes = [];
-  const lights = [];
-  ghost.scene.traverse((object) => {
-    if (object instanceof Mesh) meshes.push(object);
-    if (object instanceof PointLight || object instanceof SpotLight) lights.push(object);
-  });
-  const copiedSpot = lights.find((light) => light instanceof SpotLight);
-  let spotTargetInCopy = false;
-  ghost.scene.traverse((object) => {
-    if (copiedSpot !== undefined && object === copiedSpot.target) spotTargetInCopy = true;
-  });
-  check(
-    "copy: only shown meshes on the default layer, sharing geometry and materials; no hidden or effect mesh",
-    meshes.length === 1 &&
-      meshes[0] !== wall &&
-      meshes[0].geometry === wallGeometry &&
-      meshes[0].material === wallMaterial,
-  );
-  check(
-    "copy: it keeps its own lights (new shadow maps drawn once), a spot aimed at its copied target",
-    lights.length === 2 &&
-      !lights.includes(lamp) &&
-      lights.some((light) => light instanceof PointLight && light.shadow.needsUpdate) &&
-      spotTargetInCopy &&
-      lamp.parent === content,
-  );
-  const shifted = ghost.shift();
-  check(
-    "copy: its shift is the camera's (the ride keeps the horizontal place and changes height by the elevations)",
-    near(shifted.x, 2.5) && near(shifted.y, 2.8) && near(shifted.z, 0),
-  );
-  // The fade follows the ride: each frame's eased progress is the blend weight of that same frame (destination in,
-  // departing out), from exactly 0 to exactly 1, and only the copy's own scene is drawn into its target.
-  const drawnScenes = [];
-  const fakeRenderer = {
-    autoClear: true,
-    shadowMap: { needsUpdate: false },
-    target: null,
-    getRenderTarget() {
-      return this.target;
-    },
-    setRenderTarget(target) {
-      this.target = target;
-    },
-    clear: () => undefined,
-    render(drawn) {
-      drawnScenes.push([drawn, this.target !== null]);
-    },
-  };
-  const rideClock = createClock();
-  const rideFrames = scheduler(rideClock);
-  const weights = [];
-  const poses = [];
-  startFloorSlide({
-    frames: rideFrames,
-    apply: (eased) => {
-      const pose = slidePose(from, to, eased);
-      ghost.draw(fakeRenderer, camera, eased);
-      weights.push([eased, ghost.weight()]);
-      poses.push(pose.position[1]);
-    },
-    settle: () => undefined,
-  });
-  runDisplay(rideClock, 60, floorSlideMs + 200);
-  check(
-    "fade: each frame's blend weight is that frame's eased ride progress, from exactly 0 to exactly 1",
-    weights.length > 30 &&
-      weights.every(([eased, weight]) => near(eased, weight)) &&
-      weights[0][1] === 0 &&
-      weights[weights.length - 1][1] === 1 &&
-      weights.every(([, weight], index) => index === 0 || weight >= weights[index - 1][1]),
-  );
-  check(
-    "fade: the ride's height moves with the same progress (fade and move never lead or lag each other)",
-    weights.every(([eased], index) => near(poses[index], 1.5 + 2.8 * eased)),
-  );
-  check(
-    "fade: the departing copy is drawn into its own target, the blend over the frame; shadows only on the first",
-    drawnScenes[0][0] === ghost.scene &&
-      drawnScenes[0][1] &&
-      drawnScenes[1][0] !== ghost.scene &&
-      !drawnScenes[1][1] &&
-      fakeRenderer.autoClear === true,
-  );
-  const planCopy = ghost.scene.children[0];
-  check(
-    "copy: placed at the departing floor's real place relative to the destination (floorToHouseOffset difference)",
-    near(planCopy.position.x, -0.5) && near(planCopy.position.y, 2.8) && near(planCopy.position.z, 2),
-  );
-  // The destination's layers dispose the departing wall while the copy still draws it; release disposes it again.
-  let disposals = 0;
-  wallGeometry.addEventListener("dispose", () => {
-    disposals += 1;
-  });
-  wallGeometry.dispose();
-  ghost.dispose();
-  check("copy: what a layer disposed meanwhile is disposed again on release", disposals === 2);
-  let later = 0;
-  wallMaterial.addEventListener("dispose", () => {
-    later += 1;
-  });
-  ghost.dispose();
-  check("copy: release runs once and leaves shared materials to their owners", later === 0);
+  // Phase 21.5: the ride draws the house's real floors (no departing copy); its pose is checked above.
 }
 
 // ---- 15.1: the load queue -------------------------------------------------------------------------------------------

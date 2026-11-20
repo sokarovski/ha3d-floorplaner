@@ -11,11 +11,10 @@ export type { FrameInsets };
 import type { Intersection, Material, MeshStandardMaterial, Object3D, Texture } from "three";
 import {
   Box3,
-  BufferGeometry,
   Group,
-  Float32BufferAttribute,
-  LineBasicMaterial,
-  LineSegments,
+  Light,
+  LightShadow,
+  PointLight,
   Mesh,
   Plane,
   Raycaster,
@@ -51,6 +50,8 @@ import type { FloorBounds } from "../../src/renderer/floorScene";
 import { createHelperMaterials } from "../../src/renderer/helperMaterials";
 import { helperPalette } from "../../src/renderer/helperPalette";
 import { createInstanceLayer } from "../../src/renderer/instanceLayer";
+import type { InstanceLayer } from "../../src/renderer/instanceLayer";
+import type { FloorScene } from "../../src/renderer/floorScene";
 import { createSkyShading } from "../../src/renderer/skyShading";
 import type { SkyShading } from "../../src/renderer/skyShading";
 import { createMirrorSurfaces } from "../../src/renderer/mirrorSurface";
@@ -59,7 +60,7 @@ import type { Lighting } from "../../src/renderer/lighting";
 import { createLightsLayer, houseShadowBudget, shadowBudget } from "../../src/renderer/lightsLayer";
 import { environmentSun, sunDirectionPlan } from "@shared/domain/environment/sun";
 import { createMaterialCache } from "../../src/renderer/materialCache";
-import { createPlanRoot } from "../../src/renderer/planFrame";
+import { createPlanRoot, planToWorld } from "../../src/renderer/planFrame";
 import type { AssetReader } from "../../src/renderer/assetTransport";
 import { createTemplateCache } from "../../src/renderer/templateCache";
 import type { TemplateCache, TemplateState } from "../../src/renderer/templateCache";
@@ -82,8 +83,6 @@ import type { HouseExterior } from "../../src/renderer/houseExterior";
 import type { FloorStep, ViewerView } from "../floorNavigation";
 import { floorSlideChannel, slidePose, startFloorSlide } from "./floorTransition";
 import type { FloorSlide, SlidePose } from "./floorTransition";
-import { captureFloorGhost } from "./floorGhost";
-import type { FloorGhost } from "./floorGhost";
 import { floorToHouseOffset } from "@shared/geometry/placement";
 import { floorPlacementOf, floorsByElevation } from "@shared/domain/house/floorPlacement";
 import { isMesh } from "../../src/renderer/sceneObjects";
@@ -101,6 +100,8 @@ import type { Stage } from "./stage";
 import { computeAreaFloorGeometry } from "@shared/geometry/areaGeometry";
 import { strongerFade } from "../../src/renderer/surfaceMaterialKey";
 import { createRoomCutaway } from "./roomCutaway";
+import { viewerLimits } from "./prototypeFlags";
+import type { ViewerLimits } from "./prototypeFlags";
 import type { RoomCutaway } from "./roomCutaway";
 import { chooseView, floorSamples } from "./roomFocus";
 import type { OrbitView } from "./roomFocus";
@@ -138,10 +139,12 @@ type StatedCache<T> = Map<string, { source: T; key: string; value: T }>;
 
 const stageRadiusM = 40;
 /**
- * The glass reflection under the house (owner: on again, 2026-11-16). It doubles the cost of a frame, but the viewer
- * renders only on demand and reuses static shadow maps, so an idle view costs nothing.
+ * The glass reflection under the house, off by default since Phase 21 (owner, 2026-11-20: optimise rendering; it is
+ * kept as a viewer property, `setReflection`, to enable when wanted). Measured on the demo Family house's ground
+ * floor (desktop Chrome, pixel ratio 2): a frame 11.5 ms with it against about 4 ms without (90th percentile 29.8 ms
+ * against 5.5–10 ms), since it draws the house a second time, with every lamp, behind a half-size target.
  */
-const reflectionEnabled = true;
+const defaultReflection = false;
 /** The view is shifted so the house sits on the backdrop glow in the lower third (fraction of height). */
 const viewShiftDown = 0.05;
 const fovDeg = 35;
@@ -172,6 +175,8 @@ const openingQuietMs = 400;
 const openingMaxMs = 5000;
 /** Batches of objects are added at most this often (ms): one instance sync per batch. */
 const admitGapMs = 120;
+/** The most templates whose objects one batch places (Phase 21.5, implementation convention). */
+const admitBatchTemplates = 6;
 /** GPU texture uploads per frame: at least one, more while the frame has spent less than `uploadBudgetMs` on them. */
 const maxUploadsPerFrame = 3;
 const uploadBudgetMs = 4;
@@ -184,7 +189,6 @@ const batchQuietMs = 300;
 /** ...one floor per step, this far apart (ms), so no frame waits for the whole house. */
 const batchStepMs = 50;
 /** Multisampling of a floor switch's departing copy (the canvas is antialiased). */
-const ghostSamples = 4;
 
 /** Loading of the separate objects and textures after the opening (15.1), for the progress bar. */
 export type LoadProgress = Readonly<{ stage: LoadStage; total: number; remaining: number }>;
@@ -198,8 +202,7 @@ const delay = (ms: number): Promise<void> =>
 
 /** The view buttons (14.6): back to the framing, look straight down, or a quarter turn; each then fits. */
 export type ViewPreset = "fit" | "top" | "turn";
-/** A tapped object's short highlight (Phase 8.3): its box outline in the theme accent, for this long (ms). */
-const highlightMs = 350;
+/** The whole house's floor box (16.13), in the theme accent. */
 const highlightColor = 0x03a9f4;
 /** A placed bubble's free point sits this far above the surface tapped (mm). */
 const placedLiftMm = 150;
@@ -406,10 +409,14 @@ export class HouseViewer {
   private readonly planRoot = createPlanRoot();
   /** The sun's parent: the plan root's centring offset, without its scale and rotation. */
   private readonly sunRoot = new Group();
-  private readonly floorScene: ReturnType<typeof createFloorScene>;
+  /**
+   * Stand-ins for the floor view's scene and instances while the whole house is shown (Phase 21.4): never synced,
+   * so the cutaway, sweeps and sky see no floor there. A floor view uses the house's own (`floorScene`, `instances`).
+   */
+  private readonly emptyScene: FloorScene;
+  private readonly emptyInstances: InstanceLayer;
   /** A floor view's attached roofs (canopies, Phase 19.3); the cutting roof is drawn in the whole house only. */
   private readonly floorRoofs: RoofLayer;
-  private readonly instances: ReturnType<typeof createInstanceLayer>;
   /** Mirror slots (Phase 9.1) reflect the scene's environment map. */
   private readonly mirrors: ReturnType<typeof createMirrorSurfaces>;
   private readonly templates: ReturnType<typeof createTemplateCache>;
@@ -439,8 +446,6 @@ export class HouseViewer {
   /** The insets last handed to `onInsets`. */
   private reportedInsets: FrameInsets | null = null;
   private readonly onEditTap: (clientX: number, clientY: number) => boolean;
-  /** The short highlight of a tapped object, and when it goes (8.3). */
-  private highlight: { lines: LineSegments; timer: number } | null = null;
   private readonly onAreaSelect: (areaId: string) => void;
   private readonly onAreaDismiss: () => void;
   private readonly onEditPick: (pick: EditPick) => void;
@@ -507,10 +512,11 @@ export class HouseViewer {
     this.requestRender();
   };
   /**
-   * The whole house (16.1, complete since 18.1): built the first time the whole-house view is shown and kept,
-   * hidden, while a floor is shown, so showing the whole house again rebuilds and reloads nothing (`houseView`).
+   * Every floor of the house, built once (16.1, complete since 18.1; Phase 21.4: the only copy): the whole-house view
+   * draws all of it; a floor view draws its floor from here (`floorScene`, `instances`) with the others hidden and
+   * only that floor's content kept.
    */
-  private exterior: HouseExterior | null = null;
+  private readonly exterior: HouseExterior;
   /** The viewer's view of each authored floor (viewerFloor), kept while the authored floor is the same value. */
   private readonly viewerFloors = new WeakMap<BuildingFloorValue, BuildingFloorValue>();
   /** The floor shown before the whole house (its content loads first there), or null. */
@@ -519,10 +525,19 @@ export class HouseViewer {
   private hoverFloor: string | null = null;
   private readonly onFloorSelect: (floorId: string) => void;
   /**
-   * The departing view during a floor switch (16.3, 16.13): a copy of what it drew, at its real place relative to the
-   * destination, drawn and faded out while the camera moves; released when the move is over.
+   * A floor switch's ride (16.13; Phase 21.5: over the house's real floors, no copy): the departing view's frame
+   * origin in the house, the plan root's place then, and the departing camera; kept until the ride ends.
    */
-  private ghost: FloorGhost | null = null;
+  private ride: Readonly<{ origin: PlanPoint3; anchor: Vector3; from: SlidePose }> | null = null;
+  /** How far the departing view's content moved in the world when the destination was placed (the ride's offset). */
+  private readonly rideShift = new Vector3();
+  /**
+   * During a floor switch's preparation and ride (21.5, owner): the destination's objects wait, so only its shell and
+   * doors and windows ride in; they load after the ride, a few templates at a time, with the bar.
+   */
+  private holdObjects = false;
+  /** Templates waiting to be placed when loading began (the bar's total when everything is cached). */
+  private heldAtLoading = 0;
   private slide: FloorSlide | null = null;
   /** The ride's eased progress while a switch shows (0 until the ride starts), else null. */
   private slideProgress: number | null = null;
@@ -542,6 +557,10 @@ export class HouseViewer {
   private outline: readonly FramePoint[] = [];
   /** Room cutaway while a room is open (Phase 8.2a). */
   private readonly cutaway: RoomCutaway;
+  /** Phase 21 prototype limits (prototypeFlags.ts), read once. */
+  private readonly limits: ViewerLimits = viewerLimits();
+  /** Dev readout (Phase 21.1): the slowest render since the readout last asked (ms). */
+  private worstRenderMs = 0;
   /** Room hit volumes of the shown floor (Phase 8.1). */
   private volumes: readonly RoomVolume[] = [];
   /** Host wall of each door and window of the shown floor. */
@@ -629,7 +648,7 @@ export class HouseViewer {
     this.renderer.shadowMap.type = PCFShadowMap;
     // Static shadow maps (Phase 7.10): redrawn only when the content or a light changes, never for camera moves.
     this.renderer.shadowMap.autoUpdate = false;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.limits.pixelRatioCap));
     canvas.addEventListener("webglcontextlost", this.handleContextLost);
     canvas.addEventListener("webglcontextrestored", this.handleContextRestored);
 
@@ -665,7 +684,7 @@ export class HouseViewer {
       beforeMap: (material, map) => this.warmMap(material, map),
       onMapped: invalidate,
     });
-    this.floorScene = createFloorScene(this.materials, helperPalette("light"));
+    this.emptyScene = createFloorScene(this.materials, helperPalette("light"));
     this.templates = createTemplateCache(
       (templateId, version) => assets.templateUrl(houseId(), templateId, version),
       () => {
@@ -680,12 +699,15 @@ export class HouseViewer {
       },
     );
     const templates = this.templates;
-    const gated = (templateId: string, version: number, state: TemplateState): TemplateState =>
-      state.state === "loading" ||
-      (this.loadStage !== "opening" && this.loadStage !== "loading") ||
-      this.admittedKeys.has(templateKey(templateId, version))
+    const gated = (templateId: string, version: number, state: TemplateState): TemplateState => {
+      const key = templateKey(templateId, version);
+      return state.state === "loading" ||
+        this.loadStage === "done" ||
+        (this.loadStage === "preparing" && (!this.holdObjects || this.houseTemplateKeys.has(key))) ||
+        this.admittedKeys.has(key)
         ? state
         : loadingTemplate;
+    };
     this.placed = {
       get: (templateId, version) => gated(templateId, version, templates.get(templateId, version)),
       peek: (templateId, version) => {
@@ -698,27 +720,36 @@ export class HouseViewer {
       this.reportProgress();
     });
     this.mirrors = createMirrorSurfaces(this.renderer, this.scene.environment);
-    this.instances = createInstanceLayer(this.placed, this.materials, this.mirrors);
+    this.emptyInstances = createInstanceLayer(this.placed, this.materials, this.mirrors);
+    this.exterior = createHouseExterior(this.materials, helperPalette("light"), highlightColor, {
+      templates: this.placed,
+      mirrors: this.mirrors,
+    });
     this.floorRoofs = createRoofLayer(this.materials, this.placed);
+    // The shown floor's scene changes with the view (21.4): these read it when they need it.
+    const shownScene = (): FloorScene => this.floorScene;
     this.sky = createSkyShading({
-      frame: this.floorScene.root,
+      get frame(): Object3D {
+        return shownScene().root;
+      },
       content: this.planRoot,
-      rooms: this.floorScene.indoorRooms,
-      openings: this.instances.skyOpenings,
+      rooms: () => shownScene().indoorRooms(),
+      openings: () => this.instances.skyOpenings(),
       lighting: this.lighting,
     });
     // The builder's lights layer draws each light's emitter from its defaults, which HA states override.
     this.helperMaterials = createHelperMaterials(helperPalette("light"));
     this.lights = createLightsLayer(
       this.helperMaterials,
-      shadowBudget(this.renderer.capabilities.maxTextures),
+      this.floorShadowBudget(),
+      this.limits.pointShadowSize,
     );
     this.lights.setPinsVisible(false);
     this.effects = createEffectsLayer(() => {
       this.requestRender();
     });
     this.camera.layers.enable(effectsLayer);
-    this.stage.setReflectionVisible(reflectionEnabled);
+    this.stage.setReflectionVisible(defaultReflection);
     // Objects hidden for the reflection pass come back as they were (a hidden one stays hidden).
     let reflectionHidden: Object3D[] = [];
     this.stage.setReflectionFilter((visible) => {
@@ -733,7 +764,9 @@ export class HouseViewer {
       this.sweeps.setShown(visible);
     });
     this.cutaway = createRoomCutaway({
-      floorScene: this.floorScene,
+      get floorScene(): FloorScene {
+        return shownScene();
+      },
       planRoot: this.planRoot,
       applyMaterials: (layersChanged) => {
         this.applyMaterials();
@@ -746,15 +779,16 @@ export class HouseViewer {
     });
     this.sweeps = createIntrusionSweeps({
       planRoot: this.planRoot,
-      floorScene: this.floorScene,
+      get floorScene(): FloorScene {
+        return shownScene();
+      },
       cutUniforms: this.cutaway.cutUniforms,
       camera: this.camera,
       canvas,
       requestFrame: invalidate,
     });
     this.scene.add(this.sweeps.root);
-    this.planRoot.add(this.floorScene.root);
-    this.floorScene.root.add(this.floorRoofs.root);
+    this.planRoot.add(this.emptyScene.root, this.exterior.root);
     // The sun lives in world metres like the builder's (src/renderer/viewportRuntime.ts), never under the plan root's
     // mm → m scale: there it sat 3.6 cm from its target, so its shadow camera started at floor level and wall tops
     // and ceilings cast no sun shadows (owner report, 2026-11-18). It only follows the plan root's centring offset.
@@ -815,26 +849,28 @@ export class HouseViewer {
 
   /**
    * Shows the whole house (16.1: the exterior of every floor, stacked; multi-floor houses) or one building floor of
-   * `house`; templates and textures stream in afterwards (15.1). With `slide`, a floor switch (16.3, 16.13): what the
-   * departing view draws is copied (floorGhost.ts) and stays on screen, the destination is prepared (its house model
-   * first, compiled in the background), then the camera rides vertically by the floors' elevation difference (same
-   * angles, distance, and horizontal place; the house stacked as it is), the departing view fading out and the
-   * destination fading in with the ride's progress, and a separate fit move follows. The departing view's layers
-   * (scene, lights, effects, overlays) rebuild for the destination at once; its copy is released when the ride ends.
+   * `house`; templates and textures stream in afterwards (15.1). Every floor's shell is the house's one copy (21.4):
+   * a view only changes which floors show and which floors keep their content. With `slide`, a floor switch (16.13,
+   * 21.5): the departing frame stays on screen while the destination prepares (its doors and windows, its lights'
+   * shaders compiled in the background), then the camera rides vertically by the floors' elevation difference (same
+   * angles, distance, and horizontal place) past the real floors: the destination and the floors below it, the floors
+   * above hidden at once, the departing floor's objects removed at once. One render per frame. The destination's
+   * objects load after the ride, with the bar; a separate fit move follows the ride.
    */
   showView(house: HouseDocument, view: ViewerView, slide: FloorStep | null = null): void {
     const angles = this.cameraAngles();
     // No hover box in the departing copy.
     this.setHover(null);
-    const sliding = slide !== null && this.captureDeparting();
+    const sliding = slide !== null && this.beginRide();
     if (!sliding) this.dropDeparting();
     const floorId = view.kind === "floor" ? view.floorId : null;
     // Saved-hidden things are never drawn here, hidden lights included (viewerFloor.ts).
     const authored =
       floorId === null ? undefined : house.floors.find((candidate) => candidate.id === floorId);
+    const allFloors = { ...house, floors: house.floors.map((floor) => this.viewerFloorOf(floor)) };
     const shownHouse =
       floorId === null
-        ? { ...house, floors: house.floors.map((floor) => this.viewerFloorOf(floor)) }
+        ? allFloors
         : authored === undefined
           ? house
           : houseWithFloor(house, this.viewerFloorOf(authored));
@@ -847,9 +883,16 @@ export class HouseViewer {
     this.setHover(null);
     this.shown = { house: shownHouse, floorId };
     this.restartStages();
-    this.floorScene.sync(shownHouse, floorId ?? "", openingSizeFromParameters);
+    this.holdObjects = sliding;
+    // Objects the destination already draws (the whole house's, entering one of its floors) stay drawn.
+    if (sliding && floorId !== null) {
+      const content = this.exterior.floorParts(floorId)?.content ?? null;
+      for (const instance of this.floorInstances())
+        if (content?.root(instance.id) != null) this.admittedKeys.add(instance.key);
+    }
+    this.syncExterior(allFloors, floorId, sliding);
     this.floorRoofs.sync(floorId === null ? null : (this.shownFloor() ?? null), attachedRoofsOnly);
-    this.syncExterior(floorId === null ? shownHouse : null);
+    this.floorScene.root.add(this.floorRoofs.root);
     this.volumes = roomVolumes(this.shownFloor()?.areas ?? []);
     this.openingWalls = new Map(
       (this.shownFloor()?.areas ?? []).flatMap((area) =>
@@ -869,36 +912,39 @@ export class HouseViewer {
   }
 
   /**
-   * The whole house on (the house, its floors as shown) or hidden (null). Built once, through the placed (gated)
-   * template view, so its objects join the staged batches (15.1); kept while a floor is shown (18.1). Its content
-   * loads in order: the floor last shown first, else the floor nearest the ground.
+   * The house's floors for a view (21.4): every floor built (unchanged ones keep everything), the shown floor (or the
+   * whole house) shown, and only the shown floors' content kept: a floor view drops the other floors' objects. Content
+   * loads in order: a floor view's floor; in the whole house the floor last shown first, else the one nearest the
+   * ground. `riding`: a floor switch, so the floors below the destination stay shown until the ride ends.
    */
-  private syncExterior(house: HouseDocument | null): void {
-    const exterior =
-      this.exterior ??
-      (house === null
-        ? null
-        : createHouseExterior(this.materials, helperPalette("light"), highlightColor, {
-            templates: this.placed,
-            mirrors: this.mirrors,
-          }));
-    if (exterior === null) return;
-    if (this.exterior === null) {
-      this.exterior = exterior;
-      this.planRoot.add(exterior.root);
-      exterior.setResolution(this.viewSize.width, this.viewSize.height);
-    }
-    exterior.root.visible = house !== null;
+  private syncExterior(house: HouseDocument, floorId: string | null, riding: boolean): void {
+    const exterior = this.exterior;
     this.lights.setShadowBudget(
-      house === null ? shadowBudget(this.renderer.capabilities.maxTextures) : houseShadowBudget,
+      floorId === null ? Math.min(houseShadowBudget, this.floorShadowBudget()) : this.floorShadowBudget(),
     );
-    if (house === null) return;
-    const ground = floorsByElevation(house.floors).find((floor) => floorPlacementOf(floor).elevationMm >= 0);
-    const first = [this.lastFloorId, ground?.id].filter(
-      (id): id is string => id !== null && id !== undefined,
-    );
-    exterior.setLoadOrder(first);
+    exterior.setContentFloors(floorId === null ? null : new Set([floorId]));
+    if (floorId === null) {
+      const ground = floorsByElevation(house.floors).find(
+        (floor) => floorPlacementOf(floor).elevationMm >= 0,
+      );
+      exterior.setLoadOrder(
+        [this.lastFloorId, ground?.id].filter((id): id is string => id !== null && id !== undefined),
+      );
+    } else exterior.setLoadOrder([floorId]);
+    exterior.setFocus(floorId === null ? null : { floorId, withBelow: riding });
     exterior.sync(house, openingSizeFromParameters);
+  }
+
+  /** The shown floor's scene (the house's own, 21.4), or the empty stand-in in the whole house. */
+  private get floorScene(): FloorScene {
+    const floorId = this.shown?.floorId ?? null;
+    return (floorId === null ? null : this.exterior.floorParts(floorId)?.scene) ?? this.emptyScene;
+  }
+
+  /** The shown floor's instances (the house's own, 21.4), or the empty stand-in in the whole house. */
+  private get instances(): InstanceLayer {
+    const floorId = this.shown?.floorId ?? null;
+    return (floorId === null ? null : this.exterior.floorParts(floorId)?.content) ?? this.emptyInstances;
   }
 
   /** The whole house while it is shown, else null (a floor view keeps it hidden). */
@@ -946,32 +992,28 @@ export class HouseViewer {
   }
 
   /**
-   * Keeps the departing view for the move: true when the switch moves. What it draws is copied (meshes and its own
-   * lights, sharing geometry and materials); the canvas keeps showing its last frame while the destination prepares,
-   * since nothing is drawn meanwhile. A switch while the previous destination is still being prepared keeps that
-   * copy (it is still what shows); one during a move first snaps that move to its end. No move off screen (16.11),
-   * or before anything was drawn.
+   * Keeps where the departing view was for the ride: true when the switch moves. The canvas keeps showing its last
+   * frame while the destination prepares, since nothing is drawn meanwhile. A switch while the previous destination
+   * is still being prepared keeps that start (it is still what shows); one during a ride first snaps that ride to its
+   * end. No ride off screen (16.11), or before anything was drawn.
    */
-  private captureDeparting(): boolean {
+  private beginRide(): boolean {
     if (this.disposed || !this.visibility.onScreen() || this.shown === null) return false;
-    if (this.ghost !== null && this.slide === null) return true;
+    if (this.ride !== null && this.slide === null) return true;
     this.slide?.finish();
     if (this.loadStage === "preparing" || this.revealPending) return false;
     const canvas = this.renderer.domElement;
     if (canvas.width === 0 || canvas.height === 0) return false;
-    const size = this.renderer.getDrawingBufferSize(new Vector2());
-    const extensions = this.renderer.extensions;
-    this.ghost = captureFloorGhost({
-      planRoot: this.planRoot,
-      sunRoot: this.sunRoot,
+    const camera = this.camera;
+    this.ride = {
       origin: this.viewOrigin(),
-      camera: this.camera,
-      scene: this.scene,
-      width: size.x,
-      height: size.y,
-      samples: ghostSamples,
-      halfFloat: extensions.has("EXT_color_buffer_float") || extensions.has("EXT_color_buffer_half_float"),
-    });
+      anchor: this.planRoot.position.clone(),
+      from: {
+        position: [camera.position.x, camera.position.y, camera.position.z],
+        quaternion: [camera.quaternion.x, camera.quaternion.y, camera.quaternion.z, camera.quaternion.w],
+        projection: [...camera.projectionMatrix.elements],
+      },
+    };
     // The ride starts where the camera is (a running fit or room move stops here; the fit after the ride redoes it).
     this.move = null;
     this.cameraAnimation?.cancel();
@@ -989,17 +1031,22 @@ export class HouseViewer {
   }
 
   /**
-   * The ride's end (owner 16.13: an elevator outside the house): the departing copy at its real place, and the camera
-   * at rest exactly above or below where it was, by the floors' elevation difference: same angles, distance, and
-   * horizontal position, so the ride is a vertical translation (no zoom). When the ride completes, a separate fit
-   * move (camera channel, the usual spring) fits the destination. The pan limits widen to keep that place.
+   * The ride's end (owner 16.13: an elevator outside the house): the camera at rest exactly above or below where it
+   * was, by the floors' elevation difference: same angles, distance, and horizontal position, so the ride is a
+   * vertical translation (no zoom). The ride's start is the departing camera moved with the departing floor's
+   * content (the plan root is now placed for the destination). When the ride completes, a separate fit move (camera
+   * channel, the usual spring) fits the destination. The pan limits widen to keep that place.
    */
   private rideFraming(): void {
-    const ghost = this.ghost;
+    const ride = this.ride;
     const from = this.rideFrom;
-    if (ghost === null || from === null) return;
-    ghost.place(this.planRoot, this.viewOrigin());
-    const shift = ghost.shift();
+    if (ride === null || from === null) return;
+    const origin = this.viewOrigin();
+    this.planRoot.updateMatrixWorld(true);
+    const at = this.planRoot.localToWorld(
+      new Vector3(ride.origin.x - origin.x, ride.origin.y - origin.y, ride.origin.h - origin.h),
+    );
+    const shift = this.rideShift.copy(at).sub(ride.anchor);
     const orbit = this.orbit;
     orbit.target.set(from.target.x + shift.x, from.target.y, from.target.z + shift.z);
     orbit.reachM = Math.max(
@@ -1017,36 +1064,35 @@ export class HouseViewer {
     this.applyViewOffset();
   }
 
-  /** Ends any floor switch now: a running move snaps to its end, a waiting departing copy goes. */
+  /** Ends any floor switch now: a running ride snaps to its end, a waiting one ends. */
   private dropDeparting(): void {
     if (this.slide !== null) this.slide.finish();
-    else if (this.ghost !== null) this.releaseGhost();
+    else if (this.ride !== null) this.endRide();
   }
 
   /**
-   * The end state of a switch: the departing copy released (its lights, shadow maps, target, and what it kept on the
-   * GPU), the canvas back to its own styles, and the material sweep it held back run.
+   * The end state of a switch: the canvas back to its own styles, and the floors below the destination hidden again
+   * (their shadows go with them, so the maps are redrawn once).
    */
-  private releaseGhost(): void {
-    const ghost = this.ghost;
-    this.ghost = null;
+  private endRide(): void {
+    const ridden = this.ride !== null;
+    this.ride = null;
     this.slideProgress = null;
     this.rideFrom = null;
     const canvas = this.renderer.domElement;
     canvas.style.removeProperty("opacity");
     canvas.style.removeProperty("transition");
-    if (ghost === null) return;
-    ghost.dispose();
-    if (this.disposed) return;
-    this.applyMaterials();
+    if (!ridden || this.disposed) return;
+    const floorId = this.shown?.floorId ?? null;
+    this.exterior.setFocus(floorId === null ? null : { floorId, withBelow: false });
+    this.renderer.shadowMap.needsUpdate = true;
     this.requestRender();
   }
 
   /**
-   * The move (once the destination's first frame is drawn): on the "floor" channel of the frame scheduler, about
-   * 0.6 s, eased. Each frame the camera is placed along the move (drawScene) and the departing copy is blended over
-   * the destination with weight 1 − progress. However the move ends, the end state is put in place
-   * (floorTransition.ts) and the copy is released.
+   * The ride (once the destination's first frame is drawn): on the "floor" channel of the frame scheduler, about
+   * 0.6 s, eased. Each frame the camera is placed along the ride (drawScene). However the ride ends, the end state
+   * is put in place (floorTransition.ts).
    */
   private startSlide(): void {
     this.slide = startFloorSlide({
@@ -1056,29 +1102,30 @@ export class HouseViewer {
       },
       settle: (end) => {
         this.slide = null;
-        this.releaseGhost();
+        this.endRide();
         // Step 2 (owner 16.13): a separate fit move on the camera channel, once the ride is over. A ride ended by a
         // new switch starts that switch's ride instead; a resize reframes by itself; disposal does nothing.
-        if (end === "completed" && !this.disposed) this.reframeFloor();
+        if (end === "completed" && !this.disposed) {
+          this.reframeFloor();
+          // The destination's objects load once the ride is over (21.5), not after the fit that follows it.
+          this.beginLoading(this.stageToken);
+        }
         this.requestRender();
       },
     });
   }
 
-  /** Puts the camera where the move is (from the departing camera to the resting one); returns the resting pose. */
-  private placeSlideCamera(ghost: FloorGhost, progress: number): SlidePose {
+  /** Puts the camera where the ride is (from the departing camera, moved, to the resting one); returns the resting pose. */
+  private placeSlideCamera(ride: Readonly<{ from: SlidePose }>, progress: number): SlidePose {
     const camera = this.camera;
     const resting: SlidePose = {
       position: [camera.position.x, camera.position.y, camera.position.z],
       quaternion: [camera.quaternion.x, camera.quaternion.y, camera.quaternion.z, camera.quaternion.w],
       projection: [...camera.projectionMatrix.elements],
     };
-    const start = ghost.startPose();
-    const from: SlidePose = {
-      position: [start.position.x, start.position.y, start.position.z],
-      quaternion: [start.quaternion.x, start.quaternion.y, start.quaternion.z, start.quaternion.w],
-      projection: [...start.projection.elements],
-    };
+    const shift = this.rideShift;
+    const [x, y, z] = ride.from.position;
+    const from: SlidePose = { ...ride.from, position: [x + shift.x, y + shift.y, z + shift.z] };
     const pose = slidePose(from, resting, progress);
     camera.position.set(...pose.position);
     camera.quaternion.set(...pose.quaternion);
@@ -1117,7 +1164,7 @@ export class HouseViewer {
   private setHover(floorId: string | null): void {
     if (floorId === this.hoverFloor) return;
     this.hoverFloor = floorId;
-    this.exterior?.setHighlight(floorId);
+    this.exterior.setHighlight(floorId);
     const canvas = this.renderer.domElement;
     if (floorId === null) canvas.style.removeProperty("cursor");
     else canvas.style.cursor = "pointer";
@@ -1128,6 +1175,15 @@ export class HouseViewer {
    * The real sun from Home Assistant (`sun.sun` azimuth and elevation, or computed from HA's location and time),
    * or null for the default sun. The house's North turns it onto the plan; shadows and day/night follow it.
    */
+  /**
+   * The glass reflection under the house on or off (Phase 21: off by default). Off, its pass is never drawn, so its
+   * half-size target is never allocated on the GPU.
+   */
+  setReflection(enabled: boolean): void {
+    this.stage.setReflectionVisible(enabled);
+    this.requestRender();
+  }
+
   setSolar(solar: Readonly<{ azimuthDeg: number; elevationDeg: number }> | null): void {
     const previous = this.solar;
     if (
@@ -1261,7 +1317,7 @@ export class HouseViewer {
     this.camera.aspect = width / height;
     this.viewSize = { width, height };
     this.applyViewOffset();
-    this.exterior?.setResolution(width, height);
+    this.exterior.setResolution(width, height);
     // A floor switch's departing copy and camera are the old shape: the switch ends now (16.3).
     if (reshaped) this.dropDeparting();
     // The tight whole-floor fit (14.3) depends on the screen's shape.
@@ -1794,7 +1850,7 @@ export class HouseViewer {
     if (this.disposed) return;
     this.disposed = true;
     this.slide?.cancel();
-    this.releaseGhost();
+    this.endRide();
     this.stageToken += 1;
     this.visibility.dispose();
     this.frames.dispose();
@@ -1816,7 +1872,6 @@ export class HouseViewer {
     this.navigationInput.dispose();
     if (this.press !== null) window.clearTimeout(this.press.holdTimer);
     this.taps.dispose();
-    this.clearHighlight();
     this.effects.dispose();
     this.screens.dispose();
     this.sweeps.dispose();
@@ -1824,13 +1879,12 @@ export class HouseViewer {
     this.lights.dispose();
     this.sky.dispose();
     this.helperMaterials.dispose();
-    this.instances.dispose();
+    this.emptyInstances.dispose();
     this.floorRoofs.dispose();
-    this.exterior?.dispose();
-    this.exterior = null;
+    this.exterior.dispose();
     this.mirrors.dispose();
     this.templates.dispose();
-    this.floorScene.dispose();
+    this.emptyScene.dispose();
     this.materials.dispose();
     this.textures.dispose();
     this.stage.dispose();
@@ -1854,11 +1908,10 @@ export class HouseViewer {
   private syncInstances(shadows: "now" | "throttled" = "now"): void {
     const floor = this.statedFloor(this.shownFloor());
     this.animateStates(floor);
-    this.emitters = this.instances.sync(floor, openingSizeFromParameters, this.floorScene.contentGroup);
+    // The shown floors' content with its live states (21.4: the house's one copy; in the whole house every floor,
+    // whose states jump, without animation).
+    this.emitters = this.exterior.syncContent((each) => this.statedFloor(each) ?? each);
     this.floorRoofs.refresh();
-    // The whole house (18.1): every floor's content with its live states (no state animation: it jumps).
-    const house = this.houseView();
-    if (house !== null) this.emitters = house.syncContent((each) => this.statedFloor(each) ?? each);
     this.effects.sync(floor, this.instances.root);
     this.screens.sync(this.instances.root, this.instances.screen);
     this.syncLights(shadows);
@@ -1939,7 +1992,7 @@ export class HouseViewer {
     this.materials.begin();
     this.floorScene.applyMaterials();
     this.floorRoofs.applyMaterials();
-    this.exterior?.applyMaterials();
+    this.exterior.applyMaterials();
     // Doors and windows on the open room's near walls fade with them (8.2a, A). A neighbour's door or window in a
     // wall the open room shares draws as the room's own and fades with the room's near wall there (15.7,
     // floorScene.entityFade).
@@ -1949,8 +2002,7 @@ export class HouseViewer {
         this.cutaway.wallFade(this.openingWalls.get(entityId)),
       ),
     );
-    // The departing copy of a floor switch shares materials: the sweep waits until it is released (16.13).
-    if (this.ghost === null) this.materials.sweep();
+    this.materials.sweep();
     this.cutaway.afterMaterials();
   }
 
@@ -1983,9 +2035,8 @@ export class HouseViewer {
                 : { ...area, lights: area.lights.map((light) => this.statedLight(light)) },
             ),
           };
-    this.lights.sync(effective, house?.areaGroup ?? this.floorScene.areaGroup, this.emitters);
-    this.instances.setFixtureGlow(this.lights.fixtureGlow());
-    house?.setFixtureGlow(this.lights.fixtureGlow());
+    this.lights.sync(effective, this.exterior.areaGroup, this.emitters);
+    this.exterior.setFixtureGlow(this.lights.fixtureGlow());
     // Lights cast shadows so walls confine them (Phase 7.10); the maps are redrawn on the next frame only.
     this.requestShadows(shadows);
   }
@@ -2192,7 +2243,7 @@ export class HouseViewer {
 
   /**
    * A tap on a light or an object (or on nothing). Two quick taps on the same target: its double tap; on nothing
-   * it reframes (or closes the open room). A tapped object flashes its outline (8.3).
+   * it reframes (or closes the open room).
    */
   private tap(target: GestureTarget | null): void {
     this.taps.tap(
@@ -2200,7 +2251,6 @@ export class HouseViewer {
       target === null || this.hasDoubleTap(target),
       () => {
         if (target === null) return;
-        if (target.kind === "object") this.flashObject(target.id);
         this.onGesture(target, "tap");
       },
       () => {
@@ -2212,7 +2262,7 @@ export class HouseViewer {
     );
   }
 
-  // ---- bubbles (Phase 8.5) and the object highlight (8.3) ----------------------------------------------
+  // ---- bubbles (Phase 8.5) ----------------------------------------------
 
   /** A plan point (mm) on screen, in CSS px of the canvas; null behind the camera or outside the depth range. */
   project(point: PlanPoint3): ScreenPoint | null {
@@ -2239,8 +2289,15 @@ export class HouseViewer {
       return light === undefined ? null : { ...light.positionMm, h: light.elevationMm };
     }
     if (!areas.some((area) => area.objects.some((object) => object.id === anchor.objectId))) return null;
-    const corners = this.instances.bounds(anchor.objectId);
-    if (corners === null || corners.length === 0) return null;
+    // `bounds` maps world positions to plan by scale only, so it still carries this viewer's centring shift of
+    // the plan root (placeRoots); taking them back through the plan root gives the true plan corners.
+    const worldCorners = this.instances.bounds(anchor.objectId);
+    if (worldCorners === null || worldCorners.length === 0) return null;
+    this.planRoot.updateMatrixWorld();
+    const corners = worldCorners.map((corner) => {
+      const local = this.planRoot.worldToLocal(planToWorld(corner));
+      return { x: local.x, y: local.y, h: local.z };
+    });
     const top = corners.length >= 8 ? corners.slice(4) : corners;
     return {
       x: top.reduce((sum, corner) => sum + corner.x, 0) / top.length,
@@ -2310,46 +2367,6 @@ export class HouseViewer {
     return state.state === "ready" ? state.asset.metadata.kind : null;
   }
 
-  /** The tapped object's short highlight: its box outline for `highlightMs`, two renders, no shadow redraw. */
-  private flashObject(objectId: string): void {
-    const corners = this.instances.bounds(objectId);
-    if (corners === null || corners.length < 8) return;
-    this.clearHighlight();
-    const edges = [0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7];
-    const positions = edges.flatMap((index) => {
-      const corner = corners[index];
-      return corner === undefined ? [0, 0, 0] : [corner.x, corner.y, corner.h];
-    });
-    const geometry = new BufferGeometry();
-    geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
-    const lines = new LineSegments(
-      geometry,
-      new LineBasicMaterial({ color: highlightColor, depthTest: false, transparent: true }),
-    );
-    lines.renderOrder = 10;
-    lines.raycast = () => undefined;
-    this.planRoot.add(lines);
-    this.highlight = {
-      lines,
-      timer: window.setTimeout(() => {
-        this.clearHighlight();
-        this.requestRender();
-      }, highlightMs),
-    };
-    this.requestRender();
-  }
-
-  private clearHighlight(): void {
-    const highlight = this.highlight;
-    if (highlight === null) return;
-    window.clearTimeout(highlight.timer);
-    highlight.lines.removeFromParent();
-    highlight.lines.geometry.dispose();
-    const material = highlight.lines.material;
-    if (!Array.isArray(material)) material.dispose();
-    this.highlight = null;
-  }
-
   private reportTilt(): void {
     const tilt = this.orbit.polar - defaultPolar;
     if (Math.abs(tilt - this.lastTilt) < 0.0005) return;
@@ -2393,6 +2410,37 @@ export class HouseViewer {
     this.frames.invalidate();
   }
 
+  /** A floor's shadow lamps: the GPU's budget, or the prototype's low limit (21.6). */
+  private floorShadowBudget(): number {
+    const budget = shadowBudget(this.renderer.capabilities.maxTextures);
+    return this.limits.floorShadowLamps === null ? budget : Math.min(budget, this.limits.floorShadowLamps);
+  }
+
+  /**
+   * Dev readout (Phase 21.1): GPU resources, the last frame's draw calls, the pixel ratio and drawing buffer, an
+   * estimate of the shadow maps' memory (no browser API reports GPU memory), and the slowest render since the last
+   * call (which resets it).
+   */
+  debugStats(): string {
+    const info = this.renderer.info;
+    let shadowMb = 0;
+    this.scene.traverse((object) => {
+      if (!(object instanceof Light) || !object.castShadow) return;
+      const shadow: unknown = Reflect.get(object, "shadow");
+      if (!(shadow instanceof LightShadow) || shadow.map === null) return;
+      const size = shadow.mapSize;
+      shadowMb += (size.x * size.y * (object instanceof PointLight ? 6 : 1) * 8) / 1e6;
+    });
+    const canvas = this.renderer.domElement;
+    const worst = this.worstRenderMs;
+    this.worstRenderMs = 0;
+    return `geo ${String(info.memory.geometries)} · tex ${String(info.memory.textures)} · prog ${String(
+      info.programs?.length ?? 0,
+    )} · calls ${String(info.render.calls)} · dpr ${String(this.renderer.getPixelRatio())} ${String(
+      canvas.width,
+    )}×${String(canvas.height)} · shadows ~${String(Math.round(shadowMb))} MB · worst ${worst.toFixed(0)} ms`;
+  }
+
   /** One frame: the animations have stepped; uploads, shadows, and the render follow. */
   private renderFrame(now: number): void {
     this.reportInsets();
@@ -2404,6 +2452,7 @@ export class HouseViewer {
     const started = performance.now();
     this.drawScene();
     const renderMs = performance.now() - started;
+    this.worstRenderMs = Math.max(this.worstRenderMs, renderMs);
     this.timing?.frame(renderMs, shadows, this.lastFrameAt === null ? null : now - this.lastFrameAt);
     // Gaps are measured between frames that follow each other; an idle pause is not a dropped frame.
     this.lastFrameAt = this.frames.active() ? now : null;
@@ -2428,15 +2477,14 @@ export class HouseViewer {
     this.sweeps.beforeRender();
     this.sky.beforeRender();
     this.lights.beforeRender(this.scene);
-    const ghost = this.ghost;
+    const ride = this.ride;
     const progress = this.slideProgress;
-    if (ghost === null || progress === null) {
+    if (ride === null || progress === null) {
       this.renderer.render(this.scene, this.camera);
       return;
     }
-    const resting = this.placeSlideCamera(ghost, progress);
+    const resting = this.placeSlideCamera(ride, progress);
     this.renderer.render(this.scene, this.camera);
-    ghost.draw(this.renderer, this.camera, progress);
     this.restoreCamera(resting);
   }
 
@@ -2487,6 +2535,7 @@ export class HouseViewer {
     this.templatesDirty = false;
     this.admittedKeys.clear();
     this.warmingKeys.clear();
+    this.heldAtLoading = 0;
     this.renderer.domElement.toggleAttribute("data-preparing", true);
     this.cameraAnimation?.cancel();
     this.timing?.stage("preparing");
@@ -2546,18 +2595,12 @@ export class HouseViewer {
     this.sky.beforeRender();
     this.lights.beforeRender(this.scene);
     const started = performance.now();
-    const ghost = this.ghost;
-    await Promise.all([
-      this.compileInBackground([this.scene]),
-      ghost === null ? Promise.resolve() : this.compileGhost(ghost),
-    ]);
+    await this.compileInBackground([this.scene]);
     if (token !== this.stageToken || this.disposed) return;
-    this.timing?.compile(
-      ghost === null ? "house model" : "house model and departing view",
-      performance.now() - started,
-    );
-    // What is drawn now stays drawn when the placed view starts gating (a floor switch with cached templates).
-    this.markAdmitted();
+    this.timing?.compile("house model", performance.now() - started);
+    // What is drawn now stays drawn when the placed view starts gating; on a floor switch only the house model is
+    // drawn now (21.5), so only its templates count, and the objects load after the ride.
+    this.markAdmitted(this.holdObjects ? this.houseTemplateKeys : null);
     this.loadStage = "opening";
     this.timing?.stage("opening");
     this.revealPending = true;
@@ -2569,8 +2612,8 @@ export class HouseViewer {
   private reveal(): void {
     this.revealPending = false;
     this.renderer.domElement.toggleAttribute("data-preparing", false);
-    // A floor switch (16.3): the destination is ready and drawn once (with the departing copy over it); now it moves.
-    if (this.ghost !== null && this.slide === null) this.startSlide();
+    // A floor switch (16.13, 21.5): the destination is ready and drawn once from the ride's start; now it rides.
+    if (this.ride !== null && this.slide === null) this.startSlide();
     const token = this.stageToken;
     this.openingCapTimer = window.setTimeout(() => {
       this.beginLoading(token);
@@ -2606,7 +2649,14 @@ export class HouseViewer {
     this.dropOpeningWatch = null;
     this.loadStage = "loading";
     this.timing?.stage("loading");
+    this.holdObjects = false;
     this.loadQueue.open(objectLane);
+    // Templates already loaded but not placed (a floor switch's objects, 21.5) are placed in batches from now on.
+    this.heldAtLoading = this.unplacedKeys().length;
+    if (this.heldAtLoading > 0) {
+      this.templatesDirty = true;
+      this.scheduleAdmit();
+    }
     this.reportProgress();
     this.checkLoaded();
   }
@@ -2625,9 +2675,13 @@ export class HouseViewer {
     this.scheduleAdmit();
   }
 
-  /** Every template that is ready counts as placed (no background compile: preparing compiles the whole scene). */
-  private markAdmitted(): void {
-    for (const key of this.floorTemplateKeys()) if (this.templateSettled(key)) this.admittedKeys.add(key);
+  /**
+   * Every template that is ready counts as placed (no background compile: preparing compiles the whole scene); with
+   * `only`, just those templates (a floor switch's house model, 21.5).
+   */
+  private markAdmitted(only: ReadonlySet<string> | null = null): void {
+    for (const key of this.floorTemplateKeys())
+      if (this.templateSettled(key) && (only === null || only.has(key))) this.admittedKeys.add(key);
   }
 
   /** Every templated thing of the shown floors (18.1: all of them in the whole house): objects, doors and windows, drawn light fixtures; by instance ID. */
@@ -2651,6 +2705,13 @@ export class HouseViewer {
 
   private floorTemplateKeys(): Set<string> {
     return new Set(this.floorInstances().map((instance) => instance.key));
+  }
+
+  /** Loaded (or failed) templates of the shown floors not placed yet. */
+  private unplacedKeys(): string[] {
+    return [...this.floorTemplateKeys()].filter(
+      (key) => !this.admittedKeys.has(key) && this.templateSettled(key),
+    );
   }
 
   /** Loaded or failed; never requests a load (progress reads it on every queue change). */
@@ -2721,11 +2782,11 @@ export class HouseViewer {
    * the material patches), then shown together.
    */
   private admitTemplates(now: number): void {
-    this.templatesDirty = false;
     this.lastAdmitAt = now;
-    const fresh = [...this.floorTemplateKeys()].filter(
-      (key) => !this.admittedKeys.has(key) && this.templateSettled(key),
-    );
+    // A few templates per batch (21.5: a floor's objects come in steps with the bar, not at once).
+    const waiting = this.unplacedKeys();
+    const fresh = waiting.slice(0, admitBatchTemplates);
+    this.templatesDirty = waiting.length > fresh.length;
     // Admitted first: the placed view lets the instance layer see these templates from this sync on.
     for (const key of fresh) this.admittedKeys.add(key);
     const started = performance.now();
@@ -2835,17 +2896,6 @@ export class HouseViewer {
     return Promise.race([compiling, delay(compileWaitMs)]);
   }
 
-  /** The departing copy's shaders for its target (16.13), in the background like the house model's. */
-  private compileGhost(ghost: FloorGhost): Promise<void> {
-    const compiling = ghost.compile(this.renderer, this.camera).then(
-      () => undefined,
-      (error: unknown) => {
-        console.warn("[homeplan] background shader compile failed", error);
-      },
-    );
-    return Promise.race([compiling, delay(compileWaitMs)]);
-  }
-
   private releaseTwins(): void {
     for (const { group, material } of this.warmTwins) {
       group.removeFromParent();
@@ -2913,7 +2963,11 @@ export class HouseViewer {
     ).length;
     const remaining =
       this.loadStage === "done" ? 0 : progress.queued + progress.running + this.uploads.length + unplaced;
-    this.onLoadProgress({ stage: this.loadStage, total: progress.total, remaining });
+    this.onLoadProgress({
+      stage: this.loadStage,
+      total: Math.max(progress.total, this.heldAtLoading, remaining),
+      remaining,
+    });
     if (this.loadStage === "loading" && progress.queued === 0 && progress.running === 0) this.checkLoaded();
   }
 }

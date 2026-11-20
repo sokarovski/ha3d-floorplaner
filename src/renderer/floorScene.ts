@@ -819,6 +819,10 @@ export const createFloorScene = (materials: MaterialCache, initialPalette: Helpe
           reliefId === undefined ? variant : ghostFade(variant, reliefId),
         );
       });
+      // Walls cast shadows from both faces (Phase 21, owner report: at night a lit room's light spilled into the dark
+      // room next to it along the corners where walls meet). With the default (back faces only) the joints of the
+      // merged walls let a sliver of a lamp's light through its shadow map.
+      for (const material of layer.mesh.material) material.shadowSide = DoubleSide;
     }
   };
 
