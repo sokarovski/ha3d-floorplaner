@@ -183,7 +183,21 @@ export const IntegrationConfigResponse = Type.Object(
   { revision: RevisionNumber, configuration: IntegrationConfiguration },
   strict,
 );
-export const ConnectionResponse = Type.Object({ revision: RevisionNumber, connection: Connection }, strict);
+export const ConnectionResponse = Type.Object(
+  {
+    revision: RevisionNumber,
+    connection: Connection,
+    /** The Homeplan app's address while its discovery is known (Phase 21: that floor planner cannot be deleted). */
+    discoveredUrl: Type.Union([Type.String({ maxLength: 2048 }), Type.Null()]),
+  },
+  strict,
+);
+/** Another floor planner's houses, read only (Phase 21, Settings → Houses). */
+export const PeekRequest = Type.Object({ url: Type.String({ maxLength: 2048 }) }, strict);
+export const PeekResponse = Type.Object(
+  { url: Type.String({ maxLength: 2048 }), houses: Type.Array(HouseCard, { maxItems: 1000 }) },
+  strict,
+);
 /** The requesting browser's IP as HA sees it (House setup proposes it as the builder address); null if unusable. */
 export const ClientAddressResponse = Type.Object(
   { address: Type.Union([Type.String({ minLength: 2, maxLength: 64 }), Type.Null()]) },

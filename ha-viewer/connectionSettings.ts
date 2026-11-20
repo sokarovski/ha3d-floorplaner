@@ -24,7 +24,10 @@ import type { ViewerRenderer } from "./three/renderers";
  * Settings opens and opens a page with a `settings-page` event.
  */
 export type SettingsPage = "floorPlanners" | "houses" | "panels";
-export type ConnectionView = "footer" | SettingsPage;
+/** The Settings footer's tabs: House (the dialog's own tree of things) and the connection pages. */
+export type SettingsTab = "house" | SettingsPage;
+/** `plannerList`: the Floor planners tab's tree (the floor planners, + to add one). */
+export type ConnectionView = "footer" | "plannerList" | SettingsPage;
 
 /** What Connect last found, kept for this browser session (15.12). */
 type RememberedConnection = Readonly<{
@@ -52,6 +55,8 @@ const announce = (): void => {
 /** mdi:server (Floor planners) */
 const serverIcon =
   "M4,1H20A1,1 0 0,1 21,2V6A1,1 0 0,1 20,7H4A1,1 0 0,1 3,6V2A1,1 0 0,1 4,1M4,9H20A1,1 0 0,1 21,10V14A1,1 0 0,1 20,15H4A1,1 0 0,1 3,14V10A1,1 0 0,1 4,9M4,17H20A1,1 0 0,1 21,18V22A1,1 0 0,1 20,23H4A1,1 0 0,1 3,22V18A1,1 0 0,1 4,17M9,5H10V3H9V5M9,13H10V11H9V13M9,21H10V19H9V21M5,3V5H7V3H5M5,11V13H7V11H5M5,19V21H7V19H5Z";
+/** mdi:home (House: the shown house's settings) */
+const houseIcon = "M10,20V14H14V20H19V12H22L12,2L2,12H5V20H10Z";
 /** mdi:home-city (Houses) */
 const housesIcon =
   "M0,21V10L7.5,5L15,10V21H10V14H5V21H0M24,2V21H17V8.93L16,8.27V6H14V6.93L10,4.27V2H24M21,14H19V16H21V14M21,10H19V12H21V10M21,6H19V8H21V6Z";
@@ -75,6 +80,8 @@ export class HomeplanConnectionSettings extends LitElement {
     guard: { attribute: false },
     view: { attribute: false },
     activePage: { attribute: false },
+    planner: { attribute: false },
+    houseAvailable: { attribute: false },
   };
   static override styles = [
     tokens,
@@ -146,6 +153,56 @@ export class HomeplanConnectionSettings extends LitElement {
       a.text-button {
         text-decoration: none;
       }
+      :host([data-view="plannerList"]) {
+        display: grid;
+        gap: 2px;
+        padding-top: 12px;
+      }
+      .tree-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 8px 8px;
+      }
+      .tree-title {
+        font-weight: 500;
+      }
+      .add {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--hp-accent);
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .tree-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 8px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--hp-text);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .tree-row[data-selected] {
+        background: var(--hp-hover, rgba(127, 127, 127, 0.12));
+      }
+      .tree-row .star {
+        width: 16px;
+        color: var(--hp-accent);
+      }
+      .tree-text {
+        display: grid;
+        min-width: 0;
+      }
       .page {
         position: relative;
         display: grid;
@@ -189,7 +246,15 @@ export class HomeplanConnectionSettings extends LitElement {
   declare selectedId: string | null;
   declare guard: (() => Promise<boolean>) | undefined;
   declare view: ConnectionView;
-  declare activePage: SettingsPage | null;
+  declare activePage: SettingsTab | null;
+  /** The selected floor planner on the Floor planners tab: its URL, "new" (add one), or null (the default). */
+  declare planner: string | null;
+  /** Whether a house is shown, so the House tab can open. */
+  declare houseAvailable: boolean;
+  /** The Homeplan app's address while discovery announces it: that floor planner cannot be deleted. */
+  private discoveredUrl: string | null = null;
+  /** The other floor planners' houses (read only), by URL; a string is the error. */
+  private otherHouses = new Map<string, readonly HouseCardValue[] | string>();
   private connection: ConnectionValue = {
     builderUrl: null,
     devMode: false,
@@ -229,17 +294,13 @@ export class HomeplanConnectionSettings extends LitElement {
     this.selectedId = null;
     this.view = "houses";
     this.activePage = null;
+    this.planner = null;
+    this.houseAvailable = false;
   }
 
   override connectedCallback(): void {
     super.connectedCallback();
     this.alive = true;
-    if (this.view === "panels") {
-      this.renderers = availableRenderers();
-      const current = deviceRenderer();
-      this.rendererId = current.id;
-      this.rendererSettings = { ...current.currentSettings() };
-    }
     changes.addEventListener("change", this.onChange);
     void this.initialize();
   }
@@ -250,6 +311,15 @@ export class HomeplanConnectionSettings extends LitElement {
   }
   protected override willUpdate(): void {
     this.dataset.view = this.view;
+    // The Panels tab may reuse an element first shown as another page: its renderer list is read when it shows.
+    if (this.view === "panels" && this.renderers.length === 0) {
+      this.renderers = availableRenderers();
+      const current = deviceRenderer();
+      this.rendererId = current.id;
+      this.rendererSettings = { ...current.currentSettings() };
+    }
+    if (this.view === "houses" && this.otherHouses.size === 0 && this.connection.servers.length > 0)
+      void this.loadOtherHouses();
   }
   /** Shows the remembered result at once; a result for another URL or source generation is dropped. */
   private applyRemembered(): void {
@@ -330,6 +400,7 @@ export class HomeplanConnectionSettings extends LitElement {
       this.client.frontend(),
     ]);
     this.connection = state.connection;
+    this.discoveredUrl = state.discoveredUrl;
     this.urlDraft = state.connection.builderUrl ?? "";
     this.copies = new Map(Object.entries(config.configuration.houses));
     this.frontend = frontend;
@@ -442,10 +513,53 @@ export class HomeplanConnectionSettings extends LitElement {
     announce();
     await this.connect();
   }
+  /** Deletes a floor planner; deleting the default makes the next one the default (or leaves none). */
   private async removePlanner(url: string): Promise<void> {
-    await this.saveConnection({ servers: this.connection.servers.filter((server) => server !== url) });
-    this.message = "Floor planner removed.";
+    if (!(await this.allowed())) return;
+    const rest = this.connection.servers.filter((server) => server !== url);
+    if (url === this.connection.builderUrl) {
+      const [next = null, ...others] = rest;
+      await this.saveConnection({ builderUrl: next, servers: others });
+    } else await this.saveConnection({ servers: rest });
+    this.otherHouses.delete(url);
+    this.message = "Floor planner deleted.";
+    this.selectPlanner(null);
     announce();
+  }
+  /** Reads a floor planner that is not the default: reachable, and how many houses it has. */
+  private async checkPlanner(url: string): Promise<void> {
+    if (this.client === undefined) return;
+    const result = await this.client.peek(url);
+    this.otherHouses.set(url, result.houses);
+    this.message = `Reachable · ${String(result.houses.length)} ${result.houses.length === 1 ? "house" : "houses"}.`;
+  }
+  /** The other floor planners' houses, read in the background (Houses tab). */
+  private async loadOtherHouses(): Promise<void> {
+    const client = this.client;
+    if (client === undefined) return;
+    for (const url of this.connection.servers) this.otherHouses.set(url, []);
+    await Promise.all(
+      this.connection.servers.map(async (url) => {
+        try {
+          this.otherHouses.set(url, (await client.peek(url)).houses);
+        } catch (error) {
+          this.otherHouses.set(url, error instanceof Error ? error.message : "Floor planner unavailable.");
+        }
+        this.requestUpdate();
+      }),
+    );
+  }
+  /** Uses a house from another floor planner: that floor planner becomes the default first. */
+  private async useFrom(url: string, houseId: string): Promise<void> {
+    if (!(await this.allowed())) return;
+    await this.saveConnection({ builderUrl: url });
+    announce();
+    await this.connect();
+    await this.use(houseId);
+    this.otherHouses.clear();
+  }
+  private selectPlanner(url: string | null): void {
+    this.dispatchEvent(new CustomEvent("planner-select", { detail: url, bubbles: true, composed: true }));
   }
   private async checkSources(): Promise<void> {
     const client = this.client;
@@ -550,7 +664,7 @@ export class HomeplanConnectionSettings extends LitElement {
     this.message = "Back to the panel shipped with the integration. Reload the page to use it.";
     await this.refresh();
   }
-  private openPage(page: SettingsPage): void {
+  private openPage(page: SettingsTab): void {
     this.dispatchEvent(new CustomEvent("settings-page", { detail: page, bubbles: true, composed: true }));
   }
 
@@ -571,6 +685,18 @@ export class HomeplanConnectionSettings extends LitElement {
           ? "Floor planners · not connected"
           : "Floor planners";
     return html`<button
+        class="page"
+        title=${this.houseAvailable ? "House" : "House · choose a house first"}
+        aria-label="House"
+        ?disabled=${!this.houseAvailable}
+        ?data-active=${this.activePage === "house"}
+        @click=${() => {
+          this.openPage("house");
+        }}
+      >
+        ${icon(houseIcon)}
+      </button>
+      <button
         class="page"
         title=${plannerTitle}
         aria-label=${plannerTitle}
@@ -655,128 +781,170 @@ export class HomeplanConnectionSettings extends LitElement {
         page load. Off uses the copies stored in Home Assistant. Takes effect after a page reload.
       </span>`;
   }
-  private renderFloorPlanners(): TemplateResult {
+  /** The floor planners, the default first. */
+  private plannerUrls(): string[] {
     const builderUrl = this.connection.builderUrl;
+    return [...(builderUrl === null ? [] : [builderUrl]), ...this.connection.servers];
+  }
+  /** The selected floor planner: "new", or a listed URL (the default when none is chosen). */
+  private selectedPlanner(): string {
+    const urls = this.plannerUrls();
+    if (this.planner === "new" || urls.length === 0) return "new";
+    return this.planner !== null && urls.includes(this.planner) ? this.planner : (urls[0] ?? "new");
+  }
+  /** The Floor planners tab's tree: every floor planner (the default starred) and + to add one. */
+  private renderPlannerList(): TemplateResult {
+    const selected = this.selectedPlanner();
+    return html`<div class="tree-head">
+        <span class="tree-title">Floor planners</span>
+        <button
+          class="add"
+          title="Add a floor planner"
+          aria-label="Add a floor planner"
+          @click=${() => {
+            this.selectPlanner("new");
+          }}
+        >
+          +
+        </button>
+      </div>
+      ${
+        this.plannerUrls().length === 0
+          ? html`<span class="hint">None yet. Press + to add one.</span>`
+          : nothing
+      }
+      ${this.plannerUrls().map(
+        (url) =>
+          html`<button
+            class="tree-row"
+            ?data-selected=${selected === url}
+            @click=${() => {
+              this.selectPlanner(url);
+            }}
+          >
+            <span class="star" aria-label=${url === this.connection.builderUrl ? "Default" : ""}
+              >${url === this.connection.builderUrl ? "★" : ""}</span
+            >
+            <span class="tree-text">
+              <span class="row-name">${plannerName(url)}</span>
+              <span class="hint">${url === this.discoveredUrl ? "Found automatically" : hostOf(url)}</span>
+            </span>
+          </button>`,
+      )}
+      <button
+        class="tree-row"
+        ?data-selected=${selected === "new"}
+        @click=${() => {
+          this.selectPlanner("new");
+        }}
+      >
+        <span class="star">+</span
+        ><span class="tree-text"><span class="row-name">Add a floor planner</span></span>
+      </button>`;
+  }
+  private renderAddPlanner(): TemplateResult {
+    return html`<section>
+      <h3>Add a floor planner</h3>
+      <label
+        >Floor planner URL<input
+          type="url"
+          .value=${this.connection.builderUrl === null ? this.urlDraft : ""}
+          placeholder="http://builder-host:5173/"
+          ?disabled=${this.busy}
+          @input=${(event: Event) => {
+            if (event.target instanceof HTMLInputElement) this.urlDraft = event.target.value;
+          }}
+          @keydown=${(event: KeyboardEvent) => {
+            if (event.key === "Enter") void this.perform(() => this.addPlanner(this.urlDraft));
+          }}
+      /></label>
+      <span class="hint">
+        Its address as Home Assistant reaches it (not localhost). The first one becomes the default; nothing
+        is copied until you choose a house.
+      </span>
+      <div class="actions">
+        <button
+          class="button"
+          ?disabled=${this.busy}
+          @click=${() => void this.perform(() => this.addPlanner(this.urlDraft))}
+        >
+          Add
+        </button>
+        ${
+          this.proposal !== null
+            ? html`<button
+                class="text-button"
+                ?disabled=${this.busy}
+                @click=${() => {
+                  const proposal = this.proposal;
+                  if (proposal !== null) void this.perform(() => this.addPlanner(proposal));
+                }}
+              >
+                Use this computer: ${this.proposal}
+              </button>`
+            : nothing
+        }
+      </div>
+    </section>`;
+  }
+  /** The selected floor planner's settings: Default (star), Connect, Open, Delete; DEV MODE on the default. */
+  private renderFloorPlanners(): TemplateResult {
+    const url = this.selectedPlanner();
+    if (url === "new") return html`${this.renderFeedback()} ${this.renderAddPlanner()}`;
+    const isDefault = url === this.connection.builderUrl;
+    const found = url === this.discoveredUrl;
     return html`${this.renderFeedback()}
       <section>
-        <h3>Default</h3>
+        <h3>${isDefault ? "★ " : ""}${plannerName(url)}</h3>
+        <span class="hint">${url}</span>
         ${
-          builderUrl === null
-            ? html`<span class="hint">
-                No floor planner yet. Add one below: the first becomes the default, and Settings connects to
-                it whenever it opens.
-              </span>`
-            : html`<div class="list">
-                <div class="row">
-                  <span class="row-name">${plannerName(builderUrl)}</span>
-                  <span class="hint">${builderUrl}</span>
-                  ${
-                    this.connection.origin === "discovered"
-                      ? html`<span class="hint" data-origin="discovered"
-                          >Found automatically: the Homeplan app on this Home Assistant.</span
-                        >`
-                      : nothing
-                  }
-                  ${this.renderMemory()}
-                  <div class="actions">
-                    <button
-                      class="button"
-                      ?disabled=${this.busy}
-                      @click=${() => void this.perform(() => this.connect())}
-                    >
-                      ${this.busy && this.job === null ? "Connecting…" : "Connect"}
-                    </button>
-                    ${this.renderOpen(builderUrl)}
-                  </div>
-                </div>
-              </div>`
-        }
-      </section>
-      <section>
-        <h3>Other floor planners</h3>
-        ${
-          this.connection.servers.length === 0
-            ? html`<span class="hint"
-                >None. Floor planners you add or replace as the default are kept here.</span
+          found
+            ? html`<span class="hint" data-origin="discovered"
+                >Found automatically: the Homeplan app on this Home Assistant. It stays listed while the app
+                is installed.</span
               >`
-            : html`<div class="list">
-                ${this.connection.servers.map(
-                  (url) =>
-                    html`<div class="row">
-                      <span class="row-name">${plannerName(url)}</span>
-                      <span class="hint">${url}</span>
-                      <div class="actions">
-                        <button
-                          class="text-button"
-                          ?disabled=${this.busy}
-                          @click=${() => void this.perform(() => this.makeDefault(url))}
-                        >
-                          Make default
-                        </button>
-                        ${this.renderOpen(url)}
-                        <button
-                          class="text-button"
-                          ?disabled=${this.busy}
-                          @click=${() => void this.perform(() => this.removePlanner(url))}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>`,
-                )}
-              </div>`
+            : nothing
         }
-      </section>
-      <section>
-        <h3>Add a floor planner</h3>
-        <label
-          >Floor planner URL<input
-            type="url"
-            .value=${builderUrl === null ? this.urlDraft : ""}
-            placeholder="http://builder-host:5173/"
-            ?disabled=${this.busy}
-            @input=${(event: Event) => {
-              if (event.target instanceof HTMLInputElement) this.urlDraft = event.target.value;
-            }}
-            @keydown=${(event: KeyboardEvent) => {
-              if (event.key === "Enter") void this.perform(() => this.addPlanner(this.urlDraft));
-            }}
-        /></label>
-        <span class="hint">
-          Its address as Home Assistant reaches it (not localhost). Nothing is copied until you choose a
-          house.
-        </span>
+        ${isDefault ? this.renderMemory() : nothing}
         <div class="actions">
           <button
             class="button"
-            ?disabled=${this.busy}
-            @click=${() => void this.perform(() => this.addPlanner(this.urlDraft))}
+            ?disabled=${this.busy || isDefault}
+            title=${isDefault ? "This is the default floor planner" : "Use this floor planner by default"}
+            @click=${() => void this.perform(() => this.makeDefault(url))}
           >
-            Add
+            ${isDefault ? "★ Default" : "☆ Make default"}
           </button>
-          ${
-            this.proposal !== null
-              ? html`<button
-                  class="text-button"
-                  ?disabled=${this.busy}
-                  @click=${() => {
-                    const proposal = this.proposal;
-                    if (proposal !== null) void this.perform(() => this.addPlanner(proposal));
-                  }}
-                >
-                  Use this computer: ${this.proposal}
-                </button>`
-              : nothing
-          }
+          <button
+            class="text-button"
+            ?disabled=${this.busy}
+            @click=${() => void this.perform(() => (isDefault ? this.connect() : this.checkPlanner(url)))}
+          >
+            ${this.busy && this.job === null ? "Connecting…" : "Connect"}
+          </button>
+          ${this.renderOpen(url)}
+          <button
+            class="text-button"
+            ?disabled=${this.busy || found}
+            title=${found ? "Remove the Homeplan app in Settings → Apps to remove it here" : "Delete this floor planner"}
+            @click=${() => void this.perform(() => this.removePlanner(url))}
+          >
+            Delete
+          </button>
         </div>
+        ${
+          found
+            ? html`<span class="hint">To delete it, remove the Homeplan app (Settings → Apps).</span>`
+            : nothing
+        }
       </section>
       ${
-        builderUrl === null
-          ? nothing
-          : html`<section>
+        isDefault
+          ? html`<section>
               <h3>Development</h3>
               ${this.renderDevToggle()}
             </section>`
+          : nothing
       }
       ${this.renderReload()}`;
   }
@@ -877,7 +1045,43 @@ export class HomeplanConnectionSettings extends LitElement {
                   </div>`
               : html`<span class="hint">No houses yet.</span>`
         }
-      </section>`;
+      </section>
+      ${this.connection.servers.map((url) => this.renderOtherHouses(url))}`;
+  }
+  /** Another floor planner's houses: using one makes that floor planner the default first. */
+  private renderOtherHouses(url: string): TemplateResult {
+    const houses = this.otherHouses.get(url);
+    return html`<section>
+      <h3>On ${plannerName(url)}</h3>
+      ${
+        houses === undefined
+          ? nothing
+          : typeof houses === "string"
+            ? html`<span class="error">${houses}</span>`
+            : houses.length === 0
+              ? html`<span class="hint">No houses.</span>`
+              : html`<div class="list">
+                  ${houses.map(
+                    (house) =>
+                      html`<div class="row">
+                        <span class="row-name">${house.status === "ok" ? house.name : house.id}</span>
+                        <span class="hint"
+                          >Using it makes ${plannerName(url)} the default floor planner.</span
+                        >
+                        <div class="actions">
+                          <button
+                            class="text-button"
+                            ?disabled=${this.busy || house.status !== "ok"}
+                            @click=${() => void this.perform(() => this.useFrom(url, house.id))}
+                          >
+                            Use this house
+                          </button>
+                        </div>
+                      </div>`,
+                  )}
+                </div>`
+      }
+    </section>`;
   }
   private renderPanels(): TemplateResult {
     const frontend = this.frontend;
@@ -1061,6 +1265,8 @@ export class HomeplanConnectionSettings extends LitElement {
     switch (this.view) {
       case "footer":
         return this.renderFooter();
+      case "plannerList":
+        return this.renderPlannerList();
       case "floorPlanners":
         return this.renderFloorPlanners();
       case "panels":
@@ -1106,6 +1312,9 @@ const plannerPage = (url: string): string => {
   if (address === null || !isAppPlanner(url)) return url;
   return `${window.location.origin}/${address.hostname.replace(/-/g, "_")}`;
 };
+
+/** A floor planner's host and port (its tree subtitle). */
+const hostOf = (url: string): string => parsed(url)?.host ?? url;
 
 /** A short name for a floor planner: the Homeplan app, or its host and port. */
 const plannerName = (url: string): string => {

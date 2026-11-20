@@ -1264,6 +1264,31 @@ async def discovery_checks() -> None:
                 except HomeplanError:
                     rejected = True
                 check(rejected, "floor planners: an invalid address is refused")
+                deleted = record(
+                    (
+                        await app.connection_patch(
+                            {
+                                "expectedRevision": integer(
+                                    app.configuration.snapshot()["revision"]
+                                ),
+                                "patch": {
+                                    "builderUrl": app_url,
+                                    "servers": ["http://laptop.local:5173/"],
+                                },
+                            }
+                        )
+                    )["connection"]
+                )
+                check(
+                    deleted["builderUrl"] == app_url
+                    and deleted["servers"] == ["http://laptop.local:5173/"],
+                    "floor planners: deleting the default with an explicit list does not keep it",
+                )
+                check(
+                    app.connection_state(app.configuration.snapshot())["discoveredUrl"]
+                    == app_url,
+                    "floor planners: the connection response names the found app (it cannot be deleted)",
+                )
                 await async_unload_entry(hass, entries[0])
             finally:
                 await hass.async_stop()

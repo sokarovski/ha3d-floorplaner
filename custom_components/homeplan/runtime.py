@@ -179,8 +179,13 @@ class HomeplanRuntime:
                     connection["builderUrl"] = url
                     connection["generation"] = integer(connection["generation"]) + 1
                     connection["origin"] = None if url is None else origin
-                    # Floor planners (Phase 21): the previous default stays in the list.
-                    if isinstance(previous, str) and previous not in servers:
+                    # Floor planners (Phase 21): the previous default stays in the list, unless the same edit
+                    # gives the list explicitly (deleting the default).
+                    if (
+                        "servers" not in patch
+                        and isinstance(previous, str)
+                        and previous not in servers
+                    ):
                         servers.insert(0, previous)
                 elif url is not None and origin == "discovered":
                     connection["origin"] = origin
@@ -209,7 +214,26 @@ class HomeplanRuntime:
         result = await self.configuration.mutate(
             change, integer(body["expectedRevision"])
         )
-        return {"revision": result["revision"], "connection": result["connection"]}
+        return self.connection_state(result)
+
+    def connection_state(self, config: dict[str, object]) -> dict[str, object]:
+        """The connection response: the stored record and the Homeplan app's address while discovery announces it
+        (Settings keeps that floor planner until its app is removed)."""
+        return {
+            "revision": config["revision"],
+            "connection": config["connection"],
+            "discoveredUrl": self.discovered_url,
+        }
+
+    async def peek(self, body: dict[str, object]) -> dict[str, object]:
+        """Another floor planner's houses, read only (Settings → Houses lists every floor planner's houses)."""
+        validate("PeekRequest", body)
+        url = normalize_url(body["url"])
+        if url is None:
+            raise HomeplanError(400, "validation", "Expected a floor planner URL.")
+        source = SourceClient(async_get_clientsession(self.hass), url)
+        houses = await source.json("houses", "HouseListResponse")
+        return {"url": url, "houses": houses["houses"]}
 
     async def adopt_discovered(self, url: str) -> str:
         """Apply an announced app address under the same serialized revision-aware write.

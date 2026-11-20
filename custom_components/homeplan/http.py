@@ -146,9 +146,7 @@ class HomeplanView(HomeAssistantView):
             return response({"address": _client_address(request)})
         if parts == ["connection"]:
             if method == "GET":
-                return response(
-                    {"revision": config["revision"], "connection": config["connection"]}
-                )
+                return response(app.connection_state(config))
             if method == "PATCH":
                 return response(await app.connection_patch(payload))
         if parts == ["config"]:
@@ -160,6 +158,8 @@ class HomeplanView(HomeAssistantView):
                 return response(await app.config_patch(payload))
         if parts == ["source", "connect"] and method == "POST":
             return response(await app.connect(payload))
+        if parts == ["source", "peek"] and method == "POST":
+            return response(await app.peek(payload))
         if len(parts) >= 3 and parts[:2] == ["source", "houses"]:
             house_id = checked_id(parts[2])
             if len(parts) == 4 and parts[3] == "use" and method == "POST":

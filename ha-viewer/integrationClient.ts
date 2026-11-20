@@ -11,6 +11,7 @@ import {
   IntegrationConfigResponse,
   IntegrationJobResponse,
   IntegrationJobsResponse,
+  PeekResponse,
   UseHouseResponse,
 } from "@shared/contracts/homeplanIntegration";
 import type { BootstrapValue } from "@shared/contracts/homeplanIntegration";
@@ -82,6 +83,8 @@ export const createIntegrationClient = (currentHass: () => Hass | null) => {
       expectedRevision: number,
       patch: Readonly<{ builderUrl?: string | null; devMode?: boolean; servers?: string[] }>,
     ) => request(ConnectionResponse, ["connection"], { expectedRevision, patch }, "PATCH"),
+    /** Another floor planner's houses, read only (Phase 21). */
+    peek: (url: string) => request(PeekResponse, ["source", "peek"], { url }),
     connect: (expectedRevision: number) =>
       request(ConnectResponse, ["source", "connect"], { expectedRevision }),
     useHouse: (houseId: string, expectedRevision: number, generation: number) =>

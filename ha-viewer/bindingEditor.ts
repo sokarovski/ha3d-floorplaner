@@ -28,7 +28,7 @@ import type {
   SuggestionContext,
 } from "@shared/domain/homeAssistant/suggestions";
 import { settingsPageTitle } from "./connectionSettings";
-import type { SettingsPage } from "./connectionSettings";
+import type { SettingsPage, SettingsTab } from "./connectionSettings";
 import type { ClickableFields } from "./bindingFields";
 import { kindLabels } from "./bindingTargets";
 import type { BindingTarget, TargetKind } from "./bindingTargets";
@@ -219,7 +219,8 @@ export class HomeplanBindingEditor extends LitElement {
         grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
         min-height: 0;
       }
-      :host([data-narrow]) .split {
+      :host([data-narrow]) .split,
+      .split[data-single] {
         grid-template-columns: minmax(0, 1fr);
       }
       :host([data-narrow]) .split[data-pane="editor"] .tree-pane,
@@ -567,8 +568,13 @@ export class HomeplanBindingEditor extends LitElement {
   /** On a narrow screen only one pane shows: the list, or the editor with Back. */
   private narrow = false;
   private pane: "tree" | "editor" = "tree";
-  /** A connection page opened from the footer (Phase 21: Floor planners, Houses, Panels), else null. */
-  private page: SettingsPage | null = null;
+  /**
+   * The footer tab (Phase 21): House (the tree of things, saved with Save) or a connection page, Floor planners
+   * (a tree of floor planners), Houses or Panels, whose actions apply at once.
+   */
+  private tab: SettingsTab = "house";
+  /** The floor planner selected on the Floor planners tab: its URL, "new" to add one, null for the default. */
+  private planner: string | null = null;
   private resizeObserver: ResizeObserver | null = null;
   /** The selected row is scrolled into view after the next render (opened by a tap in Edit mode). */
   private revealPending = false;
@@ -764,7 +770,7 @@ export class HomeplanBindingEditor extends LitElement {
         ? undefined
         : this.targets.find((item) => item.kind === target.kind && item.id === target.id);
     this.selection = found === undefined ? houseSelection : { kind: found.kind, id: found.id };
-    this.page = null;
+    this.tab = "house";
     this.pane = target === null ? "tree" : "editor";
     if (found !== undefined && reveal) {
       const keys = revealKeys(found);
@@ -779,14 +785,14 @@ export class HomeplanBindingEditor extends LitElement {
 
   private selectHouse(): void {
     this.selection = houseSelection;
-    this.page = null;
+    this.tab = "house";
     this.pane = "editor";
     this.requestUpdate();
   }
 
   private selectFloor(): void {
     this.selection = floorSelection;
-    this.page = null;
+    this.tab = "house";
     this.pane = "editor";
     this.requestUpdate();
   }
@@ -1104,7 +1110,7 @@ export class HomeplanBindingEditor extends LitElement {
 
   private open(target: BindingTarget): void {
     this.selection = { kind: target.kind, id: target.id };
-    this.page = null;
+    this.tab = "house";
     this.pane = "editor";
     this.requestUpdate();
   }
@@ -1478,16 +1484,85 @@ export class HomeplanBindingEditor extends LitElement {
           .view=${page}
           .selectedId=${this.houseId}
           .guard=${() => this.saveBeforeSwitch()}
-          @settings-page=${(event: CustomEvent<SettingsPage>) => {
-            this.openPage(event.detail);
+          @settings-page=${(event: CustomEvent<SettingsTab>) => {
+            this.openTab(event.detail);
           }}
         ></homeplan-connection-settings>`;
   }
 
-  private openPage(page: SettingsPage): void {
-    this.page = page;
-    this.pane = "editor";
+  /** The shown tab: House needs a shown house; before one exists, Houses. */
+  private shownTab(): SettingsTab {
+    return this.tab === "house" && this.houseId === null ? "houses" : this.tab;
+  }
+
+  private openTab(tab: SettingsTab): void {
+    this.tab = tab;
+    this.pane = tab === "floorPlanners" ? "tree" : "editor";
     this.requestUpdate();
+  }
+
+  /** A connection tab's pane: its heading and page (Floor planners: the selected floor planner). */
+  private renderTabEditor(page: SettingsPage): TemplateResult {
+    return html`
+      <div class="editor-head">
+        ${page === "floorPlanners" ? this.renderBack() : nothing}
+        <span class="titles">
+          <h2>${settingsPageTitle(page)}</h2>
+          <span class="subtitle">${pageSubtitles[page]}</span>
+        </span>
+      </div>
+      ${
+        this.integrationClient === undefined
+          ? nothing
+          : html`<homeplan-connection-settings
+              .client=${this.integrationClient}
+              .view=${page}
+              .planner=${this.planner}
+              .selectedId=${this.houseId}
+              .guard=${() => this.saveBeforeSwitch()}
+              @settings-page=${(event: CustomEvent<SettingsTab>) => {
+                this.openTab(event.detail);
+              }}
+              @planner-select=${(event: CustomEvent<string | null>) => {
+                this.planner = event.detail;
+                this.requestUpdate();
+              }}
+            ></homeplan-connection-settings>`
+      }
+    `;
+  }
+
+  /** The dialog body for the shown tab. */
+  private renderBody(): TemplateResult {
+    const tab = this.shownTab();
+    if (tab === "house")
+      return html`<div class="split" data-pane=${this.pane}>
+        <nav class="tree-pane" aria-label="Things to set up">${this.renderList()}</nav>
+        <section class="editor-pane">${this.renderEditor()}</section>
+      </div>`;
+    if (tab === "floorPlanners")
+      return html`<div class="split" data-pane=${this.pane}>
+        <nav class="tree-pane" aria-label="Floor planners">
+          ${
+            this.integrationClient === undefined
+              ? nothing
+              : html`<homeplan-connection-settings
+                  .client=${this.integrationClient}
+                  .view=${"plannerList"}
+                  .planner=${this.planner}
+                  @planner-select=${(event: CustomEvent<string | null>) => {
+                    this.planner = event.detail;
+                    this.pane = "editor";
+                    this.requestUpdate();
+                  }}
+                ></homeplan-connection-settings>`
+          }
+        </nav>
+        <section class="editor-pane">${this.renderTabEditor("floorPlanners")}</section>
+      </div>`;
+    return html`<div class="split" data-single>
+      <section class="editor-pane">${this.renderTabEditor(tab)}</section>
+    </div>`;
   }
 
   /** On a narrow screen the editor covers the list: a back button returns to it. */
@@ -1554,18 +1629,6 @@ export class HomeplanBindingEditor extends LitElement {
   }
 
   private renderEditor(): TemplateResult {
-    const page = this.page;
-    if (page !== null)
-      return html`
-        <div class="editor-head">
-          ${this.renderBack()}
-          <span class="titles">
-            <h2>${settingsPageTitle(page)}</h2>
-            <span class="subtitle">${pageSubtitles[page]}</span>
-          </span>
-        </div>
-        ${this.renderConnectionPage(page)}
-      `;
     const target = this.selectedTarget();
     const floor = this.selection.kind === "floor" ? this.floor : null;
     const title = target?.name ?? floor?.name ?? "House";
@@ -1778,10 +1841,7 @@ export class HomeplanBindingEditor extends LitElement {
             ${icon(closeIcon)}
           </button>
         </header>
-        <div class="split" data-pane=${this.pane}>
-          <nav class="tree-pane" aria-label="Things to set up">${this.renderList()}</nav>
-          <section class="editor-pane">${this.renderEditor()}</section>
-        </div>
+        ${this.renderBody()}
         <footer>
           <span class="pages">
             ${
@@ -1790,9 +1850,10 @@ export class HomeplanBindingEditor extends LitElement {
                 : html`<homeplan-connection-settings
                     .client=${this.integrationClient}
                     .view=${"footer"}
-                    .activePage=${this.page}
-                    @settings-page=${(event: CustomEvent<SettingsPage>) => {
-                      this.openPage(event.detail);
+                    .activePage=${this.shownTab()}
+                    .houseAvailable=${this.houseId !== null}
+                    @settings-page=${(event: CustomEvent<SettingsTab>) => {
+                      this.openTab(event.detail);
                     }}
                   ></homeplan-connection-settings>`
             }
@@ -1804,10 +1865,10 @@ export class HomeplanBindingEditor extends LitElement {
               this.close();
             }}
           >
-            ${this.houseId === null ? "Close" : "Cancel"}
+            ${this.houseId === null || this.shownTab() !== "house" ? "Close" : "Cancel"}
           </button>
           ${
-            this.houseId === null
+            this.houseId === null || this.shownTab() !== "house"
               ? nothing
               : html`<button
                   class="button"
