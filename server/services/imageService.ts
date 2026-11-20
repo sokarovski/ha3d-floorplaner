@@ -4,7 +4,7 @@
 import { readFile } from "node:fs/promises";
 import sharp from "sharp";
 import type { Metadata, OutputInfo } from "sharp";
-import type { ImageEntryValue, ImageMediaType } from "../../shared/contracts/images";
+import type { ImageEntryValue, ImageMediaType, TextureHintsValue } from "../../shared/contracts/images";
 import { isBuiltInImageId } from "../../shared/domain/house/builtinMaterials";
 import { createId } from "../../shared/domain/ids";
 import { ApiError, validationError } from "../http/errors";
@@ -155,19 +155,24 @@ const findEntry = (images: readonly ImageEntryValue[], imageId: string): ImageEn
   return entry;
 };
 
-export const renameImage = async (
+/** Renames an image and/or sets its proposed material values (texture hints). */
+export const updateImage = async (
   context: ServiceContext,
   houseId: string,
   imageId: string,
-  rawName: string,
+  update: Readonly<{ name?: string; texture?: TextureHintsValue }>,
 ): Promise<ImageEntryValue> => {
   await requireHouse(context, houseId);
-  refuseBuiltIn(imageId, "renamed");
-  const name = checkedName(rawName, "/body/name");
+  refuseBuiltIn(imageId, "changed");
+  const name = update.name === undefined ? undefined : checkedName(update.name, "/body/name");
   return context.queue.run(houseLock(houseId), async () => {
     await requireHouse(context, houseId);
     const index = await context.images.readIndex(houseId);
-    const renamed = { ...findEntry(index.images, imageId), name };
+    const renamed = {
+      ...findEntry(index.images, imageId),
+      ...(name === undefined ? {} : { name }),
+      ...(update.texture === undefined ? {} : { texture: update.texture }),
+    };
     await context.images.writeIndex(houseId, {
       schemaVersion: 1,
       images: index.images.map((entry) => (entry.id === imageId ? renamed : entry)),

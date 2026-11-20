@@ -6,7 +6,7 @@ import {
   ImageEntry,
   ImageListResponse,
   ImageParams,
-  RenameImageBody,
+  UpdateImageBody,
   imageUploadFields,
 } from "../../shared/contracts/images";
 import { validationError } from "../http/errors";
@@ -18,7 +18,7 @@ import {
   imageMaxBytes,
   listImages,
   readImageFile,
-  renameImage,
+  updateImage,
   uploadImage,
 } from "../services/imageService";
 
@@ -74,9 +74,8 @@ export const imageRoutes: FastifyPluginAsyncTypebox<{ context: ServiceContext }>
 
   app.patch(
     "/houses/:houseId/images/:imageId",
-    { schema: { params: ImageParams, body: RenameImageBody, response: { 200: ImageEntry } } },
-    async (request) =>
-      renameImage(context, request.params.houseId, request.params.imageId, request.body.name),
+    { schema: { params: ImageParams, body: UpdateImageBody, response: { 200: ImageEntry } } },
+    async (request) => updateImage(context, request.params.houseId, request.params.imageId, request.body),
   );
 
   app.delete(

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
 import { fromMaterialView, MaterialView, toMaterialView } from "@shared/domain/materials/materialView";
+import { textureHintsFor } from "@shared/domain/materials/textureHints";
 import { isSchemaNode, withValueAtPath } from "@shared/domain/schemas/schemaWalk";
 import { SurfaceMaterialSchema } from "@shared/domain/schemas/values";
 import { compileValidator } from "@shared/domain/validation/ajv";
@@ -9,6 +10,7 @@ import { SchemaForm } from "../../../design-system/forms/SchemaForm/SchemaForm";
 import type { PropertyEditorProps } from "../../../design-system/property-editors/editorContract";
 import { genericEditors } from "../../../design-system/property-editors/genericEditors";
 import { ImagePropEditor } from "./ImagePropEditor";
+import { useDomainEditorData } from "./domainEditorData";
 import { MaterialPickerPopup } from "./MaterialPickerPopup";
 
 export const MaterialPropEditor = ({
@@ -20,6 +22,7 @@ export const MaterialPropEditor = ({
   disabled,
   onCommit,
 }: PropertyEditorProps): ReactElement => {
+  const data = useDomainEditorData();
   const [choosing, setChoosing] = useState(false);
   const isMaterial = compileValidator(SurfaceMaterialSchema);
   const material = isMaterial(value) ? value : undefined;
@@ -68,7 +71,23 @@ export const MaterialPropEditor = ({
               : undefined
           }
           onCommit={(path, next) => {
-            const updated = withValueAtPath(view, path, next);
+            const changed = withValueAtPath(view, path, next);
+            // A newly chosen texture brings its proposed tile size, Shininess and metallic (owner, 2026-11-20).
+            const hints =
+              path.length === 1 && path[0] === "image" && typeof next === "string" && next !== view.image
+                ? textureHintsFor(next, data.images)
+                : undefined;
+            const updated =
+              hints === undefined || !isSchemaNode(changed)
+                ? changed
+                : {
+                    ...changed,
+                    tileSizeMm: hints.tileSizeMm,
+                    roughness: hints.roughness,
+                    metallic: hints.metallic,
+                    // A flat colour would tint the new texture: it starts untinted.
+                    ...(view.image === undefined ? { tint: [255, 255, 255] } : {}),
+                  };
             const isView = compileValidator(MaterialView);
             return isSchemaNode(updated) && isView(updated)
               ? onCommit(fromMaterialView(updated, material))

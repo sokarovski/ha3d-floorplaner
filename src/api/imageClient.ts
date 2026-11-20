@@ -1,6 +1,6 @@
 // House image library (spec/architecture/api.md#images).
 import { ImageEntry, ImageListResponse } from "@shared/contracts/images";
-import type { ImageEntryValue } from "@shared/contracts/images";
+import type { ImageEntryValue, TextureHintsValue } from "@shared/contracts/images";
 import type { HttpClient } from "./httpClient";
 
 export type ImageClient = ReturnType<typeof createImageClient>;
@@ -18,6 +18,16 @@ export const createImageClient = (http: HttpClient) => ({
   rename: async (houseId: string, imageId: string, name: string): Promise<ImageEntryValue> =>
     http.request(
       { method: "PATCH", path: ["houses", houseId, "images", imageId], body: { name } },
+      ImageEntry,
+    ),
+  /** Sets an image's proposed material values (texture hints). */
+  setTexture: async (
+    houseId: string,
+    imageId: string,
+    texture: TextureHintsValue,
+  ): Promise<ImageEntryValue> =>
+    http.request(
+      { method: "PATCH", path: ["houses", houseId, "images", imageId], body: { texture } },
       ImageEntry,
     ),
   remove: async (houseId: string, imageId: string): Promise<void> =>

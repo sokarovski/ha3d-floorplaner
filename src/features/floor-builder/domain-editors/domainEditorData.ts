@@ -1,7 +1,7 @@
 // House data that domain editors need (images, presets, references, templates). Provided by the Floor Builder,
 // and by /ds pages with fixtures. One narrow context; generic editors never see it.
 import { createContext, useContext } from "react";
-import type { ImageEntryValue } from "@shared/contracts/images";
+import type { ImageEntryValue, TextureHintsValue } from "@shared/contracts/images";
 import type { TemplateListItemValue } from "@shared/contracts/templates";
 import type { LibraryMaterial } from "@shared/domain/materials/materialLibrary";
 import type { SurfaceMaterialValue } from "@shared/domain/schemas/values";
@@ -22,6 +22,8 @@ export type DomainEditorData = Readonly<{
   thumbnailUrl: (imageId: string) => string;
   uploadImage: (file: File, name?: string) => Promise<ImageEntryValue>;
   reloadImages: () => void;
+  /** Stores an image's proposed material values (tile size, Shininess, metallic). */
+  setImageTexture: (imageId: string, texture: TextureHintsValue) => Promise<ImageEntryValue>;
   presets: readonly PresetOption[];
   savePreset: (name: string, material: SurfaceMaterialValue) => boolean;
   /** Renames a house preset (built-ins are read-only); false when rejected. */

@@ -9,6 +9,26 @@ export type ImageMediaType = (typeof imageMediaTypes)[number];
 export const ImageParams = Type.Object({ houseId: IdString, imageId: IdString });
 export type ImageParamsValue = Static<typeof ImageParams>;
 
+/**
+ * A texture image's proposed material values (owner, 2026-11-20): the real size of one repeat, shininess (stored as
+ * glTF roughness) and metallic. Choosing the texture in a material applies them; the material can then be adjusted.
+ */
+export const TextureHints = Type.Object(
+  {
+    tileSizeMm: Type.Object(
+      {
+        x: Type.Number({ exclusiveMinimum: 0, maximum: 100000 }),
+        y: Type.Number({ exclusiveMinimum: 0, maximum: 100000 }),
+      },
+      { additionalProperties: false },
+    ),
+    roughness: Type.Number({ minimum: 0, maximum: 1 }),
+    metallic: Type.Number({ minimum: 0, maximum: 1 }),
+  },
+  { additionalProperties: false },
+);
+export type TextureHintsValue = Static<typeof TextureHints>;
+
 /** One entry of the server-owned index `textures/images.json`. `file`/`thumbnail` are house-relative paths. */
 export const ImageEntry = Type.Object(
   {
@@ -26,6 +46,8 @@ export const ImageEntry = Type.Object(
     file: Type.String(),
     thumbnail: Type.String(),
     createdAt: Timestamp,
+    /** Proposed material values (optional; images uploaded before 2026-11-20 have none). */
+    texture: Type.Optional(TextureHints),
   },
   { additionalProperties: false },
 );
@@ -53,5 +75,9 @@ export type ImageListResponseValue = Static<typeof ImageListResponse>;
 export const imageUploadFields = { file: "file", name: "name" } as const;
 
 /** PATCH /api/houses/:houseId/images/:imageId */
-export const RenameImageBody = Type.Object({ name: DisplayName }, { additionalProperties: false });
-export type RenameImageBodyValue = Static<typeof RenameImageBody>;
+/** PATCH an image: its name, its proposed material values, or both. */
+export const UpdateImageBody = Type.Object(
+  { name: Type.Optional(DisplayName), texture: Type.Optional(TextureHints) },
+  { additionalProperties: false, minProperties: 1 },
+);
+export type UpdateImageBodyValue = Static<typeof UpdateImageBody>;

@@ -34,6 +34,11 @@ export const useDomainEditorValue = (libraries: HouseLibraries): DomainEditorDat
         return image;
       },
       reloadImages: libraries.reloadImages,
+      setImageTexture: async (imageId, texture) => {
+        const image = await services.images.setTexture(session.houseId, imageId, texture);
+        libraries.reloadImages();
+        return image;
+      },
       presets: allPresets,
       savePreset: (name, material) => session.execute(savePresetCommand(name, material).command).ok,
       renamePreset: (presetId, name) => session.execute(renamePresetCommand(presetId, name)).ok,

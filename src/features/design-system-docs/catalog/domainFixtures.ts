@@ -55,6 +55,7 @@ export const fixtureDomainData: DomainEditorData = {
   thumbnailUrl: (imageId) => swatch(imageId === "img_fixture01" ? "#b08550" : "#5a6470"),
   uploadImage: () => Promise.reject(new Error("Uploads are disabled in the design-system fixtures.")),
   reloadImages: () => undefined,
+  setImageTexture: () => Promise.reject(new Error("Uploads are disabled in the design-system fixtures.")),
   presets: fixturePresets,
   savePreset: () => true,
   renamePreset: () => true,

@@ -97,7 +97,7 @@ The image index `textures/images.json` is server-owned ([D14](../decisions.md#d1
 | --- | --- | --- | --- |
 | `GET` | `/api/houses/:houseId/images` | List the image index | |
 | `POST` | `/api/houses/:houseId/images` | Upload (multipart `file`, optional `name`) | JPEG/PNG/WebP, ≤ 25 MB, ≤ 8192 px ([D16](../decisions.md#d16-interaction-defaults-and-support-limits)); generates the thumbnail; returns `201` with the entry |
-| `PATCH` | `/api/houses/:houseId/images/:imageId` | Rename `{ name }` | Display name only |
+| `PATCH` | `/api/houses/:houseId/images/:imageId` | `{ name?, texture? }` (at least one): rename, and/or set the image's proposed material values `texture: { tileSizeMm: { x, y }, roughness, metallic }` | The index entry only (never `house.json`); built-in textures are read-only (`400`). Added 2026-11-20: `texture` ([proposed texture values](../builder/features/materials-and-objects.md#proposed-texture-values)) |
 | `DELETE` | `/api/houses/:houseId/images/:imageId` | Delete | `409 referenced` if `house.json` references it; the client checks live history first |
 | `GET` | `/api/houses/:houseId/images/:imageId/file` | Image bytes | Immutable per ID; long cache headers |
 | `GET` | `/api/houses/:houseId/images/:imageId/thumbnail` | 256 px thumbnail | WebP, longest side ≤ 256 px |

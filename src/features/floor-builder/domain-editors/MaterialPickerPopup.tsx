@@ -2,9 +2,15 @@ import { useState } from "react";
 import type { ReactElement } from "react";
 import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { findBuiltInImage } from "@shared/domain/house/builtinMaterials";
-import { libraryCategories, materialHex, searchLibrary } from "@shared/domain/materials/materialLibrary";
+import {
+  libraryCategories,
+  materialHex,
+  materialKey,
+  searchLibrary,
+} from "@shared/domain/materials/materialLibrary";
 import type { LibraryMaterial } from "@shared/domain/materials/materialLibrary";
-import { savePresetForm } from "@shared/domain/schemas/forms/materialForms";
+import { proportionalTileSize } from "@shared/domain/materials/textureHints";
+import { newMaterialFromImageForm, savePresetForm } from "@shared/domain/schemas/forms/materialForms";
 import type { SurfaceMaterialValue } from "@shared/domain/schemas/values";
 import { Button } from "../../../design-system/components/Button/Button";
 import { Icon } from "../../../design-system/components/Icon/Icon";
@@ -12,6 +18,7 @@ import { Input } from "../../../design-system/components/Input/Input";
 import { Popup } from "../../../design-system/components/Popup/Popup";
 import { FormPopup } from "../../../design-system/forms/FormPopup/FormPopup";
 import { FormSubmitError } from "../../../design-system/forms/formErrors";
+import { submitWithFormErrors } from "../../forms/toFormSubmitError";
 import { useDomainEditorData } from "./domainEditorData";
 import { MaterialSwatch } from "./MaterialSwatch";
 import { SavePresetPopup } from "./SavePresetPopup";
@@ -40,7 +47,9 @@ const sourceLabel = (item: LibraryMaterial): string =>
  * The material chooser (owner, 2026-11-20; replaces the Presets menu): search, category chips (Used in this house,
  * House presets, then the built-in categories), a grid of swatches grouped by category, and a preview of the
  * selected material with its details. Apply (or a double click) copies it onto the surface; house presets can be
- * renamed or deleted here; Save current as preset stores the surface's material as a house preset.
+ * renamed or deleted here; Save current as preset stores the surface's material as a house preset; New material
+ * from image uploads an image with its proposed values (repeat size, Shininess, metallic), saves it as a house
+ * preset and applies it.
  */
 export const MaterialPickerPopup = ({
   open,
@@ -55,6 +64,7 @@ export const MaterialPickerPopup = ({
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [saving, setSaving] = useState<SurfaceMaterialValue | undefined>(undefined);
   const [renaming, setRenaming] = useState<LibraryMaterial | undefined>(undefined);
+  const [creating, setCreating] = useState(false);
   const library = open ? data.materialLibrary() : [];
   const matching = searchLibrary(library, query, null);
   const filtered = searchLibrary(library, query, category);
@@ -62,7 +72,12 @@ export const MaterialPickerPopup = ({
   const groups = present
     .map((name) => ({ category: name, items: filtered.filter((item) => item.category === name) }))
     .filter((group) => group.items.length > 0);
-  const selected = filtered.find((item) => item.key === selectedKey) ?? filtered[0];
+  // Before a choice, the surface's own material is selected (else the first tile).
+  const currentKey = current === undefined ? undefined : materialKey(current);
+  const selected =
+    filtered.find((item) => item.key === selectedKey) ??
+    (selectedKey === null ? filtered.find((item) => materialKey(item.material) === currentKey) : undefined) ??
+    filtered[0];
   const textureName = (material: SurfaceMaterialValue): string => {
     const imageId = material.pbrMetallicRoughness.baseColorTexture?.imageId;
     if (imageId === undefined) return "None (flat colour)";
@@ -85,7 +100,7 @@ export const MaterialPickerPopup = ({
   return (
     <>
       <Popup
-        open={open && saving === undefined && renaming === undefined}
+        open={open && saving === undefined && renaming === undefined && !creating}
         title={title}
         size="xl"
         onClose={close}
@@ -99,6 +114,14 @@ export const MaterialPickerPopup = ({
               }}
             >
               Save current as preset…
+            </Button>
+            <Button
+              variant="ghost"
+              onPress={() => {
+                setCreating(true);
+              }}
+            >
+              New material from image…
             </Button>
             <span data-material-picker-spacer="" />
             <Button variant="secondary" onPress={close}>
@@ -250,6 +273,44 @@ export const MaterialPickerPopup = ({
           )}
         </div>
       </Popup>
+      {creating ? (
+        <FormPopup
+          open
+          schema={newMaterialFromImageForm}
+          values={{ repeatWidthMm: 1000, roughness: 0.7, metallic: 0 }}
+          onCancel={() => {
+            setCreating(false);
+          }}
+          onSubmit={async (values) => {
+            const material = await submitWithFormErrors(async () => {
+              const image = await data.uploadImage(values.file, values.name);
+              const texture = {
+                tileSizeMm: proportionalTileSize(values.repeatWidthMm, image),
+                roughness: values.roughness,
+                metallic: values.metallic,
+              };
+              await data.setImageTexture(image.id, texture);
+              const created: SurfaceMaterialValue = {
+                pbrMetallicRoughness: {
+                  baseColorTexture: { imageId: image.id },
+                  baseColorFactor: [1, 1, 1, 1],
+                  roughnessFactor: texture.roughness,
+                  metallicFactor: texture.metallic,
+                },
+                extras: {
+                  homeplan: { tileSizeMm: texture.tileSizeMm, rotationDeg: 0, offsetMm: { x: 0, y: 0 } },
+                },
+              };
+              return created;
+            });
+            if (!data.savePreset(values.name, material))
+              throw new FormSubmitError("The image was uploaded, but the preset could not be saved.");
+            setCreating(false);
+            onApply(material);
+            close();
+          }}
+        />
+      ) : null}
       <SavePresetPopup
         material={saving}
         onClose={() => {
