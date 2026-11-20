@@ -7,7 +7,7 @@ import {
   uploadHouseForm,
 } from "@shared/domain/schemas/forms/houseForms";
 import { renameImageForm, uploadImageForm } from "@shared/domain/schemas/forms/imageForms";
-import { newMaterialFromImageForm, savePresetForm } from "@shared/domain/schemas/forms/materialForms";
+import { createMaterialForm, savePresetForm } from "@shared/domain/schemas/forms/materialForms";
 import { importModelForm } from "@shared/domain/schemas/forms/modelForms";
 import { saveWithNoteForm } from "@shared/domain/schemas/forms/revisionForms";
 import { settingsForm } from "@shared/domain/schemas/forms/settingsForms";
@@ -26,12 +26,7 @@ export const mvpFormFixtures = [
   { id: "upload-image", label: "Upload image", schema: uploadImageForm, values: {} },
   { id: "rename-image", label: "Rename image", schema: renameImageForm, values: { name: "Oak parquet" } },
   { id: "save-preset", label: "Save as preset", schema: savePresetForm, values: {} },
-  {
-    id: "new-material-from-image",
-    label: "Create material",
-    schema: newMaterialFromImageForm,
-    values: { repeatWidthMm: 1000, roughness: 0.7, metallic: 0 },
-  },
+  { id: "create-material", label: "Create material", schema: createMaterialForm, values: {} },
   { id: "save-note", label: "Save with note", schema: saveWithNoteForm, values: {} },
   { id: "export-png", label: "Export PNG", schema: exportPngForm, values: {} },
   { id: "import-model", label: "Import model", schema: importModelForm, values: {} },

@@ -58,6 +58,7 @@ export const fixtureDomainData: DomainEditorData = {
   setImageTexture: () => Promise.reject(new Error("Uploads are disabled in the design-system fixtures.")),
   presets: fixturePresets,
   savePreset: () => true,
+  createPreset: () => "mp_fixture01",
   renamePreset: () => true,
   updatePreset: () => true,
   replaceMaterial: () => true,

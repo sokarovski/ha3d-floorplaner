@@ -43,6 +43,10 @@ export const useDomainEditorValue = (libraries: HouseLibraries): DomainEditorDat
       },
       presets: allPresets,
       savePreset: (name, material) => session.execute(savePresetCommand(name, material).command).ok,
+      createPreset: (name, material) => {
+        const { command, presetId } = savePresetCommand(name, material);
+        return session.execute(command).ok ? presetId : undefined;
+      },
       renamePreset: (presetId, name) => session.execute(renamePresetCommand(presetId, name)).ok,
       updatePreset: (presetId, material) =>
         session.execute(updatePresetMaterialCommand(presetId, material)).ok,

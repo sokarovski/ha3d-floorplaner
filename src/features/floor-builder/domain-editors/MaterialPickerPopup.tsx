@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
 import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
-import { findBuiltInImage } from "@shared/domain/house/builtinMaterials";
+import { findBuiltInImage, isBuiltInImageId } from "@shared/domain/house/builtinMaterials";
 import {
   libraryCategories,
   materialHex,
@@ -9,8 +9,7 @@ import {
   searchLibrary,
 } from "@shared/domain/materials/materialLibrary";
 import type { LibraryMaterial } from "@shared/domain/materials/materialLibrary";
-import { proportionalTileSize } from "@shared/domain/materials/textureHints";
-import { newMaterialFromImageForm, savePresetForm } from "@shared/domain/schemas/forms/materialForms";
+import { createMaterialForm, savePresetForm } from "@shared/domain/schemas/forms/materialForms";
 import { MaterialView, toMaterialView } from "@shared/domain/materials/materialView";
 import type { LengthUnit } from "@shared/domain/schemas/house";
 import type { SurfaceMaterialValue } from "@shared/domain/schemas/values";
@@ -22,7 +21,6 @@ import { FormPopup } from "../../../design-system/forms/FormPopup/FormPopup";
 import { FormSubmitError } from "../../../design-system/forms/formErrors";
 import { SchemaForm } from "../../../design-system/forms/SchemaForm/SchemaForm";
 import { genericEditors } from "../../../design-system/property-editors/genericEditors";
-import { submitWithFormErrors } from "../../forms/toFormSubmitError";
 import { useDomainEditorData } from "./domainEditorData";
 import { ImagePropEditor } from "./ImagePropEditor";
 import { materialAfterCommit } from "./materialViewCommit";
@@ -43,6 +41,12 @@ type MaterialPickerPopupProps = Readonly<{
 const tileSpanMm = 1500;
 const previewSpanMm = 3000;
 
+/** A new material (Create material): plain white, no texture, a 1 m tile for a texture chosen later. */
+const plainWhite = (): SurfaceMaterialValue => ({
+  pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], roughnessFactor: 0.7, metallicFactor: 0 },
+  extras: { homeplan: { tileSizeMm: { x: 1000, y: 1000 }, rotationDeg: 0, offsetMm: { x: 0, y: 0 } } },
+});
+
 const sourceLabel = (item: LibraryMaterial): string =>
   item.source === "used"
     ? `${String(item.surfaces ?? 0)} surface${item.surfaces === 1 ? "" : "s"}`
@@ -57,9 +61,8 @@ const sourceLabel = (item: LibraryMaterial): string =>
  * back (a house preset, or every surface using a material of Used in this house), Revert returns to the original;
  * a built-in shows its values instead of a form (it can be applied, not changed). Apply (or a double click on a tile) copies the selected material, as edited, onto the
  * surface; house presets can be renamed or deleted here. The footer shows the selected element's own material with Save as
- * preset (owner: "current" was unclear); Create material
- * from image uploads an image with its proposed values (repeat size, Shininess, metallic), saves it as a house
- * preset and applies it.
+ * preset (owner: "current" was unclear); Create material asks for a name and selects a new plain white house
+ * preset to set up in the editor.
  */
 export const MaterialPickerPopup = ({
   open,
@@ -114,6 +117,25 @@ export const MaterialPickerPopup = ({
       data.images.find((image) => image.id === imageId)?.name ??
       "House image"
     );
+  };
+  /**
+   * A saved house preset whose texture is an uploaded image without proposed values gives the image its tile size,
+   * Shininess and metallic, so choosing that texture again proposes them (owner, 2026-11-20).
+   */
+  const proposeFromPreset = (material: SurfaceMaterialValue): void => {
+    const imageId = material.pbrMetallicRoughness.baseColorTexture?.imageId;
+    const placement = material.extras?.homeplan;
+    if (imageId === undefined || placement === undefined || isBuiltInImageId(imageId)) return;
+    if (data.images.find((image) => image.id === imageId)?.texture !== undefined) return;
+    data
+      .setImageTexture(imageId, {
+        tileSizeMm: placement.tileSizeMm,
+        roughness: material.pbrMetallicRoughness.roughnessFactor,
+        metallic: material.pbrMetallicRoughness.metallicFactor,
+      })
+      .catch((error: unknown) => {
+        console.warn("[homeplan] the image's proposed values were not saved", error);
+      });
   };
   const close = (): void => {
     setQuery("");
@@ -318,8 +340,10 @@ export const MaterialPickerPopup = ({
                         } else if (
                           selected.presetId !== undefined &&
                           data.updatePreset(selected.presetId, draft)
-                        )
+                        ) {
+                          proposeFromPreset(draft);
                           setDraft(undefined);
+                        }
                       }}
                     >
                       {selected.source === "used"
@@ -374,38 +398,20 @@ export const MaterialPickerPopup = ({
       {creating ? (
         <FormPopup
           open
-          schema={newMaterialFromImageForm}
-          values={{ repeatWidthMm: 1000, roughness: 0.7, metallic: 0 }}
+          schema={createMaterialForm}
+          values={{}}
           onCancel={() => {
             setCreating(false);
           }}
           onSubmit={async (values) => {
-            const material = await submitWithFormErrors(async () => {
-              const image = await data.uploadImage(values.file, values.name);
-              const texture = {
-                tileSizeMm: proportionalTileSize(values.repeatWidthMm, image),
-                roughness: values.roughness,
-                metallic: values.metallic,
-              };
-              await data.setImageTexture(image.id, texture);
-              const created: SurfaceMaterialValue = {
-                pbrMetallicRoughness: {
-                  baseColorTexture: { imageId: image.id },
-                  baseColorFactor: [1, 1, 1, 1],
-                  roughnessFactor: texture.roughness,
-                  metallicFactor: texture.metallic,
-                },
-                extras: {
-                  homeplan: { tileSizeMm: texture.tileSizeMm, rotationDeg: 0, offsetMm: { x: 0, y: 0 } },
-                },
-              };
-              return created;
-            });
-            if (!data.savePreset(values.name, material))
-              throw new FormSubmitError("The image was uploaded, but the preset could not be saved.");
+            await Promise.resolve();
+            const presetId = data.createPreset(values.name, plainWhite());
+            if (presetId === undefined) throw new FormSubmitError("The material could not be created.");
             setCreating(false);
-            onApply(material);
-            close();
+            // The new material is selected in the editor (owner), where its texture and values are set.
+            setQuery("");
+            setCategory(null);
+            select(`preset:${presetId}`);
           }}
         />
       ) : null}

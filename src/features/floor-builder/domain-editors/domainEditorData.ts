@@ -26,6 +26,8 @@ export type DomainEditorData = Readonly<{
   setImageTexture: (imageId: string, texture: TextureHintsValue) => Promise<ImageEntryValue>;
   presets: readonly PresetOption[];
   savePreset: (name: string, material: SurfaceMaterialValue) => boolean;
+  /** Saves a house preset and returns its ID (undefined when rejected). */
+  createPreset: (name: string, material: SurfaceMaterialValue) => string | undefined;
   /** Renames a house preset (built-ins are read-only); false when rejected. */
   renamePreset: (presetId: string, name: string) => boolean;
   /** Replaces a house preset's material (surfaces keep their copies); false when rejected. */

@@ -17,12 +17,3 @@ export const textureHintsFor = (
     };
   return images.find((image) => image.id === imageId)?.texture;
 };
-
-/** A repeat size that keeps the image's proportions: `widthMm` across, the height to match. */
-export const proportionalTileSize = (
-  widthMm: number,
-  image: Readonly<{ widthPx: number; heightPx: number }>,
-): Readonly<{ x: number; y: number }> => ({
-  x: widthMm,
-  y: Math.round((widthMm * image.heightPx) / Math.max(1, image.widthPx)),
-});
