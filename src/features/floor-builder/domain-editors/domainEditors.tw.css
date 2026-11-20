@@ -174,7 +174,7 @@
 
   /* The selected material, edited with the material form (owner, 2026-11-20): it scrolls by itself. */
   [data-material-picker-preview] {
-    @apply sticky top-16 flex max-h-[min(70vh,44rem)] flex-col gap-3 overflow-y-auto rounded-card bg-canvas p-3;
+    @apply sticky top-16 flex max-h-[min(44rem,calc(100dvh_-_27rem))] flex-col gap-3 overflow-y-auto rounded-card bg-canvas p-3;
   }
 
   [data-material-picker-preview] [data-material-swatch] {
@@ -198,12 +198,34 @@
     @apply size-5 shrink-0;
   }
 
+  /* A built-in material's values, laid out like the property panel's fields: label column, then the value. */
+  [data-material-picker-details] {
+    @apply grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2.5 pt-1;
+  }
+
+  [data-material-picker-details] dt {
+    @apply truncate text-[13px] text-muted;
+  }
+
+  [data-material-picker-details] dd {
+    @apply flex min-h-8 min-w-0 items-center gap-2 rounded-control bg-input px-2.5 text-sm text-foreground tabular-nums;
+  }
+
+  [data-material-picker-texture] {
+    @apply size-6 shrink-0 rounded-sm object-cover;
+  }
+
+  [data-material-picker-colour] {
+    @apply size-4 shrink-0 rounded-sm shadow-[inset_0_0_0_1px_rgb(0_0_0/15%)];
+    background-color: var(--swatch-color, #fff);
+  }
+
   [data-material-picker-actions] {
     @apply flex flex-wrap gap-2;
   }
 
   [data-material-picker-unsaved] {
-    @apply basis-full text-xs text-warning;
+    @apply text-xs text-warning;
   }
 
   [data-material-picker-spacer] {

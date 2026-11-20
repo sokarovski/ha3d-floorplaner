@@ -17,6 +17,7 @@ import { Button } from "../../../design-system/components/Button/Button";
 import { Icon } from "../../../design-system/components/Icon/Icon";
 import { Input } from "../../../design-system/components/Input/Input";
 import { Popup } from "../../../design-system/components/Popup/Popup";
+import { DiscardChangesPopup } from "../../../design-system/forms/DiscardChangesPopup/DiscardChangesPopup";
 import { FormPopup } from "../../../design-system/forms/FormPopup/FormPopup";
 import { FormSubmitError } from "../../../design-system/forms/formErrors";
 import { SchemaForm } from "../../../design-system/forms/SchemaForm/SchemaForm";
@@ -82,6 +83,8 @@ export const MaterialPickerPopup = ({
   const [draft, setDraft] = useState<SurfaceMaterialValue | undefined>(undefined);
   /** A house preset's name as edited above its form (undefined: unchanged); saved with Save (owner). */
   const [draftName, setDraftName] = useState<string | undefined>(undefined);
+  /** A tile chosen while there were unsaved changes: Save, Cancel or Discard first (owner). */
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
   const library = open ? data.materialLibrary() : [];
   const matching = searchLibrary(library, query, null);
   const filtered = searchLibrary(library, query, category);
@@ -139,6 +142,27 @@ export const MaterialPickerPopup = ({
         console.warn("[homeplan] the image's proposed values were not saved", error);
       });
   };
+  /** Writes the working copy back (a house preset, or every surface using the material); false when rejected. */
+  const saveEdits = (): boolean => {
+    if (selected === undefined) return false;
+    if (selected.source === "used") {
+      if (draft === undefined || !data.replaceMaterial(selected.material, draft)) return false;
+      select(`used:${materialKey(draft)}`);
+      return true;
+    }
+    const presetId = selected.presetId;
+    if (presetId === undefined) return false;
+    if (draftName !== undefined) {
+      if (draftName === "" || !data.renamePreset(presetId, draftName)) return false;
+      setDraftName(undefined);
+    }
+    if (draft !== undefined) {
+      if (!data.updatePreset(presetId, draft)) return false;
+      proposeFromPreset(draft);
+      setDraft(undefined);
+    }
+    return true;
+  };
   const close = (): void => {
     setQuery("");
     setCategory(null);
@@ -154,7 +178,8 @@ export const MaterialPickerPopup = ({
   return (
     <>
       <Popup
-        open={open && saving === undefined && !creating}
+        // Stays open under its own popups (Unsaved changes, Save as preset, Create material), which stack on top.
+        open={open}
         title={title}
         size="xl"
         onClose={close}
@@ -264,9 +289,10 @@ export const MaterialPickerPopup = ({
                         role="option"
                         aria-selected={item.key === selected?.key}
                         data-image-picker-item=""
-                        disabled={unsaved && item.key !== selected?.key}
                         onClick={() => {
-                          if (item.key !== selected?.key) select(item.key);
+                          if (item.key === selected?.key) return;
+                          if (unsaved) setPendingKey(item.key);
+                          else select(item.key);
                         }}
                         onDoubleClick={() => {
                           if (!unsaved) apply(item.material);
@@ -296,9 +322,27 @@ export const MaterialPickerPopup = ({
                 // A built-in material shows its values, not a form (owner): it can be applied, not changed.
                 <dl data-material-picker-details="">
                   <dt>Texture</dt>
-                  <dd>{textureName(edited)}</dd>
+                  <dd>
+                    {edited.pbrMetallicRoughness.baseColorTexture === undefined ? null : (
+                      <img
+                        src={data.thumbnailUrl(edited.pbrMetallicRoughness.baseColorTexture.imageId)}
+                        alt=""
+                        data-material-picker-texture=""
+                      />
+                    )}
+                    {textureName(edited)}
+                  </dd>
                   <dt>Colour / tint</dt>
-                  <dd>{materialHex(edited)}</dd>
+                  <dd>
+                    <span
+                      aria-hidden="true"
+                      data-material-picker-colour=""
+                      ref={(element) => {
+                        element?.style.setProperty("--swatch-color", materialHex(edited));
+                      }}
+                    />
+                    {materialHex(edited)}
+                  </dd>
                   {edited.pbrMetallicRoughness.baseColorTexture === undefined ||
                   edited.extras === undefined ? null : (
                     <>
@@ -356,19 +400,7 @@ export const MaterialPickerPopup = ({
                       size="sm"
                       disabled={!unsaved || draftName === ""}
                       onPress={() => {
-                        if (selected.source === "used") {
-                          if (draft !== undefined && data.replaceMaterial(selected.material, draft))
-                            select(`used:${materialKey(draft)}`);
-                          return;
-                        }
-                        const presetId = selected.presetId;
-                        if (presetId === undefined) return;
-                        if (draftName !== undefined && !data.renamePreset(presetId, draftName)) return;
-                        setDraftName(undefined);
-                        if (draft !== undefined && data.updatePreset(presetId, draft)) {
-                          proposeFromPreset(draft);
-                          setDraft(undefined);
-                        }
+                        saveEdits();
                       }}
                     >
                       {selected.source === "used"
@@ -386,11 +418,7 @@ export const MaterialPickerPopup = ({
                     >
                       Revert
                     </Button>
-                    {unsaved ? (
-                      <p data-material-picker-unsaved="">
-                        Save or revert your changes to apply a material or choose another.
-                      </p>
-                    ) : null}
+
                     {selected.source === "house" && selected.presetId !== undefined ? (
                       <Button
                         size="sm"
@@ -404,6 +432,9 @@ export const MaterialPickerPopup = ({
                       </Button>
                     ) : null}
                   </div>
+                  {unsaved ? (
+                    <p data-material-picker-unsaved="">Save or revert your changes to apply this material.</p>
+                  ) : null}
                 </>
               )}
             </aside>
@@ -430,6 +461,25 @@ export const MaterialPickerPopup = ({
           }}
         />
       ) : null}
+      <DiscardChangesPopup
+        open={open && pendingKey !== null}
+        title="Unsaved changes"
+        message={`There are unsaved changes to ${draftName ?? selected?.name ?? "this material"}.`}
+        keepLabel="Cancel"
+        onSave={() => {
+          const next = pendingKey;
+          setPendingKey(null);
+          if (saveEdits() && next !== null) select(next);
+        }}
+        onKeepEditing={() => {
+          setPendingKey(null);
+        }}
+        onDiscard={() => {
+          const next = pendingKey;
+          setPendingKey(null);
+          select(next);
+        }}
+      />
       <SavePresetPopup
         material={saving}
         onClose={() => {
