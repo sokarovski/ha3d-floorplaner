@@ -48,9 +48,10 @@ const sourceLabel = (item: LibraryMaterial): string =>
 /**
  * The material chooser (owner, 2026-11-20; replaces the Presets menu): search, category chips (Used in this house,
  * House presets, then the built-in categories), a grid of swatches grouped by category, and a preview of the
- * selected material in an editor (the material form, on a copy). Apply (or a double click on a tile) copies it onto
- * the surface; an edited house preset can be saved back to the preset, any edited material saved as a new preset;
- * house presets can be renamed or deleted here. The footer shows the selected element's own material with Save as
+ * selected material in an editor (the material form) on a working copy beside the original: Save writes the copy
+ * back (a house preset, or every surface using a material of Used in this house), Revert returns to the original;
+ * built-ins are read-only. Apply (or a double click on a tile) copies the selected material, as edited, onto the
+ * surface; house presets can be renamed or deleted here. The footer shows the selected element's own material with Save as
  * preset (owner: "current" was unclear); Create material
  * from image uploads an image with its proposed values (repeat size, Shininess, metallic), saves it as a house
  * preset and applies it.
@@ -86,6 +87,9 @@ export const MaterialPickerPopup = ({
     (selectedKey === null ? filtered.find((item) => materialKey(item.material) === currentKey) : undefined) ??
     filtered[0];
   const edited = draft ?? selected?.material;
+  // Built-in materials are shown, not edited (owner, 2026-11-20); house presets and used materials are edited on a
+  // working copy (`draft`) beside the original (`selected.material`): Save writes it back, Revert drops it.
+  const readOnly = selected?.source === "builtin";
   const currentName =
     currentKey === undefined
       ? undefined
@@ -260,6 +264,7 @@ export const MaterialPickerPopup = ({
                 registry={{ ...genericEditors, image: ImagePropEditor }}
                 projectUnit={projectUnit}
                 mode="live"
+                disabled={readOnly}
                 onCommit={(path, next) => {
                   const updated = materialAfterCommit(edited, path, next, data.images);
                   if (updated === undefined) return false;
@@ -267,69 +272,67 @@ export const MaterialPickerPopup = ({
                   return true;
                 }}
               />
-              <div data-material-picker-actions="">
-                {draft === undefined ? null : (
-                  <>
-                    {selected.source === "house" && selected.presetId !== undefined ? (
+              {readOnly ? (
+                <p data-material-picker-preview-meta="">
+                  A built-in material cannot be changed. Apply it, then adjust it on the surface (or save that
+                  as a preset).
+                </p>
+              ) : (
+                <div data-material-picker-actions="">
+                  <Button
+                    size="sm"
+                    disabled={draft === undefined}
+                    onPress={() => {
+                      if (draft === undefined) return;
+                      if (selected.source === "used") {
+                        if (data.replaceMaterial(selected.material, draft))
+                          select(`used:${materialKey(draft)}`);
+                      } else if (
+                        selected.presetId !== undefined &&
+                        data.updatePreset(selected.presetId, draft)
+                      )
+                        setDraft(undefined);
+                    }}
+                  >
+                    {selected.source === "used"
+                      ? `Save to ${String(selected.surfaces ?? 0)} surface${selected.surfaces === 1 ? "" : "s"}`
+                      : "Save preset"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={draft === undefined}
+                    onPress={() => {
+                      setDraft(undefined);
+                    }}
+                  >
+                    Revert
+                  </Button>
+                  {selected.source === "house" && selected.presetId !== undefined ? (
+                    <>
                       <Button
                         size="sm"
+                        variant="ghost"
                         onPress={() => {
-                          if (selected.presetId !== undefined && data.updatePreset(selected.presetId, draft))
-                            setDraft(undefined);
+                          setRenaming(selected);
                         }}
                       >
-                        Save to preset
+                        Rename
                       </Button>
-                    ) : null}
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onPress={() => {
-                        setSaving(draft);
-                      }}
-                    >
-                      Save as new preset…
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => {
-                        setDraft(undefined);
-                      }}
-                    >
-                      Reset
-                    </Button>
-                  </>
-                )}
-                {selected.source === "house" && selected.presetId !== undefined ? (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => {
-                        setRenaming(selected);
-                      }}
-                    >
-                      Rename
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => {
-                        if (selected.presetId !== undefined) data.deletePreset(selected.presetId);
-                        select(null);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </>
-                ) : null}
-              </div>
-              {selected.source === "builtin" && draft !== undefined ? (
-                <p data-material-picker-preview-meta="">
-                  Built-in presets stay as they are: apply your changes, or save them as a new preset.
-                </p>
-              ) : null}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onPress={() => {
+                          if (selected.presetId !== undefined) data.deletePreset(selected.presetId);
+                          select(null);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
+              )}
             </aside>
           )}
         </div>

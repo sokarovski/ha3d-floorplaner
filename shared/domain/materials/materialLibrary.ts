@@ -55,7 +55,7 @@ export const libraryCategories: readonly string[] = [
 
 /** One tile of the chooser. */
 export type LibraryMaterial = Readonly<{
-  /** Stable within one listing: `preset:<id>` or `used:<n>`. */
+  /** `preset:<id>`, or `used:<material>` (stable while the material stays the same, also after it is saved). */
   key: string;
   name: string;
   category: string;
@@ -128,11 +128,11 @@ export const materialLibrary = (
 ): readonly LibraryMaterial[] => {
   const byKey = new Map(presets.map((preset) => [materialKey(preset.material), preset]));
   let custom = 0;
-  const used = usedMaterials(house).map((entry, index): LibraryMaterial => {
+  const used = usedMaterials(house).map((entry): LibraryMaterial => {
     const preset = byKey.get(materialKey(entry.material));
     if (preset === undefined) custom += 1;
     return {
-      key: `used:${String(index)}`,
+      key: `used:${materialKey(entry.material)}`,
       name: preset?.name ?? (custom === 1 ? "Custom" : `Custom ${String(custom)}`),
       category: usedCategory,
       material: entry.material,

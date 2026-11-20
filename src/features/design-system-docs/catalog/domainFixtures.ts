@@ -60,6 +60,7 @@ export const fixtureDomainData: DomainEditorData = {
   savePreset: () => true,
   renamePreset: () => true,
   updatePreset: () => true,
+  replaceMaterial: () => true,
   deletePreset: () => true,
   materialLibrary: () => materialLibrary(fixtureLibraryHouse, fixturePresets),
   referenceOptions: (kind) =>

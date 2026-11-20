@@ -1,8 +1,13 @@
 // Material presets (D19): Save as preset stores a named copy; applying copies values; delete never changes surfaces.
 import { createId } from "../ids";
+import { materialKey } from "../materials/materialLibrary";
+import { SurfaceMaterialSchema } from "../schemas/values";
 import type { SurfaceMaterialValue } from "../schemas/values";
+import { compileValidator } from "../validation/ajv";
 import { defineCommand } from "./command";
 import type { Command } from "./command";
+
+const isMaterial = compileValidator(SurfaceMaterialSchema);
 
 export const savePresetCommand = (
   name: string,
@@ -45,4 +50,29 @@ export const deletePresetCommand = (presetId: string): Command =>
     if (index < 0) return "The preset no longer exists.";
     draft.materialPresets.splice(index, 1);
     return undefined;
+  });
+
+/**
+ * Changes a material wherever the house uses it (the material chooser's Save on a material of Used in this house,
+ * owner 2026-11-20): every surface whose material equals `previous` gets `next`; presets are not touched. One
+ * command, so one Undo restores every surface.
+ */
+export const replaceMaterialCommand = (previous: SurfaceMaterialValue, next: SurfaceMaterialValue): Command =>
+  defineCommand("Change material", undefined, (draft) => {
+    const key = materialKey(previous);
+    let changed = 0;
+    const visit = (value: unknown): void => {
+      if (typeof value !== "object" || value === null) return;
+      const entries: [string | number, unknown][] = Array.isArray(value)
+        ? value.map((item, index): [number, unknown] => [index, item])
+        : Object.entries(value);
+      for (const [name, item] of entries) {
+        if (isMaterial(item) && materialKey(item) === key) {
+          Reflect.set(value, name, structuredClone(next));
+          changed += 1;
+        } else visit(item);
+      }
+    };
+    for (const [name, value] of Object.entries(draft)) if (name !== "materialPresets") visit(value);
+    return changed === 0 ? "No surface uses that material any more." : undefined;
   });
