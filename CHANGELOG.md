@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Fixed: after updating to 0.1.4, some installs showed "Recovered a compatible local frontend…" over the viewer's Settings and Edit buttons until Home Assistant restarted. The note now appears only once, at the top left, says plainly that the integration's own panel is used because the old one could not run, and has **Open settings** (the Panels tab) and a close button.
+
 ## 0.1.4
 
 - **Material chooser** in the builder: **More…** on any material opens a chooser like the object chooser, with search, categories (Used in this house, House presets, Paint and plain, Wood, Tiles and stone, Outdoor, Roofing) and swatches that show each texture at its real size and rotation.
