@@ -276,6 +276,27 @@ class HomeplanRuntime:
         await self.configuration.mutate(change)
         return outcome
 
+    async def list_discovered(self, url: str) -> None:
+        """A discovered app beside a typed default: remembered, and listed among the floor planners (Phase 21) when
+        it is not listed yet. Nothing else changes; an unchanged list writes nothing."""
+        normalized = normalize_url(url)
+        if normalized is None:
+            return
+        self.discovered_url = normalized
+        connection = record(self.configuration.snapshot()["connection"])
+        servers = [str(server) for server in list(connection.get("servers", []))]
+        if normalized == connection["builderUrl"] or normalized in servers:
+            return
+
+        def change(value: dict[str, object]) -> None:
+            current = record(value["connection"])
+            listed = [str(server) for server in list(current.get("servers", []))]
+            if normalized != current["builderUrl"] and normalized not in listed:
+                current["servers"] = [normalized, *listed][:MAX_FLOOR_PLANNERS]
+            value["connection"] = current
+
+        await self.configuration.mutate(change)
+
     def discovery_outcome(self, url: str) -> str:
         """What adopt_discovered would do now, without writing (lets discovery skip a needless probe)."""
         connection = record(self.configuration.snapshot()["connection"])

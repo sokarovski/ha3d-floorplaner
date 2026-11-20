@@ -111,6 +111,8 @@ export type HouseExterior = Readonly<{
   areaGroup: (areaId: string) => Group | null;
   /** An instance's placed model group in whichever floor holds it, or null before it is built. */
   instanceRoot: (instanceId: string) => Object3D | null;
+  /** Light fixtures not drawn (or picked) on any floor, by light ID (the HA viewer's Shown when, Phase 21). */
+  setConcealedLights: (lightIds: ReadonlySet<string>) => void;
   /** Fixture glow by light ID (`LightsLayer.fixtureGlow`) for every floor's fixtures. */
   setFixtureGlow: (glow: ReadonlyMap<string, FixtureGlow>) => void;
   /**
@@ -539,6 +541,9 @@ export const createHouseExterior = (
         if (found !== null) return found;
       }
       return null;
+    },
+    setConcealedLights: (lightIds) => {
+      for (const entry of floors.values()) entry.content?.setConcealedLights(lightIds);
     },
     setFixtureGlow: (glow) => {
       for (const entry of floors.values()) entry.content?.setFixtureGlow(glow);

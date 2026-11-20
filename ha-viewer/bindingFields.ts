@@ -34,6 +34,12 @@ const fallbackActions = [
   ["none", "Nothing"],
 ] as const;
 
+const actionLabels: Readonly<Partial<Record<string, string>>> = {
+  toggle: "Toggle",
+  "more-info": "More info",
+  none: "Nothing",
+};
+
 /** Fields with the given values; absent values are left out, so an empty binding stays empty. */
 const fieldsOf = (
   entity: string | undefined,
@@ -53,6 +59,7 @@ export class HomeplanBindingFields extends LitElement {
     domain: { attribute: false },
     entityLabel: { attribute: false },
     suggestions: { attribute: false },
+    defaults: { attribute: false },
   };
 
   static override styles = [
@@ -74,9 +81,14 @@ export class HomeplanBindingFields extends LitElement {
   declare entityLabel: string;
   /** The best entities for this binding (10.3), shown as chips under the entity. */
   declare suggestions: readonly EntitySuggestion[];
+  /** Each gesture's default action (HA's ui_action `default_action`), shown while the gesture is not set. */
+  declare defaults: Readonly<
+    Partial<Record<"tapAction" | "holdAction" | "doubleTapAction", HaActionValue["action"]>>
+  >;
 
   constructor() {
     super();
+    this.defaults = {};
     this.haForm = false;
     this.fields = {};
     this.domain = undefined;
@@ -116,7 +128,11 @@ export class HomeplanBindingFields extends LitElement {
         selector: { entity: this.domain === undefined ? {} : { filter: { domain: this.domain } } },
       },
     ];
-    const actionSchema = gestures.map(([name]) => ({ name, selector: { ui_action: {} } }));
+    // HA's ui_action shows "Default action (…)" for an unset gesture when it knows the default (Phase 21).
+    const actionSchema = gestures.map(([name, key]) => {
+      const fallback = this.defaults[key];
+      return { name, selector: { ui_action: fallback === undefined ? {} : { default_action: fallback } } };
+    });
     const labels: Readonly<Record<string, string>> = {
       entity: this.entityLabel,
       ...Object.fromEntries(gestures.map(([name, , label]) => [name, label])),
@@ -187,7 +203,11 @@ export class HomeplanBindingFields extends LitElement {
               }}
             >
               ${[
-                ...fallbackActions,
+                ...fallbackActions.map(([value, name]): readonly [string, string] =>
+                  value === "" && this.defaults[key] !== undefined
+                    ? [value, `Default (${actionLabels[this.defaults[key]] ?? this.defaults[key]})`]
+                    : [value, name],
+                ),
                 // An action set in HA (for example perform-action) is kept and shown by its name.
                 ...(fallbackActions.some(([value]) => value === (this.fields[key]?.action ?? ""))
                   ? []

@@ -22,13 +22,32 @@ export const defaultAction = (gesture: Gesture): HaActionValue =>
       ? { action: "more-info" }
       : { action: "none" };
 
+/** The domains HA's frontend toggles on a tap by default (its `DOMAINS_TOGGLE`). */
+const toggleDomains: ReadonlySet<string> = new Set([
+  "fan",
+  "input_boolean",
+  "light",
+  "switch",
+  "group",
+  "automation",
+  "humidifier",
+  "valve",
+]);
+
 /**
- * An object's action for a gesture when none is configured (Phase 8.3, decided): an AC (template kind
- * `airConditioner`) opens its entity's more-info on tap (expected a `climate` entity); every other gesture and
- * every other object does nothing, so an object without actions lets the tap through to its room.
+ * Home Assistant's own default for a gesture on an entity (its button and tile cards; Phase 21, owner: every thing
+ * with an entity behaves like HA by default): a tap toggles a toggleable entity and opens more-info for any other,
+ * a hold opens more-info, a double tap does nothing. Objects use it (an AC's climate entity opens more-info, as
+ * before); a light's default is the same for its light entity.
  */
-export const defaultObjectAction = (templateKind: string | null, gesture: Gesture): HaActionValue =>
-  templateKind === "airConditioner" && gesture === "tap" ? { action: "more-info" } : { action: "none" };
+export const haDefaultAction = (entityId: string | null, gesture: Gesture): HaActionValue =>
+  gesture === "tap"
+    ? {
+        action: entityId !== null && toggleDomains.has(entityId.split(".")[0] ?? "") ? "toggle" : "more-info",
+      }
+    : gesture === "hold"
+      ? { action: "more-info" }
+      : { action: "none" };
 
 /** host: an element inside HA's DOM, so composed events (more-info) reach HA's dialog manager. */
 export const runAction = async (

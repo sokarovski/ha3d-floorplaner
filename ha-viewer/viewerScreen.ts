@@ -38,7 +38,7 @@ import { compactWidthPx, roomFrameInsets, widgetGapPx, widgetMarginPx } from "./
 import { suggestionData } from "./entitySuggestions";
 import { roomHaArea } from "@shared/domain/homeAssistant/suggestions";
 import { entityColourMode } from "./lightOutput";
-import { defaultAction, defaultObjectAction, runAction } from "./haActions";
+import { defaultAction, haDefaultAction, runAction } from "./haActions";
 import { loadHaForm } from "./haElements";
 import type { Gesture } from "./haActions";
 import type { HassEntity, HassStore } from "./hassStore";
@@ -1140,7 +1140,10 @@ export class HomeplanViewerScreen extends LitElement {
           this.updateScreen(key.id);
           if (this.updateInstanceState(key.id)) states = true;
         } else if (key.kind === "bubbles") bubbles = true;
-      if (lights) this.viewer?.setLightStates(new Map(this.lightStates));
+      if (lights) {
+        this.viewer?.setLightStates(new Map(this.lightStates));
+        this.viewer?.setHiddenLights(this.hiddenLights());
+      }
       // Doors, windows, and blinds (9.7): only a changed drawn value re-resolves its instance.
       if (states) this.viewer?.setInstanceStates(this.instanceStateValues());
       if (changed.some((key) => key.kind === "effects")) this.viewer?.setEffectStates(this.effectStates());
@@ -1152,7 +1155,12 @@ export class HomeplanViewerScreen extends LitElement {
     return evaluator;
   }
 
-  /** False while a light's `visibleWhen` does not hold (it is then drawn off and ignores gestures). */
+  /** The lights whose Shown when does not hold now: hidden (fixture not drawn, off, no gestures; Phase 21). */
+  private hiddenLights(): ReadonlySet<string> {
+    return new Set(Object.keys(this.liveBindings.lights).filter((lightId) => !this.lightShown(lightId)));
+  }
+
+  /** False while a light's `visibleWhen` does not hold (it is then hidden: off, no fixture, no gestures). */
   private lightShown(lightId: string): boolean {
     return this.evaluator?.shown("lights", lightId) ?? true;
   }
@@ -1212,6 +1220,7 @@ export class HomeplanViewerScreen extends LitElement {
     evaluator.setBindings(live);
     for (const lightId of Object.keys(live.lights)) this.updateLight(lightId);
     this.viewer?.setLightStates(new Map(this.lightStates));
+    this.viewer?.setHiddenLights(this.hiddenLights());
     this.viewer?.setEffectStates(this.effectStates());
     this.tvScreens.clear();
     this.instanceStates = new Map();
@@ -1393,7 +1402,7 @@ export class HomeplanViewerScreen extends LitElement {
       const entityId = binding.stateEntityId ?? null;
       // A default action needs the object's entity (an AC without one falls through to its room).
       if (configured === undefined && entityId === null) return null;
-      const action = configured ?? defaultObjectAction(this.viewer?.objectKind(target.id) ?? null, gesture);
+      const action = configured ?? haDefaultAction(entityId, gesture);
       return action.action === "none" ? null : { action, entityId };
     }
     const bubble = this.findBubble(target.id);

@@ -57,7 +57,8 @@ class HomeplanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if outcome == "unchanged":
                 return self.async_abort(reason="already_configured")
             if outcome == "manualKept":
-                app.discovered_url = url
+                # Kept beside the typed default: listed as a floor planner (Phase 21), never replacing it.
+                await app.list_discovered(url)
                 return self.async_abort(reason="manual_source_kept")
         try:
             await SourceClient(async_get_clientsession(self.hass), url).probe()

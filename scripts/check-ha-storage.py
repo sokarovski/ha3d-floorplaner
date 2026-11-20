@@ -1243,9 +1243,21 @@ async def discovery_checks() -> None:
                         },
                     }
                 )
+                # The app was the default before, so the typed URL moved it into the list; clear the list so the
+                # announcement below has to list it itself.
+                await app.connection_patch(
+                    {
+                        "expectedRevision": integer(
+                            app.configuration.snapshot()["revision"]
+                        ),
+                        "patch": {"servers": []},
+                    }
+                )
                 manual = record(app.configuration.snapshot()["connection"])
                 check(
-                    manual["origin"] == "manual" and manual["devMode"] is True,
+                    manual["origin"] == "manual"
+                    and manual["devMode"] is True
+                    and manual["servers"] == [],
                     "a typed URL is manual and DEV MODE works with it as before",
                 )
                 probes_before = probes

@@ -106,6 +106,19 @@ const statesOf = (value: unknown): readonly string[] =>
 const testOf = (value: unknown): Test =>
   value === "state_not" || value === "numeric_state" ? value : "state";
 
+/** Always (no condition), Never (an empty "or"), or When (one or more tests). */
+type ConditionMode = "always" | "never" | "when";
+
+/** The condition no state meets: an "or" of nothing. */
+const never: HaConditionValue = { condition: "or", conditions: [] };
+
+const modeOf = (condition: HaConditionValue | undefined): ConditionMode =>
+  condition === undefined
+    ? "always"
+    : condition.condition === "or" && condition.conditions.length === 0
+      ? "never"
+      : "when";
+
 export class HomeplanConditionEditor extends LitElement {
   static override properties: PropertyDeclarations = {
     store: { attribute: false },
@@ -438,14 +451,75 @@ export class HomeplanConditionEditor extends LitElement {
     `;
   }
 
+  /**
+   * Always (no condition), Never (an empty "or", which no state meets: HA's own card conditions read it the same
+   * way), or When (tests). Phase 21, owner: a fixed setting needs no entity.
+   */
+  private setMode(mode: ConditionMode): void {
+    if (mode === modeOf(this.condition)) return;
+    this.json = false;
+    this.jsonText = "";
+    this.jsonError = null;
+    if (mode === "always") {
+      this.simple = { match: "and", rows: [] };
+      this.emit(undefined);
+      this.requestUpdate();
+    } else if (mode === "never") {
+      this.simple = { match: "and", rows: [] };
+      this.emit(never);
+      this.requestUpdate();
+    } else {
+      this.simple = { match: "and", rows: [] };
+      this.addRow();
+    }
+  }
+
+  private renderMode(mode: ConditionMode): TemplateResult {
+    const options = [
+      { value: "always", label: this.emptyText },
+      { value: "never", label: "Never" },
+      { value: "when", label: "When…" },
+    ];
+    return this.haForm
+      ? html`<ha-form
+          .hass=${this.store?.current()}
+          .data=${{ mode }}
+          .schema=${[{ name: "mode", selector: { select: { mode: "dropdown", options } } }]}
+          .computeLabel=${() => "Condition"}
+          @value-changed=${(event: Event) => {
+            const value = formValue(event)?.mode;
+            if (value === "always" || value === "never" || value === "when") this.setMode(value);
+          }}
+        ></ha-form>`
+      : html`<label>
+          Condition
+          <select
+            @change=${(event: Event) => {
+              const value = valueOf(event);
+              if (value === "always" || value === "never" || value === "when") this.setMode(value);
+            }}
+          >
+            ${options.map(
+              (option) =>
+                html`<option value=${option.value} ?selected=${option.value === mode}>
+                  ${option.label}
+                </option>`,
+            )}
+          </select>
+        </label>`;
+  }
+
   protected override render(): TemplateResult {
     const condition = this.condition;
     const store = this.store;
+    const mode = modeOf(condition);
+    if (mode !== "when") return this.renderMode(mode);
     const met =
       condition === undefined || store === undefined
         ? null
         : evaluateCondition(condition, (entityId) => store.entity(entityId));
     return html`
+      ${this.renderMode(mode)}
       <div class="head">
         ${
           this.json

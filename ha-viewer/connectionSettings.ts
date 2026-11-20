@@ -10,7 +10,9 @@ import type {
 } from "@shared/contracts/homeplanIntegration";
 import { createConnectionMemory } from "./connectionMemory";
 import type { MemoryState } from "./connectionMemory";
-import { fieldStyles } from "./formHelpers";
+import { fieldStyles, formValue, numberOf } from "./formHelpers";
+import { loadHaForm } from "./haElements";
+import type { HassStore } from "./hassStore";
 import type { IntegrationClient } from "./integrationClient";
 import { SourceError } from "./houseSource";
 import { tokens } from "./styles/tokens";
@@ -56,6 +58,11 @@ const announce = (): void => {
 /** mdi:server (Floor planners) */
 const serverIcon =
   "M4,1H20A1,1 0 0,1 21,2V6A1,1 0 0,1 20,7H4A1,1 0 0,1 3,6V2A1,1 0 0,1 4,1M4,9H20A1,1 0 0,1 21,10V14A1,1 0 0,1 20,15H4A1,1 0 0,1 3,14V10A1,1 0 0,1 4,9M4,17H20A1,1 0 0,1 21,18V22A1,1 0 0,1 20,23H4A1,1 0 0,1 3,22V18A1,1 0 0,1 4,17M9,5H10V3H9V5M9,13H10V11H9V13M9,21H10V19H9V21M5,3V5H7V3H5M5,11V13H7V11H5M5,19V21H7V19H5Z";
+/** mdi:star (the default floor planner) */
+const starIcon =
+  "M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z";
+/** mdi:plus (add a floor planner) */
+const plusIcon = "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
 /** mdi:home (House: the shown house's settings) */
 const houseIcon = "M10,20V14H14V20H19V12H22L12,2L2,12H5V20H10Z";
 /** mdi:home-city (Houses) */
@@ -83,6 +90,7 @@ export class HomeplanConnectionSettings extends LitElement {
     activePage: { attribute: false },
     planner: { attribute: false },
     houseAvailable: { attribute: false },
+    store: { attribute: false },
   };
   static override styles = [
     tokens,
@@ -103,7 +111,7 @@ export class HomeplanConnectionSettings extends LitElement {
         min-width: 0;
       }
       h3 {
-        margin: 0;
+        margin: 8px 0 0;
         font-size: 15px;
         font-weight: 500;
       }
@@ -154,37 +162,48 @@ export class HomeplanConnectionSettings extends LitElement {
       a.text-button {
         text-decoration: none;
       }
+      /* The Floor planners tree matches the House tree (bindingEditor.ts): rows, icons, the selected tint. */
       :host([data-view="plannerList"]) {
         display: grid;
         gap: 2px;
-        padding-top: 12px;
       }
-      .tree-head {
+      .toolbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 4px 8px 8px;
+        min-height: 48px;
+        padding: 4px 4px 4px 8px;
       }
-      .tree-title {
+      .toolbar-title {
         font-weight: 500;
       }
-      .add {
+      .icon-button {
+        display: grid;
+        place-items: center;
         width: 32px;
         height: 32px;
+        padding: 0;
         border: none;
         border-radius: 50%;
         background: transparent;
-        color: var(--hp-accent);
-        font-size: 22px;
-        line-height: 1;
+        color: var(--hp-muted);
         cursor: pointer;
       }
-      .tree-row {
+      .icon-button:hover {
+        background: var(--secondary-background-color, rgba(0, 0, 0, 0.04));
+      }
+      .icon-button svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+      .item {
+        width: 100%;
         display: flex;
         align-items: center;
         gap: 8px;
-        width: 100%;
-        padding: 8px;
+        min-height: 40px;
+        padding: 6px 8px;
         border: none;
         border-radius: 8px;
         background: transparent;
@@ -193,16 +212,46 @@ export class HomeplanConnectionSettings extends LitElement {
         text-align: left;
         cursor: pointer;
       }
-      .tree-row[data-selected] {
-        background: var(--hp-hover, rgba(127, 127, 127, 0.12));
+      .item:hover {
+        background: var(--secondary-background-color, rgba(0, 0, 0, 0.04));
       }
-      .tree-row .star {
-        width: 16px;
-        color: var(--hp-accent);
+      .item[data-selected] {
+        background: rgba(var(--rgb-primary-color, 3, 169, 244), 0.14);
       }
-      .tree-text {
+      .link {
+        flex: none;
+        width: 18px;
+        height: 18px;
+        display: inline-grid;
+        place-items: center;
+      }
+      .link svg {
+        width: 18px;
+        height: 18px;
+        fill: var(--hp-muted);
+      }
+      .link[data-default] svg {
+        fill: var(--hp-accent);
+      }
+      .names {
         display: grid;
+        gap: 2px;
         min-width: 0;
+      }
+      .name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .area {
+        font-size: 12px;
+        color: var(--hp-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      input.file {
+        display: none;
       }
       .page {
         position: relative;
@@ -252,6 +301,10 @@ export class HomeplanConnectionSettings extends LitElement {
   declare planner: string | null;
   /** Whether a house is shown, so the House tab can open. */
   declare houseAvailable: boolean;
+  /** Home Assistant's state, for ha-form's own controls. */
+  declare store: HassStore | undefined;
+  /** Whether HA's ha-form is available (inside Home Assistant), so fields use HA's own controls. */
+  private haForm = false;
   /** The Homeplan app's address while discovery announces it: that floor planner cannot be deleted. */
   private discoveredUrl: string | null = null;
   /** An uploaded archive waiting for Replace (Home Assistant already has a copy of that house). */
@@ -305,6 +358,11 @@ export class HomeplanConnectionSettings extends LitElement {
     super.connectedCallback();
     this.alive = true;
     changes.addEventListener("change", this.onChange);
+    if (this.view !== "footer" && this.view !== "plannerList")
+      void loadHaForm().then((available) => {
+        this.haForm = available;
+        this.requestUpdate();
+      });
     void this.initialize();
   }
   override disconnectedCallback(): void {
@@ -808,25 +866,59 @@ export class HomeplanConnectionSettings extends LitElement {
       return html`<span class="hint" data-origin="discovered"
         >DEV MODE is for a Floor Builder running on your own computer.</span
       >`;
-    return html`<label class="toggle"
-        ><input
-          type="checkbox"
-          .checked=${this.connection.devMode}
-          ?disabled=${this.busy}
-          @change=${(event: Event) => {
-            if (event.target instanceof HTMLInputElement) {
-              const enabled = event.target.checked;
-              void this.perform(() => this.toggleDev(enabled));
-            }
-          }}
-        />DEV MODE</label
-      >
+    return html`${this.field(
+        "devMode",
+        "DEV MODE",
+        { boolean: {} },
+        this.connection.devMode,
+        (value) => {
+          if (typeof value === "boolean" && value !== this.connection.devMode)
+            void this.perform(() => this.toggleDev(value));
+        },
+        html`<label class="toggle"
+          ><input
+            type="checkbox"
+            .checked=${this.connection.devMode}
+            ?disabled=${this.busy}
+            @change=${(event: Event) => {
+              if (event.target instanceof HTMLInputElement) {
+                const enabled = event.target.checked;
+                void this.perform(() => this.toggleDev(enabled));
+              }
+            }}
+          />DEV MODE</label
+        >`,
+      )}
       <span class="hint">
         Loads the panel code and the house's current (unsaved) state from the default floor planner on every
         page load. Off uses the copies stored in Home Assistant. Takes effect after a page reload.
       </span>`;
   }
-  /** The floor planners, the default first. */
+  /**
+   * One field: HA's own control (ha-form with a selector, like the House settings) inside Home Assistant, else the
+   * plain fallback (the harness).
+   */
+  private field(
+    name: string,
+    label: string,
+    selector: Readonly<Record<string, unknown>>,
+    value: unknown,
+    apply: (value: unknown) => void,
+    fallback: TemplateResult,
+  ): TemplateResult {
+    return this.haForm
+      ? html`<ha-form
+          .hass=${this.store?.current()}
+          .data=${{ [name]: value }}
+          .schema=${[{ name, selector }]}
+          .computeLabel=${() => label}
+          @value-changed=${(event: Event) => {
+            const form = formValue(event);
+            if (form !== null) apply(form[name]);
+          }}
+        ></ha-form>`
+      : fallback;
+  }
   private plannerUrls(): string[] {
     const builderUrl = this.connection.builderUrl;
     return [...(builderUrl === null ? [] : [builderUrl]), ...this.connection.servers];
@@ -840,77 +932,84 @@ export class HomeplanConnectionSettings extends LitElement {
   /** The Floor planners tab's tree: every floor planner (the default starred) and + to add one. */
   private renderPlannerList(): TemplateResult {
     const selected = this.selectedPlanner();
-    return html`<div class="tree-head">
-        <span class="tree-title">Floor planners</span>
+    return html`<div class="toolbar">
+        <span class="toolbar-title">Floor planners</span>
         <button
-          class="add"
+          class="icon-button"
           title="Add a floor planner"
           aria-label="Add a floor planner"
           @click=${() => {
             this.selectPlanner("new");
           }}
         >
-          +
+          ${icon(plusIcon)}
         </button>
       </div>
-      ${
-        this.plannerUrls().length === 0
-          ? html`<span class="hint">None yet. Press + to add one.</span>`
-          : nothing
-      }
-      ${this.plannerUrls().map(
-        (url) =>
-          html`<button
-            class="tree-row"
-            ?data-selected=${selected === url}
-            @click=${() => {
-              this.selectPlanner(url);
-            }}
+      ${this.plannerUrls().map((url) => {
+        const isDefault = url === this.connection.builderUrl;
+        return html`<button
+          class="item"
+          ?data-selected=${selected === url}
+          aria-current=${selected === url ? "true" : "false"}
+          @click=${() => {
+            this.selectPlanner(url);
+          }}
+        >
+          <span class="link" ?data-default=${isDefault} title=${isDefault ? "Default" : ""}
+            >${icon(isDefault ? starIcon : serverIcon)}</span
           >
-            <span class="star" aria-label=${url === this.connection.builderUrl ? "Default" : ""}
-              >${url === this.connection.builderUrl ? "★" : ""}</span
+          <span class="names">
+            <span class="name">${plannerName(url)}</span>
+            <span class="area"
+              >${isDefault ? "Default · " : ""}${url === this.discoveredUrl ? "Found automatically" : hostOf(url)}</span
             >
-            <span class="tree-text">
-              <span class="row-name">${plannerName(url)}</span>
-              <span class="hint">${url === this.discoveredUrl ? "Found automatically" : hostOf(url)}</span>
-            </span>
-          </button>`,
-      )}
+          </span>
+        </button>`;
+      })}
       <button
-        class="tree-row"
+        class="item"
         ?data-selected=${selected === "new"}
         @click=${() => {
           this.selectPlanner("new");
         }}
       >
-        <span class="star">+</span
-        ><span class="tree-text"><span class="row-name">Add a floor planner</span></span>
+        <span class="link">${icon(plusIcon)}</span>
+        <span class="names"><span class="name">Add a floor planner</span></span>
       </button>`;
   }
   private renderAddPlanner(): TemplateResult {
     return html`<section>
       <h3>Add a floor planner</h3>
-      <label
-        >Floor planner URL<input
-          type="url"
-          .value=${this.connection.builderUrl === null ? this.urlDraft : ""}
-          placeholder="http://builder-host:5173/"
-          ?disabled=${this.busy}
-          @input=${(event: Event) => {
-            if (event.target instanceof HTMLInputElement) this.urlDraft = event.target.value;
-          }}
-          @keydown=${(event: KeyboardEvent) => {
-            if (event.key === "Enter") void this.perform(() => this.addPlanner(this.urlDraft));
-          }}
-      /></label>
+      ${this.field(
+        "url",
+        "Floor planner URL",
+        { text: { type: "url" } },
+        this.urlDraft,
+        (value) => {
+          this.urlDraft = typeof value === "string" ? value : "";
+        },
+        html`<label
+          >Floor planner URL<input
+            type="url"
+            .value=${this.urlDraft}
+            placeholder="http://builder-host:5173/"
+            ?disabled=${this.busy}
+            @input=${(event: Event) => {
+              if (event.target instanceof HTMLInputElement) this.urlDraft = event.target.value;
+            }}
+            @keydown=${(event: KeyboardEvent) => {
+              if (event.key === "Enter") void this.perform(() => this.addPlanner(this.urlDraft));
+            }}
+        /></label>`,
+      )}
       <span class="hint">
-        Its address as Home Assistant reaches it (not localhost). The first one becomes the default; nothing
-        is copied until you choose a house.
+        Its address as Home Assistant reaches it (not localhost), for example http://builder-host:5173/. The
+        first one becomes the default; nothing is copied until you choose a house.
       </span>
       <div class="actions">
         <button
           class="button"
-          ?disabled=${this.busy}
+          ?disabled=${this.busy || this.urlDraft.trim() === ""}
           @click=${() => void this.perform(() => this.addPlanner(this.urlDraft))}
         >
           Add
@@ -932,7 +1031,6 @@ export class HomeplanConnectionSettings extends LitElement {
       </div>
     </section>`;
   }
-  /** The selected floor planner's settings: Default (star), Connect, Open, Delete; DEV MODE on the default. */
   private renderFloorPlanners(): TemplateResult {
     const url = this.selectedPlanner();
     if (url === "new") return html`${this.renderFeedback()} ${this.renderAddPlanner()}`;
@@ -1117,19 +1215,30 @@ export class HomeplanConnectionSettings extends LitElement {
       <span class="hint">
         A house archive (.zip) downloaded here or from a Floor Builder becomes a copy in Home Assistant.
       </span>
-      <label
-        >House archive<input
-          type="file"
-          accept=".zip,application/zip"
+      <input
+        class="file"
+        type="file"
+        accept=".zip,application/zip"
+        @change=${(event: Event) => {
+          const input = event.target;
+          if (!(input instanceof HTMLInputElement)) return;
+          const file = input.files?.[0];
+          input.value = "";
+          if (file !== undefined) void this.perform(() => this.upload(file, false));
+        }}
+      />
+      <div class="actions">
+        <button
+          class="button"
           ?disabled=${this.busy}
-          @change=${(event: Event) => {
-            const input = event.target;
-            if (!(input instanceof HTMLInputElement)) return;
-            const file = input.files?.[0];
-            input.value = "";
-            if (file !== undefined) void this.perform(() => this.upload(file, false));
+          @click=${() => {
+            const input = this.renderRoot.querySelector("input.file");
+            if (input instanceof HTMLInputElement) input.click();
           }}
-      /></label>
+        >
+          Choose a house archive…
+        </button>
+      </div>
       ${
         this.pendingArchive === null
           ? nothing
@@ -1158,7 +1267,6 @@ export class HomeplanConnectionSettings extends LitElement {
       }
     </section>`;
   }
-  /** Another floor planner's houses: using one makes that floor planner the default first. */
   private renderOtherHouses(url: string): TemplateResult {
     const houses = this.otherHouses.get(url);
     return html`<section>
@@ -1309,49 +1417,77 @@ export class HomeplanConnectionSettings extends LitElement {
       chosen !== undefined &&
       (chosen.id !== stored.id ||
         JSON.stringify(this.rendererSettings) !== JSON.stringify(stored.currentSettings()));
+    const choose = (id: unknown): void => {
+      const next = this.renderers.find((renderer) => renderer.id === id);
+      if (next === undefined || next.id === this.rendererId) return;
+      this.rendererId = next.id;
+      this.rendererSettings = { ...next.currentSettings() };
+      this.requestUpdate();
+    };
     return html`<section>
       <h3>This device</h3>
-      <label
-        >Renderer<select
-          @change=${(event: Event) => {
-            if (!(event.target instanceof HTMLSelectElement)) return;
-            const id = event.target.value;
-            const next = this.renderers.find((renderer) => renderer.id === id);
-            if (next === undefined) return;
-            this.rendererId = next.id;
-            this.rendererSettings = { ...next.currentSettings() };
-            this.requestUpdate();
-          }}
-        >
-          ${this.renderers.map(
-            (renderer) =>
-              html`<option value=${renderer.id} ?selected=${renderer.id === this.rendererId}>
-                ${renderer.label}
-              </option>`,
-          )}
-        </select></label
-      >
+      ${this.field(
+        "renderer",
+        "Renderer",
+        {
+          select: {
+            mode: "dropdown",
+            options: this.renderers.map((renderer) => ({ value: renderer.id, label: renderer.label })),
+          },
+        },
+        this.rendererId,
+        choose,
+        html`<label
+          >Renderer<select
+            @change=${(event: Event) => {
+              if (event.target instanceof HTMLSelectElement) choose(event.target.value);
+            }}
+          >
+            ${this.renderers.map(
+              (renderer) =>
+                html`<option value=${renderer.id} ?selected=${renderer.id === this.rendererId}>
+                  ${renderer.label}
+                </option>`,
+            )}
+          </select></label
+        >`,
+      )}
       ${chosen === undefined ? nothing : html`<span class="hint">${chosen.description}</span>`}
       ${(chosen?.settingsSchema() ?? []).map((setting) => {
         const value = this.rendererSettings[setting.key] ?? setting.defaultValue;
-        return html`<label
-            >${setting.label} ·
-            ${setting.percent ? `${String(Math.round(value * 100))} %` : String(value)}<input
-              type="range"
-              min=${setting.min}
-              max=${setting.max}
-              step=${setting.step}
-              .value=${String(value)}
-              @input=${(event: Event) => {
-                if (!(event.target instanceof HTMLInputElement)) return;
-                this.rendererSettings = {
-                  ...this.rendererSettings,
-                  [setting.key]: Number(event.target.value),
-                };
-                this.requestUpdate();
-              }}
-          /></label>
-          <span class="hint">${setting.hint}</span>`;
+        const scale = setting.percent ? 100 : 1;
+        const set = (raw: unknown): void => {
+          const number = numberOf(raw);
+          if (number === undefined) return;
+          this.rendererSettings = { ...this.rendererSettings, [setting.key]: number / scale };
+          this.requestUpdate();
+        };
+        return html`${this.field(
+            setting.key,
+            setting.label,
+            {
+              number: {
+                min: setting.min * scale,
+                max: setting.max * scale,
+                step: setting.step * scale,
+                mode: "slider",
+                ...(setting.percent ? { unit_of_measurement: "%" } : {}),
+              },
+            },
+            Math.round(value * scale * 100) / 100,
+            set,
+            html`<label
+              >${setting.label} · ${String(Math.round(value * scale))}${setting.percent ? " %" : ""}<input
+                type="range"
+                min=${setting.min * scale}
+                max=${setting.max * scale}
+                step=${setting.step * scale}
+                .value=${String(value * scale)}
+                @input=${(event: Event) => {
+                  if (event.target instanceof HTMLInputElement) set(event.target.value);
+                }}
+            /></label>`,
+          )} <span class="hint">${setting.hint}</span>`;
       })}
       <span class="hint"
         >Stored in this browser only: each device (a wall tablet, a phone) keeps its own.</span

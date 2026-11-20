@@ -11,6 +11,7 @@ import type { PropertyDeclarations, PropertyValues, TemplateResult } from "lit";
 import { emptyHouseBindings } from "@shared/domain/schemas/homeAssistant";
 import type {
   HaAreaPresenceValue,
+  HaActionValue,
   HaConditionValue,
   HaDashboardValue,
   HaEffectBindingValue,
@@ -27,6 +28,7 @@ import type {
   RoomProposal,
   SuggestionContext,
 } from "@shared/domain/homeAssistant/suggestions";
+import { haDefaultAction } from "./haActions";
 import { settingsPageTitle } from "./connectionSettings";
 import type { SettingsPage, SettingsTab } from "./connectionSettings";
 import type { ClickableFields } from "./bindingFields";
@@ -92,6 +94,26 @@ export type SettingsFloor = Readonly<{ id: string; name: string }>;
 
 const icon = (path: string): TemplateResult =>
   html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d=${path}></path></svg>`;
+
+/**
+ * What each gesture does while it is not set (Phase 21), shown as "Default action (…)": HA's own default for the
+ * thing's entity (haActions.ts); a door or window opens its entity's more-info on a tap or hold (10.1).
+ */
+const gestureDefaults = (
+  target: BindingTarget,
+  entityId: string | null,
+): Readonly<Partial<Record<"tapAction" | "holdAction" | "doubleTapAction", HaActionValue["action"]>>> =>
+  // A room's tap opens the room; its gesture fields show no HA default.
+  target.kind === "areas"
+    ? {}
+    : target.opening === true
+      ? { tapAction: "more-info", holdAction: "more-info", doubleTapAction: "none" }
+      : {
+          tapAction: haDefaultAction(target.kind === "lights" ? (entityId ?? "light.") : entityId, "tap")
+            .action,
+          holdAction: "more-info",
+          doubleTapAction: "none",
+        };
 
 /** The footer pages' subtitles (Phase 21). */
 const pageSubtitles: Readonly<Record<SettingsPage, string>> = {
@@ -1482,6 +1504,7 @@ export class HomeplanBindingEditor extends LitElement {
       : html`<homeplan-connection-settings
           .client=${this.integrationClient}
           .view=${page}
+          .store=${this.store}
           .selectedId=${this.houseId}
           .guard=${() => this.saveBeforeSwitch()}
           @settings-page=${(event: CustomEvent<SettingsTab>) => {
@@ -1517,6 +1540,7 @@ export class HomeplanBindingEditor extends LitElement {
           : html`<homeplan-connection-settings
               .client=${this.integrationClient}
               .view=${page}
+              .store=${this.store}
               .planner=${this.planner}
               .selectedId=${this.houseId}
               .guard=${() => this.saveBeforeSwitch()}
@@ -1689,6 +1713,7 @@ export class HomeplanBindingEditor extends LitElement {
         .fields=${binding}
         .domain=${target.kind === "lights" ? "light" : undefined}
         .entityLabel=${entityLabel}
+        .defaults=${gestureDefaults(target, binding.stateEntityId ?? null)}
         .suggestions=${this.entitySuggestions(target)}
         @fields-change=${(event: CustomEvent<ClickableFields>) => {
           // The entity and actions are replaced; everything else (the condition, a room's presence) is kept.
@@ -1753,7 +1778,7 @@ export class HomeplanBindingEditor extends LitElement {
       <div class="subtitle">
         ${
           target.kind === "lights"
-            ? "While the condition does not hold, the light is drawn off and ignores clicks."
+            ? "While the condition does not hold, the light is hidden: off, not drawn, and it ignores clicks."
             : target.opening === true
               ? "While the condition does not hold, the door or window ignores clicks (they reach its room)."
               : target.kind === "objects"

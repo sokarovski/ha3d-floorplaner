@@ -10,6 +10,7 @@ import {
   presenceAllowed,
 } from "@shared/domain/homeAssistant/conditions";
 import type { ConditionEntity } from "@shared/domain/homeAssistant/conditions";
+import { haDefaultAction } from "../ha-viewer/haActions";
 import { mergeBindings, migrateStoredBindings } from "@shared/domain/homeAssistant/bindings";
 import {
   bubbleIcon,
@@ -2108,6 +2109,31 @@ check("schema: presence needs an entity", !validateArea({ presence: { corners: [
     "live bindings: the departing floor's entities are no longer used",
     !Object.values(firstLive.lights).some((binding) => binding.stateEntityId === "light.living") &&
       Object.values(groundLive.lights).some((binding) => binding.stateEntityId === "light.living"),
+  );
+}
+
+// Phase 21: HA's own gesture defaults for a thing's entity, and "Never" (an empty or), which no state meets.
+{
+  const tap = (entityId: string | null): string => haDefaultAction(entityId, "tap").action;
+  check(
+    "gesture defaults: a tap toggles HA's toggleable domains (light, switch, fan)",
+    tap("light.kitchen") === "toggle" && tap("switch.kettle") === "toggle" && tap("fan.bedroom") === "toggle",
+  );
+  check(
+    "gesture defaults: a tap opens more-info for other domains (climate, sensor, cover) and without an entity",
+    tap("climate.living_room") === "more-info" &&
+      tap("sensor.power") === "more-info" &&
+      tap("cover.blinds") === "more-info" &&
+      tap(null) === "more-info",
+  );
+  check(
+    "gesture defaults: hold opens more-info, double tap does nothing",
+    haDefaultAction("switch.kettle", "hold").action === "more-info" &&
+      haDefaultAction("switch.kettle", "doubleTap").action === "none",
+  );
+  check(
+    "Never (an empty or) is never met, whatever the states",
+    !evaluateCondition({ condition: "or", conditions: [] }, () => ({ state: "on", attributes: {} })),
   );
 }
 

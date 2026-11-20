@@ -464,6 +464,8 @@ export class HouseViewer {
   /** The open room's framing, while one is open (14.6 view buttons). */
   private roomGoal: RoomGoal | null = null;
   private viewSize = { width: 0, height: 0 };
+  /** Lights hidden by their Shown when (Phase 21), concealed on every floor's content. */
+  private hiddenLights: ReadonlySet<string> = new Set();
   /** Fixture emitter positions from the last instance sync, for the lights layer. */
   private emitters: ReadonlyMap<string, PlanPoint3> = new Map();
   private lightStates: ReadonlyMap<string, LightState> = new Map();
@@ -1237,6 +1239,17 @@ export class HouseViewer {
    * Light states from Home Assistant by light object ID. A light missing from the map (unmapped, or its entity
    * unknown or unavailable) is drawn off (Phase 7.9).
    */
+  /**
+   * Lights whose Shown when does not hold (Phase 21): their fixtures are not drawn or picked on any floor; the screen
+   * also draws them off. Kept across floor switches and new objects.
+   */
+  setHiddenLights(lightIds: ReadonlySet<string>): void {
+    this.hiddenLights = lightIds;
+    this.exterior.setConcealedLights(lightIds);
+    this.renderer.shadowMap.needsUpdate = true;
+    this.requestRender();
+  }
+
   setLightStates(states: ReadonlyMap<string, LightState>): void {
     this.lightStates = states;
     // Phase 16.6 timing (opt-in): time to the next frame and whether it compiled programs.
@@ -1918,6 +1931,7 @@ export class HouseViewer {
     // The shown floors' content with its live states (21.4: the house's one copy; in the whole house every floor,
     // whose states jump, without animation).
     this.emitters = this.exterior.syncContent((each) => this.statedFloor(each) ?? each);
+    this.exterior.setConcealedLights(this.hiddenLights);
     this.floorRoofs.refresh();
     this.effects.sync(floor, this.instances.root);
     this.screens.sync(this.instances.root, this.instances.screen);
