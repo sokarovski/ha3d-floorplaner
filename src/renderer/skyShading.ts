@@ -76,6 +76,11 @@ export type SkyShading = Readonly<{
   beforeRender: () => void;
   /** Portals in use and slots compiled (diagnostics). */
   portals: () => Readonly<{ count: number; slots: number }>;
+  /**
+   * Runs `run` with the patch compiling for `count` portal slots (0, 4, 8 or 16), for a host precompiling another
+   * view's programs (a compile reads the key and the source at once); the slots are restored afterwards.
+   */
+  withSlots: (count: number, run: () => void) => void;
   dispose: () => void;
 }>;
 
@@ -563,6 +568,15 @@ export const createSkyShading = (sources: SkyShadingSources): SkyShading => {
       writeUniforms();
     },
     portals: () => ({ count: portals.length, slots }),
+    withSlots: (count, run) => {
+      const kept = slots;
+      slots = count;
+      try {
+        run();
+      } finally {
+        slots = kept;
+      }
+    },
     dispose: () => {
       uniforms.hpIndoorMap.value.dispose();
     },

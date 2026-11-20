@@ -150,6 +150,8 @@ export type LightsLayer = Readonly<{
   shadowCasterCount: () => number;
   /** Strip slots compiled into the materials (stripShading.ts; 0, 4, 8 or 16). */
   stripSlots: () => number;
+  /** Runs `run` with the strip patch compiling for `slots` (stripShading.ts `withSlots`; precompiling a view). */
+  withStripSlots: (slots: number, run: () => void) => void;
   /**
    * Over the shadow budget (Phase 16.6): runs `run` once with each point/spot shadow split one step from the
    * current one applied (castShadow only, restored afterwards; no shadow map is drawn), so a host can precompile
@@ -652,6 +654,9 @@ export const createLightsLayer = (
     beforeRender: (scene) => stripShading.beforeRender(scene),
     shadowCasterCount: () => casters,
     stripSlots: () => stripShading.slots(),
+    withStripSlots: (slots, run) => {
+      stripShading.withSlots(slots, run);
+    },
     withNeighbourSplits: (run) => {
       const emitters = [...entries.values()].flatMap((entry) => entry.emitters);
       const current = new Map(emitters.map((emitter) => [emitter, emitter.castShadow]));

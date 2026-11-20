@@ -15,6 +15,7 @@ import {
   Light,
   LightShadow,
   PointLight,
+  SpotLight,
   Mesh,
   Plane,
   Raycaster,
@@ -52,7 +53,7 @@ import { helperPalette } from "../../src/renderer/helperPalette";
 import { createInstanceLayer } from "../../src/renderer/instanceLayer";
 import type { InstanceLayer } from "../../src/renderer/instanceLayer";
 import type { FloorScene } from "../../src/renderer/floorScene";
-import { createSkyShading } from "../../src/renderer/skyShading";
+import { createSkyShading, portalSlotCapacity } from "../../src/renderer/skyShading";
 import type { SkyShading } from "../../src/renderer/skyShading";
 import { createMirrorSurfaces } from "../../src/renderer/mirrorSurface";
 import { createLighting, previewToneMapping, sunSettingsFromPosition } from "../../src/renderer/lighting";
@@ -2974,12 +2975,134 @@ export class HouseViewer {
       compiles.push(this.compileInBackground([this.scene]));
     });
     void Promise.all(compiles).then(() => {
-      if (token === this.stageToken && !this.disposed)
+      if (token !== this.stageToken || this.disposed) return;
+      this.timing?.compile(
+        `final light topology (${String(compiles.length)} shadow splits)`,
+        performance.now() - started,
+      );
+      void this.prewarmViews(token);
+    });
+  }
+
+  /**
+   * After loading, in the background (Phase 21, owner: "prepare the screen for action"): the programs the views not
+   * shown need (every other floor, and the whole house from a floor) compile now, so the first switch to one reuses
+   * them instead of compiling every material then. A view's program differs from the shown one's in its light
+   * topology and in two material patches' slot counts: strips (exact, from the view's lights) and sky portals (its
+   * glazed outside openings, known only once its windows load, so every slot bucket up to its openings' count). Each
+   * view's lights are built once in a throwaway lights layer (its lamps as HA has them, so its shadow split matches)
+   * and stand in for the shown lights during one compile call, which gathers lights, keys and sources at once;
+   * everything is restored before anything draws, and the materials look their programs up again on the next frame
+   * (a compile leaves the last variant current). One view per step; a new view stops it. The scene's own materials
+   * stand in for the view's (the same kinds of materials share programs); its objects compile as they arrive.
+   */
+  private async prewarmViews(token: number): Promise<void> {
+    const shown = this.shown;
+    if (shown === null) return;
+    const floors = shown.house.floors.map((floor) => this.viewerFloorOf(floor));
+    const stated = (floor: BuildingFloorValue): BuildingFloorValue => ({
+      ...floor,
+      areas: floor.areas.map((area) =>
+        area.lights.length === 0
+          ? area
+          : { ...area, lights: area.lights.map((light) => this.statedLight(light)) },
+      ),
+    });
+    // Sky portal buckets up to the floor's openings (walls' doors and windows, roof windows); the whole house has none.
+    const skyBuckets = (floor: BuildingFloorValue): number[] => {
+      const openings =
+        floor.areas.reduce(
+          (sum, area) => sum + area.walls.reduce((each, wall) => each + wall.objects.length, 0),
+          0,
+        ) + (floor.roofs ?? []).reduce((sum, roof) => sum + (roof.windows?.length ?? 0), 0);
+      const top = Math.min(openings, portalSlotCapacity);
+      return [0, 4, 8, portalSlotCapacity].filter((bucket) => bucket <= top && (bucket > 0 || top === 0));
+    };
+    const views: { name: string; floor: BuildingFloorValue; budget: number; sky: number[] }[] = floors
+      .filter((floor) => floor.id !== shown.floorId)
+      .map((floor) => ({
+        name: floor.name,
+        floor: stated(floor),
+        budget: this.floorShadowBudget(),
+        sky: skyBuckets(floor),
+      }));
+    const [first] = floors;
+    if (shown.floorId !== null && first !== undefined)
+      views.push({
+        name: "whole house",
+        floor: stated({ ...first, areas: floors.flatMap((floor) => floor.areas) }),
+        budget: Math.min(houseShadowBudget, this.floorShadowBudget()),
+        sky: [0],
+      });
+    if (views.length === 0) return;
+    const stand = new Group();
+    stand.name = "view prewarm lights";
+    const groups = new Map<string, Group>();
+    const groupOf = (areaId: string): Group => {
+      const known = groups.get(areaId);
+      if (known !== undefined) return known;
+      const group = new Group();
+      stand.add(group);
+      groups.set(areaId, group);
+      return group;
+    };
+    const layer = createLightsLayer(this.helperMaterials, 0, this.rendering.limits().pointShadowSize);
+    // One variant per idle moment: each compile call blocks while it generates its programs' sources.
+    const idle = (): Promise<void> =>
+      new Promise((resolve) => {
+        if ("requestIdleCallback" in window)
+          window.requestIdleCallback(
+            () => {
+              resolve();
+            },
+            { timeout: 1000 },
+          );
+        else
+          setTimeout(() => {
+            resolve();
+          }, 50);
+      });
+    const started = performance.now();
+    try {
+      for (const view of views) {
+        layer.setShadowBudget(view.budget);
+        layer.sync(view.floor, groupOf, new Map());
+        for (const sky of view.sky) {
+          await idle();
+          if (token !== this.stageToken || this.disposed) return;
+          const shownLights: Light[] = [];
+          const materials = new Set<Material>();
+          this.scene.traverseVisible((object) => {
+            if (object instanceof PointLight || object instanceof SpotLight) shownLights.push(object);
+            if (isMesh(object))
+              for (const material of Array.isArray(object.material) ? object.material : [object.material])
+                materials.add(material);
+          });
+          let compiled: Promise<void> = Promise.resolve();
+          for (const light of shownLights) light.visible = false;
+          this.scene.add(stand);
+          try {
+            this.lights.withStripSlots(layer.stripSlots(), () => {
+              this.sky.withSlots(sky, () => {
+                compiled = this.compileInBackground([this.scene]);
+              });
+            });
+          } finally {
+            this.scene.remove(stand);
+            for (const light of shownLights) light.visible = true;
+            for (const material of materials) material.needsUpdate = true;
+          }
+          this.requestRender();
+          await compiled;
+        }
         this.timing?.compile(
-          `final light topology (${String(compiles.length)} shadow splits)`,
+          `prewarm: ${view.name} (${String(view.sky.length)} variants)`,
           performance.now() - started,
         );
-    });
+      }
+    } finally {
+      layer.dispose();
+    }
   }
 
   /** The remaining objects and textures: queued, loading, or loaded and not yet shown. */

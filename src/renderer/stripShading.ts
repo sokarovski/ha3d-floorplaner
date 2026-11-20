@@ -46,6 +46,11 @@ export type StripShading = Readonly<{
   setStrips: (strips: readonly StripSource[]) => void;
   /** Before every render of `scene`: patches new materials and writes the strips' world-space uniforms. */
   beforeRender: (scene: Object3D) => void;
+  /**
+   * Runs `run` with the patch compiling for `count` slots (a bucket: 0, 4, 8 or 16), for a host precompiling another
+   * view's programs (a compile reads the key and the source at once); the slots are restored afterwards.
+   */
+  withSlots: (count: number, run: () => void) => void;
   /** Slots compiled into the materials (0, 4, 8 or 16). */
   slots: () => number;
 }>;
@@ -211,5 +216,14 @@ export const createStripShading = (): StripShading => {
       writeUniforms();
     },
     slots: () => slots,
+    withSlots: (count, run) => {
+      const kept = slots;
+      slots = count;
+      try {
+        run();
+      } finally {
+        slots = kept;
+      }
+    },
   };
 };
